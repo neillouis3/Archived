@@ -5,11 +5,7 @@ import {Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Button} from "@her
 
 export default function NavBar() {
   return (
-    <Navbar>
-      <NavbarBrand>
-        <p className="font-regular text-inherit">&lt;3 milestone</p>
-      </NavbarBrand>
-      
+    <Navbar maxWidth="2xl" shouldHideOnScroll={true} disableAnimation={true} >      
       <NavbarContent justify="end">
         <NavbarItem className="hidden lg:flex">
           <Link href="#">Login</Link>

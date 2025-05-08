@@ -31,8 +31,8 @@ export default function RootLayout({
       >
         <Providers>
           <div className="w-screen flex flex-col items-center">
-            <NavBar/>
-            <div className="w-[55%]">
+            <NavBar />
+            <div className="w-[55%] mt-32">
               {children}
             </div>
             
