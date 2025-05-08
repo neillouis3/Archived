@@ -35,7 +35,7 @@ interface DetailedChipProps {
 
 export default function DetailedChip({ title }: DetailedChipProps) {
   return (
-    <Chip endContent={<NotificationIcon size={18} />} variant="faded">
+    <Chip  size="sm" endContent={<NotificationIcon size={12} />} variant="faded">
       {title}
     </Chip>
   );
