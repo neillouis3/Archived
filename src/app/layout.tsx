@@ -42,9 +42,9 @@ export default function RootLayout({
           <Providers>
             <div className="w-screen h-screen flex flex-col items-center">
               
-              <div className="w-[55%] h-full">
+              
                 {children}
-              </div>
+
               
             </div>
 

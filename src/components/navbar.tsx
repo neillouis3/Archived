@@ -1,6 +1,6 @@
 "use client";
-import {Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Button, Avatar} from "@heroui/react";
-import { SignInButton, SignUpButton } from "@clerk/nextjs";
+import {Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Button} from "@heroui/react";
+import ProfileIcon from "./profileIcon";
 import { ThemeSwitcher } from "./themeSwitch";
 
 
@@ -17,7 +17,7 @@ export default function NavBar() {
       <NavbarContent justify="end">
         
         <NavbarItem>
-          <Avatar size="md" isBordered color="default" src="https://i.pravatar.cc/150?u=a042581f4e29026024d" />
+          <ProfileIcon />  
           
         </NavbarItem>
 

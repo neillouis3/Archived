@@ -7,13 +7,13 @@ import { SignIn, SignUpButton } from "@clerk/nextjs";
 
 export default function Home() {
   return (
-    <div className="flex flex-row w-full items-center justify-center h-full gap-16">
-      <div className="flex flex-col w-full h-full justify-center items-center gap-16 pb-64">
+    <div className="flex flex-row w-full items-center justify-center h-full pb-32 gap-16">
+      <div className="flex flex-col w-full h-full justify-center items-center pb-32 gap-16 ">
         <div className="w-full flex justify-center">
           <Image
             alt="HeroUI hero Image"
             src="/logo.jpg"
-            width={300}
+            width={250}
           />
         </div>
         <div className="flex justify-center w-full px-16">
