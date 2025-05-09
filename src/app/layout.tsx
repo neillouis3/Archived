@@ -4,6 +4,15 @@ import "./globals.css";
 import { Providers } from "./providers";
 import NavBar from "@/components/navbar";
 
+import {
+  ClerkProvider,
+  SignInButton,
+  SignUpButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+} from '@clerk/nextjs'
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -25,21 +34,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <Providers>
-          <div className="w-screen flex flex-col items-center">
-            <NavBar />
-            <div className="w-[55%] mt-32">
-              {children}
+    <ClerkProvider>
+        <html lang="en" suppressHydrationWarning>
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        >
+          <Providers>
+            <div className="w-screen h-screen flex flex-col items-center">
+              
+              <div className="w-[55%] h-full">
+                {children}
+              </div>
+              
             </div>
-            
-          </div>
 
-        </Providers>
-      </body>
-    </html>
+          </Providers>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

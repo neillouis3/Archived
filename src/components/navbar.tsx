@@ -1,20 +1,26 @@
 "use client";
-import {Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Button} from "@heroui/react";
+import {Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Button, Avatar} from "@heroui/react";
+import { SignInButton, SignUpButton } from "@clerk/nextjs";
+import { ThemeSwitcher } from "./themeSwitch";
+
 
 
 
 export default function NavBar() {
   return (
     <Navbar maxWidth="2xl" shouldHideOnScroll={true} disableAnimation={true} >      
+      <NavbarContent justify="start">
+       <NavbarItem>
+          <ThemeSwitcher />
+        </NavbarItem>
+      </NavbarContent>
       <NavbarContent justify="end">
-        <NavbarItem className="hidden lg:flex">
-          <Link href="#">Login</Link>
-        </NavbarItem>
+        
         <NavbarItem>
-          <Button as={Link} color="primary" href="#" variant="flat">
-            Sign Up
-          </Button>
+          <Avatar size="md" isBordered color="default" src="https://i.pravatar.cc/150?u=a042581f4e29026024d" />
+          
         </NavbarItem>
+
       </NavbarContent>
     </Navbar>
   );
