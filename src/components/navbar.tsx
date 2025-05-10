@@ -1,7 +1,8 @@
 "use client";
 import {Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Button} from "@heroui/react";
 import ProfileIcon from "./profileIcon";
-import { ThemeSwitcher } from "./themeSwitch";
+import AddPostModal from "./addPostModal";
+
 
 
 
@@ -9,10 +10,14 @@ import { ThemeSwitcher } from "./themeSwitch";
 export default function NavBar() {
   return (
     <Navbar maxWidth="2xl" shouldHideOnScroll={true} disableAnimation={true} >      
-      <NavbarContent justify="start">
-       <NavbarItem>
-          <ThemeSwitcher />
+
+      <NavbarContent justify="center">
+        
+        <NavbarItem>
+          <AddPostModal />
+          
         </NavbarItem>
+
       </NavbarContent>
       <NavbarContent justify="end">
         

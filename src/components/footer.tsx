@@ -1,6 +1,6 @@
 
 import React from "react";
-
+import { SignOutButton } from "@clerk/nextjs";
 export default function Footer () {
     return (
         <div className="bg-white dark:bg-darkback_ground w-full h-fit bottom-0 mt-auto justify-center items-center flex max-lg:hidden t-8  pb-16  border-t border-gray-200 pt-8 ">
@@ -14,7 +14,7 @@ export default function Footer () {
                 </div>
                 
             </div>
-            
+            <SignOutButton />
 
 
         

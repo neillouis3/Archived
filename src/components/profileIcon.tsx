@@ -1,4 +1,6 @@
-import {Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, cn, Avatar} from "@heroui/react";
+import {Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, cn, Avatar, DropdownSection} from "@heroui/react";
+import { ThemeSwitcher } from "./themeSwitch";
+import { SignOutButton } from "@clerk/nextjs";
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {}
 
@@ -125,36 +127,45 @@ export default function ProfileIcon() {
 
       </DropdownTrigger>
       <DropdownMenu aria-label="Dropdown menu with icons" variant="faded">
-        <DropdownItem
-          key="new"
-          shortcut="⌘N"
-          startContent={<AddNoteIcon className={iconClasses} />}
-        >
-          New file
-        </DropdownItem>
-        <DropdownItem
-          key="copy"
-          shortcut="⌘C"
-          startContent={<CopyDocumentIcon className={iconClasses} />}
-        >
-          Copy link
-        </DropdownItem>
-        <DropdownItem
-          key="edit"
-          shortcut="⌘⇧E"
-          startContent={<EditDocumentIcon className={iconClasses} />}
-        >
-          Edit file
-        </DropdownItem>
-        <DropdownItem
-          key="delete"
-          className="text-danger"
-          color="danger"
-          shortcut="⌘⇧D"
-          startContent={<DeleteDocumentIcon className={cn(iconClasses, "text-danger")} />}
-        >
-          Delete file
-        </DropdownItem>
+        <DropdownSection showDivider>
+          <DropdownItem
+            key="new"
+            startContent={<AddNoteIcon className={iconClasses} />}
+          >
+            Profile
+          </DropdownItem>
+          <DropdownItem
+            key="copy"
+            startContent={<CopyDocumentIcon className={iconClasses} />}
+          >
+            Settings
+          </DropdownItem>
+        </DropdownSection>
+        <DropdownSection showDivider>
+
+          <DropdownItem
+            key="edit"
+          
+          >
+            <ThemeSwitcher />
+          </DropdownItem>
+        </DropdownSection>
+        <DropdownSection>
+          
+            <DropdownItem
+              key="delete"
+              className="text-danger"
+              color="danger"
+              startContent={<DeleteDocumentIcon className={cn(iconClasses, "text-danger")} />}
+            >
+              <SignOutButton>
+                Logout
+              </SignOutButton>
+
+            </DropdownItem>
+
+          
+        </DropdownSection>
       </DropdownMenu>
     </Dropdown>
   );
