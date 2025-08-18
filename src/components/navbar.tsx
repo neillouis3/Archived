@@ -1,5 +1,5 @@
 "use client";
-import {Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Button} from "@heroui/react";
+import {Navbar, NavbarContent, NavbarItem} from "@heroui/react";
 import ProfileIcon from "./profileIcon";
 import AddPostModal from "./addPostModal";
 

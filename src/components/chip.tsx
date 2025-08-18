@@ -2,17 +2,14 @@
 
 import {Chip} from "@heroui/react";
 
-interface IconProps {
+type IconProps = React.SVGProps<SVGSVGElement> & {
   size?: number;
-  height?: number;
-  width?: number;
-  [key: string]: any;
-}
+};
 
 export const NotificationIcon = ({size, height, width, ...props}: IconProps) => {
   return (
     <svg
-      fill="none"
+      fill="currentColor"
       height={size || height || 24}
       viewBox="0 0 24 24"
       width={size || width || 24}

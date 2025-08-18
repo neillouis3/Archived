@@ -1,4 +1,3 @@
-import AlbumPost from "@/components/albumPost";
 import { SignUp } from '@clerk/nextjs'
 
 

@@ -1,6 +1,8 @@
 // tailwind.config.js
 const {heroui} = require("@heroui/react");
 
+import { withUt } from "uploadthing/tw";
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [

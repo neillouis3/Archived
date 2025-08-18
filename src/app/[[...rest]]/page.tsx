@@ -1,8 +1,7 @@
 "use client";
 
 import {Image} from "@heroui/image";
-import {Button, Link} from "@heroui/react";
-import { SignIn, SignUpButton } from "@clerk/nextjs";
+import { SignIn } from "@clerk/nextjs";
 
 
 export default function Home() {

@@ -1,5 +1,5 @@
 "use client";
-import {Card, CardFooter, Image, Button} from "@heroui/react";
+import {Card, Image} from "@heroui/react";
 
 interface ImageCardProps {
   src?: string;
