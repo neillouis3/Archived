@@ -11,7 +11,7 @@
   "dependencies": {
     "@clerk/nextjs": "^6.19.1",
     "@heroui/react": "^2.8.0-beta.4",
-    "@nextui-org/theme": "^2.4.5",
+    "@heroui/select": "^2.4.25",
     "@uploadthing/react": "^7.3.1",
     "motion": "^12.10.1",
     "next": "15.3.2",

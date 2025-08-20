@@ -98,11 +98,10 @@ export const TagIcon = (props: React.SVGProps<SVGSVGElement>) => {
                       <div className="mt-2">
                         <Input size="sm"  placeholder="Add tags" type="text" variant="flat" endContent={<TagIcon/>} />
                       </div>
-                      <div className="mt-2">
+                      <div className="mt-2 h-36">
                          <Select
                            className="max-w-xs"
                            label="milestone"
-                           labelPlacement="outside"
                            placeholder="Add to album"
                            selectionMode="multiple"
                          >

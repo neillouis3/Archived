@@ -2,6 +2,7 @@ import {Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, cn, Avata
 import { ThemeSwitcher } from "./themeSwitch";
 import { SignOutButton } from "@clerk/nextjs";
 
+
 interface IconProps extends React.SVGProps<SVGSVGElement> {}
 
 export const AddNoteIcon = (props: IconProps) => {
@@ -131,6 +132,7 @@ export default function ProfileIcon() {
           <DropdownItem
             key="new"
             startContent={<AddNoteIcon className={iconClasses} />}
+            href="/accounts/profile"
           >
             Profile
           </DropdownItem>
