@@ -1,17 +1,26 @@
+"use client"
+
 import AlbumPost from "@/components/albumPost";
+import { useUser } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
+
 
 
 export default function Home() {
+  const { isSignedIn, user, isLoaded } = useUser();
+  
+  if (!user) return redirect('/accounts/login')
+    
   return (
-    <div className="flex flex-row w-full h-[200vh] overflow-x-hidden gap-4 relative">
-      <div className="flex-1/3 flex flex-col bg-white h-screen sticky top-0">
-        
-        <div className="mt-32 ">
+    <div className="flex flex-row w-full h-[200vh] overflow-x-hidden gap-16 relative">
+      <div className="flex-1/3 flex flex-col h-screen sticky top-0">
+
+        <div className="mt-16 ">
           <h1 className="text-4xl font-bold text-gray-500">milestones</h1>
           <p className="text-gray-500">Febuary 16 2024</p>
         </div>
       </div>
-      <div className="flex-2/3 bg-gray h-fit pt-32 flex flex-col gap-52">
+      <div className="flex-2/3 bg-gray h-fit pt-16 flex flex-col gap-52">
         <AlbumPost />
 
       </div>

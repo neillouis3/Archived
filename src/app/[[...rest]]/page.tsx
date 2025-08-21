@@ -1,11 +1,20 @@
 "use client";
 
 import {Image} from "@heroui/image";
-import { SignIn } from "@clerk/nextjs";
+import { SignIn, useUser } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
 
 
 export default function Home() {
+  const { user } = useUser();
+
+  if (user) {
+    redirect('/home');
+  }
+
   return (
+
+
     <div className="flex flex-row w-full items-center justify-center h-full pb-32 gap-16">
       <div className="flex flex-col w-full h-full justify-center items-center pb-32 gap-16 ">
         <div className="w-full flex justify-center">

@@ -115,14 +115,19 @@ export const DeleteDocumentIcon = (props: IconProps) => {
   );
 };
 
-export default function ProfileIcon() {
+export default function ProfileIcon(
+  { imageUrl}: { imageUrl?: string} = {}
+) {
+  const resolvedImageUrl = imageUrl ?? "https://i.pravatar.cc/150?u=placeholder";
+
+
   const iconClasses = "text-xl text-default-500 pointer-events-none flex-shrink-0";
 
   return (
     <Dropdown placement="bottom-end" backdrop="blur" >
       <DropdownTrigger>
         <Button isIconOnly size="lg" variant="bordered" radius="full">
-            <Avatar size="md" isBordered color="default" src="https://i.pravatar.cc/150?u=a042581f4e29026024d" />
+            <Avatar size="md" isBordered color="default" src={resolvedImageUrl} />
         </Button>
             
 
@@ -133,12 +138,14 @@ export default function ProfileIcon() {
             key="new"
             startContent={<AddNoteIcon className={iconClasses} />}
             href="/accounts/profile"
+            
           >
             Profile
           </DropdownItem>
           <DropdownItem
             key="copy"
             startContent={<CopyDocumentIcon className={iconClasses} />}
+            href="/accounts/settings"
           >
             Settings
           </DropdownItem>
