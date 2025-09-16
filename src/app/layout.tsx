@@ -32,7 +32,7 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           <Providers>
-            <div className="w-screen h-screen flex flex-col items-center">
+            <div className="w-screen  flex flex-col items-center">
               
               
                 {children}

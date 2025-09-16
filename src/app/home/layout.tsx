@@ -30,12 +30,12 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <div className="h-screen flex flex-col w-screen items-center overflow-y-clip ">
+          <div className="bg-background flex flex-col w-screen items-center overflow-y-clip ">
             <NavBar />
-            <div className="h-full w-[55%]">
+            <div className="h-full w-7xl bg-blue">
               {children}
             </div>
-            <Footer />
+            
           </div>
           
               

@@ -1,6 +1,6 @@
 "use client";
 
-import {Image} from "@heroui/image";
+import {Image} from "@heroui/react";
 import { SignIn, useUser } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 
@@ -15,8 +15,8 @@ export default function Home() {
   return (
 
 
-    <div className="flex flex-row w-full items-center justify-center h-full pb-32 gap-16">
-      <div className="flex flex-col w-full h-full justify-center items-center pb-32 gap-16 ">
+    <div className="flex flex-row w-full items-center justify-center h-full  gap-16">
+      <div className="flex flex-col w-full h-full justify-center items-center py-24 gap-16 ">
         <div className="w-full flex justify-center">
           <Image
             alt="HeroUI hero Image"
@@ -25,7 +25,7 @@ export default function Home() {
           />
         </div>
         <div className="flex justify-center w-full px-16">
-          <p>Welcome to Milestones! This is a demo of the app. You can sign in or sign up to see the full functionality.</p>
+          <p>Welcome to Milestones! This is a demo of the app.</p>
         </div>
         
       </div>

@@ -115,7 +115,7 @@ export default function AddPostModal(
                     <div className="mt-2 h-36">
                        <Select
                          className="max-w-xs"
-                         label="milestone"
+                         
                          placeholder="Add to album"
                          selectionMode="multiple"
                        >

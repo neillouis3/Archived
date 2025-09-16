@@ -6,3 +6,9 @@
 @source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+
+    --color-background: #F3F4F6;
+    --shadow-3xl: 0 35px 35px rgba(0, 0, 0, 0.25); 
+}
+

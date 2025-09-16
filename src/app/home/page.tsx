@@ -1,6 +1,9 @@
 "use client"
 
 import AlbumPost from "@/components/albumPost";
+import StatusPost from "@/components/statusPost";
+import ProjectDetails from "@/components/projectDetails";
+import AddPostModal from "@/components/addPostModal";
 import { useUser } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 
@@ -12,18 +15,20 @@ export default function Home() {
   if (!user) return redirect('/accounts/login')
     
   return (
-    <div className="flex flex-row w-full h-[200vh] overflow-x-hidden gap-16 relative">
-      <div className="flex-1/3 flex flex-col h-screen sticky top-0">
-
-        <div className="mt-16 ">
-          <h1 className="text-4xl font-bold text-gray-500">milestones</h1>
-          <p className="text-gray-500">Febuary 16 2024</p>
+    <div className="flex w-full h-[200vh] overflow-x-hidden gap-16 relative justify-center">
+      <ProjectDetails/>
+      
+      <div className="max-w-7xl w-3xl bg-gray h-fit py-8 flex flex-col gap-4 items-center">
+        <div className="mb-8">
+          <AddPostModal username={user?.username ?? undefined} fullName={user?.fullName ?? undefined} imageUrl={user?.imageUrl ?? undefined} />
         </div>
-      </div>
-      <div className="flex-2/3 bg-gray h-fit pt-16 flex flex-col gap-52">
+
         <AlbumPost />
+        <StatusPost />
 
       </div>
+
+      
     </div>
   );
 }
