@@ -3,7 +3,7 @@ import DetailedChip from "@/components/chip";
 
 export default function statusPost() {
     return (
-        <div className="bg-white pt-4 pb-8 flex flex-col gap-4 rounded-xl">
+        <div className="bg-white pt-4 pb-8 flex flex-col gap-4 rounded-xl shadow-md">
             <div className="px-4">
                 <p className="text-xs font-medium text-default-400 mb-4"> Febuary 16, 2024 at 2:34 AM</p>
                 <h1 className="text-xl font-bold">

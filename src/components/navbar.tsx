@@ -13,7 +13,7 @@ export default function NavBar() {
   const { user } = useUser();
   
   return (
-    <Navbar maxWidth="full" isBlurred={false}  disableAnimation={true} isBordered classNames={{base: "bg-white"}}> 
+    <Navbar maxWidth="2xl" isBlurred={false}  disableAnimation={true} isBordered classNames={{base: "bg-white"}}> 
       <NavbarBrand>
         <Link href="/home">
           <h1 className="text-2xl font-bold text-gray-500">milestones</h1>

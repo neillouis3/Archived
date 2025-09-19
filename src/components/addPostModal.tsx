@@ -14,10 +14,11 @@ import {
 
 import {Select, SelectSection, SelectItem} from "@heroui/react";
 
-import { UploadDropzone } from "@/utils/uploadThing";
+import { UploadDropzone, UploadButton } from "@/utils/uploadThing";
 import {Textarea} from "@heroui/react";
 
 import "@uploadthing/react/styles.css";
+
 
 export const PlusIcon = (props: React.SVGProps<SVGSVGElement>) => {
   return (
@@ -133,9 +134,18 @@ export default function AddPostModal(
                 <Button className="text-zinc-400" variant="light" onPress={onClose}>
                   Save to drafts
                 </Button>
-                <Button color="primary" onPress={onClose} >
-                  Post
-                </Button>
+                <UploadButton
+                  endpoint="imageUploader"
+                  onClientUploadComplete={(res) => {
+                    // Do something with the response
+                    console.log("Files: ", res);
+                    alert("Upload Completed");
+                  }}
+                  onUploadError={(error: Error) => {
+                    // Do something with the error.
+                    alert(`ERROR! ${error.message}`);
+                  }}
+                />
               </ModalFooter>
             </>
           )}

@@ -2,10 +2,11 @@
 
 import AlbumPost from "@/components/albumPost";
 import StatusPost from "@/components/statusPost";
-import ProjectDetails from "@/components/projectDetails";
+import LeftSideBar from "@/components/leftSideBar";
 import AddPostModal from "@/components/addPostModal";
 import { useUser } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
+import RightSideBar from "@/components/rightSideBar";
 
 
 
@@ -15,16 +16,14 @@ export default function Home() {
   if (!user) return redirect('/accounts/login')
     
   return (
-    <div className="flex w-full h-[200vh] overflow-x-hidden gap-16 relative justify-center">
-      <ProjectDetails/>
+    <div className="flex flex-col w-full gap-16 items-center justify-center">
+           <LeftSideBar username={user?.username ?? undefined} fullName={user?.fullName ?? undefined} imageUrl={user?.imageUrl ?? undefined} />
+           <RightSideBar username={user?.username ?? undefined} fullName={user?.fullName ?? undefined} imageUrl={user?.imageUrl ?? undefined} />
       
-      <div className="max-w-7xl w-3xl bg-gray h-fit py-8 flex flex-col gap-4 items-center">
-        <div className="mb-8">
-          <AddPostModal username={user?.username ?? undefined} fullName={user?.fullName ?? undefined} imageUrl={user?.imageUrl ?? undefined} />
-        </div>
-
+      <div className=" w-[40vw] bg-gray h-fit py-8 flex flex-col gap-4 items-center">
+      <AddPostModal username={user?.username ?? undefined} fullName={user?.fullName ?? undefined} imageUrl={user?.imageUrl ?? undefined} />
         <AlbumPost />
-        <StatusPost />
+
 
       </div>
 
