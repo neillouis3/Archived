@@ -1,27 +1,20 @@
 import mongoose from "mongoose";
 
-const postsSchema = new mmongoose.Schema ({
+const mediaSchema = new mongoose.Schema({
+  url: { type: String, required: true },
+  clerkId: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now },
+});
 
-    authorClerkId: { type: String, required: true, index: true },
-    title: { type: String, trim: true },
-    body: { type: String, required: true },
-    // ordered array of media references (keeps post doc small but references media)
-    media: [{
-        type: Schema.Types.ObjectId,
-        ref: 'media'
-    }],
-    // simple attachments metadata for quick access (optional denormalized)
-    
-    tags: [{ type: String, index: true }],
-    visibility: { type: String, enum: ['public','unlisted','private'], default: 'public' },
-    status: { type: String, enum: ['active','archived','moderation'], default: 'active' },
-    pinned: { type: Boolean, default: false },
-    
-    // Denormalized counters for fast feeds
-    commentsCount: { type: Number, default: 0 },
-    reactionsCount: { type: Number, default: 0 },
-    
-    deleted: { type: Boolean, default: false },
+const postsSchema = new mongoose.Schema({
+  authorClerkId: { type: String, required: true },
+  title: String,
+  body: { type: String, required: true },
+  media: [mediaSchema],
+  tags: [String],
+  visibility: { type: String, default: "public" },
+  pinned: { type: Boolean, default: false },
+  status: { type: String, default: "active" },
 }, { timestamps: true });
 
 

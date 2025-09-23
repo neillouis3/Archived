@@ -24,6 +24,6 @@
       "@lib/*": ["./src/lib/*"],
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/lib/mongo.js", "src/app/api/media/route.js"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/components/addPostModal.jsx", "src/components/addPostModal.jsx", "src/components/dropzone.jsx", "src/components/dropbox.jsx", "server/uploadthing.js"],
   "exclude": ["node_modules"]
 }
