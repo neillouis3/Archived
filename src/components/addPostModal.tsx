@@ -2,26 +2,27 @@
 import React, { useState } from "react";
 import {
   Modal, ModalContent, ModalHeader, ModalBody, ModalFooter,
-  Button, useDisclosure, User, Input, Textarea, Select, SelectItem
+  Button, useDisclosure, User, Input, Textarea,
 } from "@heroui/react";
 import Dropzone from "@components/dropbox";
 import { uploadFiles } from "@components/uploadFiles";
-import { PlusIcon, MailIcon, TagIcon } from "./icons"; // adjust imports
+import { useUser } from "@clerk/nextjs";
+import { PlusIcon } from "./icons"; // adjust imports
 
 export default function AddPostModal({
   imageUrl,
   username,
   fullName,
-  clerkId,
 }: {
   imageUrl?: string;
   username?: string;
   fullName?: string;
-  clerkId?: string;
 } = {}) {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+  const { user, isLoaded } = useUser();
 
-  const resolvedClerkId = clerkId ?? "none";
+
+  const resolvedClerkId = user?.id ?? "none";
   const resolvedImageUrl = imageUrl ?? "https://i.pravatar.cc/150?u=placeholder";
   const resolvedUsername = username ? `@${username}` : "@username";
   const resolvedFullName = fullName ?? "Your Name";
@@ -35,7 +36,7 @@ export default function AddPostModal({
   const [description, setDescription] = useState("");
 
   const handlePost = async () => {
-    console.log(clerkId)
+
     setLoading(true);
 
     try {
@@ -54,6 +55,8 @@ export default function AddPostModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           authorClerkId: resolvedClerkId,
+          username: resolvedUsername,
+          avatarUrl: resolvedImageUrl,
           title: title,
           body: description,
           media: mediaUrls,
@@ -97,8 +100,8 @@ export default function AddPostModal({
             <>
               <ModalHeader className="flex flex-col gap-1">Post milestones</ModalHeader>
               <ModalBody>
-                <div className="flex flex-row gap-4">
-                  <div className="flex-2/3">
+                <div className="flex flex-row gap-4 h-fit">
+                  <div className="flex-2/3 h-64 flex justify-center items-center ">
                     <Dropzone
                       files={files}
                       setFiles={setFiles}
@@ -106,16 +109,14 @@ export default function AddPostModal({
                       setRejected={setRejected}
                       className="w-full h-96"
                     />
-                    </div>
-                  <div className="flex-1/3 flex flex-col">
+                  </div>
+                  <div className="flex-1/3 flex flex-col ">
                     <div className="w-full">
                       <User
                         avatarProps={{ src: resolvedImageUrl }}
                         description={resolvedUsername}
                         name={resolvedFullName}
                       />
-                      <h1>{clerkId}</h1>
-                      <h1>{resolvedClerkId}</h1>
                     </div>
                    
 

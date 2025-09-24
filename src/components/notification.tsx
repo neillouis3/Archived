@@ -1,6 +1,5 @@
-import {Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, cn, Avatar, DropdownSection} from "@heroui/react";
-import { ThemeSwitcher } from "./themeSwitch";
-import { SignOutButton } from "@clerk/nextjs";
+import {Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, DropdownSection} from "@heroui/react";
+
 
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,6 +1,6 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { Button, Listbox, ListboxSection, ListboxItem } from "@heroui/react";
+
+import { Listbox, ListboxSection, ListboxItem } from "@heroui/react";
 
 
 export default function ProjectDetails() {

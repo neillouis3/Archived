@@ -1,6 +1,6 @@
 "use client";
 import React, { SVGProps} from "react";
-import { Button, Listbox, ListboxSection, ListboxItem, Input, Image, Avatar } from "@heroui/react";
+import { Avatar } from "@heroui/react";
 
 export const SearchIcon = (props: SVGProps<SVGSVGElement>) => {
     return (
@@ -39,28 +39,28 @@ export default function leftSideBar({ imageUrl, username, fullName }: { imageUrl
             <div className="pt-24 pb-8 px-8 lg:h-screen max-lg:border-t-1 max-lg:border-t-default-300 lg:w-[30vw] flex flex-col items-center lg:justify-end z-1 left-0  bottom-0 fixed  lg:top-0 transition-opacity duration-500">
                 <div className="flex flex-col w-full h-full items-end justify-between ">
                     <div className="flex flex-col gap-4">
-                        <div className="bg-white w-64 h-64 rounded-lg gap-4 flex flex-col shadow-md">
-                            <div className="bg-primary w-full flex-2 rounded-t-lg">
+                        <div className="bg-white w-64 h-48 rounded-lg gap-4 flex flex-col shadow-md">
+                            <div className="bg-primary w-full flex-3 rounded-t-lg">
 
                             </div>
                             <div className="p-4 flex-4">
-                                <div className="-mt-11 mb-2">
-                                    <Button isIconOnly size="undefined" variant="bordered" radius="full">
+                                <div className="-mt-14 mb-2">
+                                    
                                         <Avatar size="lg" isBordered color="default" src={resolvedImageUrl} />
-                                    </Button>
+                                    
                                 </div>
                                 
                                 <p className="font-semibold text-lg">{fullName}</p>
                                 <p className="text-xs text-default-400 -mt-1 mb-2">@{username}</p>
 
-                                <p className="text-xs">Computer Engineering at Memorial University</p>
+                                {/* <p className="text-xs">Computer Engineering at Memorial University</p> */}
                             </div>
                         </div>
-                        <div className="bg-white w-64  rounded-lg flex flex-col">
+                        {/* <div className="bg-white w-64  rounded-lg flex flex-col">
                             <div className="p-4 text-xs">
                                 202 followers
                             </div>
-                        </div>
+                        </div> */}
                         
                     </div>
 

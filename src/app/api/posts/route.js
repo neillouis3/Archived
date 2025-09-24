@@ -47,4 +47,65 @@ export async function GET(req) {
   }
 }
 
-export async function POST(req) { try { await connection(); const body = await req.json(); const { authorClerkId, title, body: postBody, media = [], tags = [], visibility, pinned, status } = body; if (!authorClerkId) return NextResponse.json({ error: "authorClerkId required" }, { status: 400 }); if (!postBody) return NextResponse.json({ error: "body required" }, { status: 400 }); const mediaWithClerkId = media.map((url) => ({ url, clerkId: authorClerkId })); const newPost = await Posts.create({ authorClerkId, title, body: postBody, media: mediaWithClerkId, tags, visibility, pinned, status, }); return NextResponse.json(newPost, { status: 201 }); } catch (err) { console.error("POST /api/posts error:", err); return NextResponse.json({ error: "Failed to create post" }, { status: 500 }); } }
+export async function POST(req) {
+  try {
+    await connection();
+
+    const body = await req.json();
+    
+    const {
+      authorClerkId,
+      username,
+      avatarUrl,
+      title,
+      body: postBody,
+      media = [],
+      tags = [],
+      visibility,
+      pinned,
+      status,
+    } = body;
+
+    // Basic validations
+    if (!authorClerkId) {
+      return NextResponse.json(
+        { error: "authorClerkId required" },
+        { status: 400 }
+      );
+    }
+
+    if (!postBody) {
+      return NextResponse.json(
+        { error: "body required" },
+        { status: 400 }
+      );
+    }
+
+    // Attach clerkId to media
+    const mediaWithClerkId = media.map((url) => ({
+      url,
+      clerkId: authorClerkId,
+    }));
+
+    const newPost = await Posts.create({
+      authorClerkId,
+      username,
+      avatarUrl,
+      title,
+      body: postBody,
+      media: mediaWithClerkId,
+      tags,
+      visibility,
+      pinned,
+      status,
+    });
+
+    return NextResponse.json(newPost, { status: 201 });
+  } catch (err) {
+    console.error("POST /api/posts error:", err);
+    return NextResponse.json(
+      { error: "Failed to create post" },
+      { status: 500 }
+    );
+  }
+}

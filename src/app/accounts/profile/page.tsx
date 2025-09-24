@@ -48,22 +48,24 @@ export default  function Profile() {
                 <div className="h-full items-center ">
                     <p className="font-semibold text-2xl -mt-1">{user?.fullName}</p>
                     <p className="text-xs text-default-400 -mt-1 mb-2">@{user?.username}</p>
-                    <div  className="text-[10px] px-2 py-0.5 w-fit bg-default-200 rounded-full font-semibold">Edit profile</div>
+                    {/* <div  className="text-[10px] px-2 py-0.5 w-fit bg-default-200 rounded-full font-semibold">Edit profile</div> */}
                 </div>
               
             </div>
-            <div className="my-4 w-2/3">
+            {/* <div className="my-4 w-2/3">
                 <p className="text-xs">Computer Engineering at Memorial University. I am on my fourth year. I am taking 5 courses, and I have one and a half years left before graduating. I will graduate around April of 2027.</p>
-            </div>    
+            </div>     */}
           </div>
         </div>
         {posts.map((post) =>
-          <AlbumPost
-            key={post._id}
-            title={post.title}
-            description={post.body}
-            imgUrl={post.media.map((m: any) => m.url).filter(Boolean)}
-          />
+                    <AlbumPost
+                    key={post._id}
+                    title={post.title}
+                    description={post.body}
+                    mediaUrl={post.media.map((m: any) => m.url).filter(Boolean)}
+                    username={post.username}
+                    imageUrl={post.avatarUrl}
+                  />
         )}
        
 

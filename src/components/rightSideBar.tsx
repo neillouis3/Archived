@@ -1,6 +1,6 @@
 "use client";
 import React, { SVGProps} from "react";
-import { Button, Listbox, ListboxSection, ListboxItem, Input, Image, Avatar } from "@heroui/react";
+import AddPostModal from '@components/addPostModal'
 
 export const SearchIcon = (props: SVGProps<SVGSVGElement>) => {
     return (
@@ -40,7 +40,7 @@ export default function RightSideBar({ imageUrl, username, fullName }: { imageUr
                 <div className="flex flex-col w-full h-full items-start justify-between">
                     <div className="flex flex-col gap-4">
                         
-                        <div className="bg-white h-fit rounded-lg w-64 text-sm shadow-md p-1" >
+                        {/* <div className="bg-white h-fit rounded-lg w-64 text-sm shadow-md p-1" >
                             <div className="px-3 pt-3">
                                 <Input 
                                     size="sm"
@@ -62,7 +62,9 @@ export default function RightSideBar({ imageUrl, username, fullName }: { imageUr
                             </Listbox>
 
                             
-                        </div>
+                        </div> */}
+
+                        <AddPostModal username={username ?? undefined} fullName={fullName ?? undefined} imageUrl={imageUrl ?? undefined}/>
                     </div>
 
                     <p className="text-xs mt-auto">Designed & built by @neillouis3 for Sophia</p>

@@ -8,7 +8,9 @@ const mediaSchema = new mongoose.Schema({
 
 const postsSchema = new mongoose.Schema({
   authorClerkId: { type: String, required: true },
-  title: String,
+  username: { type: String, required: true },
+  avatarUrl: { type: String },
+  title: { type: String },
   body: { type: String, required: true },
   media: [mediaSchema],
   tags: [String],
@@ -16,6 +18,7 @@ const postsSchema = new mongoose.Schema({
   pinned: { type: Boolean, default: false },
   status: { type: String, default: "active" },
 }, { timestamps: true });
+
 
 
 
