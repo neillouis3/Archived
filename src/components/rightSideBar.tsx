@@ -1,70 +1,93 @@
 "use client";
 import React, { SVGProps} from "react";
 import AddPostModal from '@components/addPostModal'
+import { Avatar, Button, Listbox, ListboxItem } from "@heroui/react";
+import Image from "next/image";
+import { PlusIcon } from "./icons";
 
 export const SearchIcon = (props: SVGProps<SVGSVGElement>) => {
     return (
-      <svg
-        aria-hidden="true"
-        fill="none"
-        focusable="false"
-        height="1em"
-        role="presentation"
-        viewBox="0 0 24 24"
-        width="1em"
-        {...props}
-      >
-        <path
-          d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-        />
-        <path
-          d="M22 22L20 20"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-        />
-      </svg>
-    );
-  };
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5" {...props}>
+  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+</svg>
+    )}
+    export const SearchIcon1 = (props: SVGProps<SVGSVGElement>) => {
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
+  <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+</svg>
+
+      )}
+      export const SearchIcon2 = (props: SVGProps<SVGSVGElement>) => {
+        return (
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
+  <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+</svg>
+
+        )}
 
 export default function RightSideBar({ imageUrl, username, fullName }: { imageUrl?: string; username?: string; fullName?: string } = {}) {
-    const resolvedImageUrl = imageUrl ?? "https://i.pravatar.cc/150?u=placeholder";
+
 
     return (
             <div className="pt-24 pb-8 px-8 lg:h-screen max-lg:border-t-1 max-lg:border-t-default-300 lg:w-[30vw] flex flex-col items-center lg:justify-end z-1 right-0  top-0 fixed  lg:top-0 transition-opacity duration-500">
                 <div className="flex flex-col w-full h-full items-start justify-between">
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col h-full gap-4">
                         
-                        {/* <div className="bg-white h-fit rounded-lg w-64 text-sm shadow-md p-1" >
-                            <div className="px-3 pt-3">
-                                <Input 
-                                    size="sm"
-                                    placeholder="Search"
-                                    radius="lg"
-                                    startContent={
-                                        <SearchIcon className="text-black/50 mb-0.5 dark:text-white/90 text-slate-400 pointer-events-none shrink-0" />
-                                    }
-                                />
-                            </div>
-                            <Listbox>
+                        <div className="bg-white h-fit rounded-lg w-64 text-sm shadow-md p-1" >
+                            
+                            <Listbox >
                                 
-                                <ListboxItem key="Albums">Friends</ListboxItem>
-                                <ListboxItem key="Albums2">Explore</ListboxItem>
-                                <ListboxItem key="Albu3ms">Following</ListboxItem>
+                                <ListboxItem  key="Albums" startContent={<SearchIcon />}>Friends</ListboxItem>
+                                <ListboxItem key="Albums2" startContent={<SearchIcon1 />}>Explore</ListboxItem>
+                                <ListboxItem key="Albu3ms" startContent={<SearchIcon2 />}>Following</ListboxItem>
                                 
                                 
                                 
                             </Listbox>
 
                             
-                        </div> */}
+                        </div>
+                        <div>
+                          <AddPostModal username={username ?? undefined} fullName={fullName ?? undefined} imageUrl={imageUrl ?? undefined}/>
+                        </div>
+                        
+                        <div className="bg-white h-full rounded-lg w-full text-sm shadow-md p-4 mb-8" >
+                            <p className="text-sm font-bold">People you may know</p>
+                            <div className="flex flex-col gap-4 mt-4">
+                              <div className="flex flex-row justify-between items-center">
+                                <div className="flex flex-row items-center gap-2">
+                                  <Avatar src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="album1"  />
+                                  <p className="text-sm">John Doe</p>
+                                </div>
+                                
+                                <Button isIconOnly color="primary" variant="light" size="sm">
+                                  <PlusIcon />
+                                </Button>
+                              </div>
+                              <div className="flex flex-row justify-between items-center">
+                                <div className="flex flex-row items-center gap-2">
+                                  <Avatar src="https://i.pravatar.cc/150?u=a042581f4e29026024d" alt="album1"   />
+                                  <p className="text-sm">John Doe</p>
+                                </div>
+                                
+                                <Button isIconOnly color="primary" variant="light" size="sm">
+                                  <PlusIcon />
+                                </Button>
+                              </div>
+                              <div className="flex flex-row justify-between items-center">
+                                <div className="flex flex-row items-center gap-2">
+                                  <Avatar src="https://i.pravatar.cc/150?u=a04258114e29026702d" alt="album1"  />
+                                  <p className="text-sm">John Doe</p>
+                                </div>
+                                
+                                <Button isIconOnly color="primary" variant="light" size="sm">
+                                  <PlusIcon />
+                                </Button>
+                              </div>
 
-                        <AddPostModal username={username ?? undefined} fullName={fullName ?? undefined} imageUrl={imageUrl ?? undefined}/>
+                            </div>
+                        </div>
                     </div>
 
                     <p className="text-xs mt-auto">Designed & built by @neillouis3 for Sophia</p>

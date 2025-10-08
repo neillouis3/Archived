@@ -1,6 +1,7 @@
 "use client";
 import React, { SVGProps} from "react";
-import { Avatar } from "@heroui/react";
+import { Avatar, Accordion, AccordionItem, Button } from "@heroui/react";
+import { Image } from "@heroui/react";
 
 export const SearchIcon = (props: SVGProps<SVGSVGElement>) => {
     return (
@@ -38,22 +39,91 @@ export default function leftSideBar({ imageUrl, username, fullName }: { imageUrl
     return (
             <div className="pt-24 pb-8 px-8 lg:h-screen max-lg:border-t-1 max-lg:border-t-default-300 lg:w-[30vw] flex flex-col items-center lg:justify-end z-1 left-0  bottom-0 fixed  lg:top-0 transition-opacity duration-500">
                 <div className="flex flex-col w-full h-full items-end justify-between ">
-                    <div className="flex flex-col gap-4">
-                        <div className="bg-white w-64 h-48 rounded-lg gap-4 flex flex-col shadow-md">
-                            <div className="bg-primary w-full flex-3 rounded-t-lg">
+                    <div className="flex flex-col h-full gap-4">
+                        <div className="bg-white dark:bg-[#27272a] w-64 h-full py-6 rounded-lg gap-4 flex flex-col shadow-md">
 
-                            </div>
-                            <div className="p-4 flex-4">
-                                <div className="-mt-14 mb-2">
+                            <div className="px-6">
+                                <div className=" mb-2">
                                     
                                         <Avatar size="lg" isBordered color="default" src={resolvedImageUrl} />
                                     
                                 </div>
                                 
                                 <p className="font-semibold text-lg">{fullName}</p>
-                                <p className="text-xs text-default-400 -mt-1 mb-2">@{username}</p>
+                                <p className="text-sm text-default-400 -mt-1 mb-2">@{username}</p>
 
-                                {/* <p className="text-xs">Computer Engineering at Memorial University</p> */}
+                                <p className="text-sm">Computer Engineering at Memorial University</p>
+
+                                <div className="flex flex-col justify-center items-center bg-[#f4f4f5] mt-4 -mx-2 px-2 py-2 rounded-lg h-fit gap-2">
+
+                                  <div className="flex flex-row justify-between items-center w-full">
+                                    <p className="text-sm text-default-400"><span className="font-bold text-default-700">202</span> posts</p>
+                                    <p className="text-sm text-default-400"><span className="font-bold text-default-700">202</span> followers</p>
+                                    <p className="text-sm text-default-400"><span className="font-bold text-default-700">202</span> following</p>
+
+                                  </div>
+
+
+                                </div>
+                            </div>
+
+                            
+                            <div className="w-full px-4 mt-4">
+                              <Accordion defaultExpandedKeys={["1"]} itemClasses={{title: "text-sm"}} variant="light">
+                                <AccordionItem key="1" title="Milestones">
+                                  <div className="columns-2 gap-2 items-center w-full text-xs h-fit" >
+                                    <div className="bg-default-200 mb-2 rounded-lg w-full aspect-square">
+                                      <Image src="/images/album1.jpg" alt="album1" radius="md" isZoomed classNames={{img: "aspect-square object-cover"}} />
+                                    </div>
+                                    <div className="bg-default-200 mb-2 rounded-lg w-full aspect-square">
+                                      <Image src="/images/album2.jpg" alt="album1" radius="md" isZoomed classNames={{img: "aspect-square object-cover"}} />
+                                    </div>
+                                    <div className="bg-default-200 mb-2 rounded-lg  w-full aspect-square">
+                                      <Image src="/images/album3.jpg" alt="album1" radius="md" isZoomed classNames={{img: "aspect-square object-cover"}} />
+                                    </div>
+                                    <div className="bg-default-200 mb-2 rounded-lg  w-full aspect-square">
+                                      <Image src="/images/album4.jpg" alt="album1" radius="md" isZoomed classNames={{img: "aspect-square object-cover"}} />
+                                    </div>
+
+                                    
+                                  </div>
+                                  <div className="flex justify-end">
+                                    <Button size="sm" color="primary" variant="light">View all</Button>
+                                  </div>
+                                </AccordionItem>
+                                <AccordionItem key="2" title="Milestones">
+                                  <div className="columns-3 gap-2 items-center w-full text-xs" >
+                                    <div className="bg-default-200 mb-2 rounded-lg w-16 h-16">
+                                      <Image src="/images/album1.jpg" alt="album1" width={40} height={40} />
+                                    </div>
+                                    <div className="bg-default-200 mb-2 rounded-lg w-16 h-16">
+                                      <Image src="/images/album1.jpg" alt="album1" width={40} height={40} />
+                                    </div>
+                                    <div className="bg-default-200 mb-2 rounded-lg w-16 h-16">
+                                      <Image src="/images/album1.jpg" alt="album1" width={40} height={40} />
+                                    </div>
+                                    <div className="bg-default-200 mb-2 rounded-lg w-16 h-16">
+                                      <Image src="/images/album1.jpg" alt="album1" width={40} height={40} />
+                                    </div>
+                                    <div className="bg-default-200 mb-2 rounded-lg w-16 h-16">
+                                      <Image src="/images/album1.jpg" alt="album1" width={40} height={40} />
+                                    </div>
+                                    <div className="bg-default-200 mb-2 rounded-lg w-16 h-16">
+                                      <Image src="/images/album1.jpg" alt="album1" width={40} height={40} />
+                                    </div>
+                                    <div className="bg-default-200 mb-2 rounded-lg w-16 h-16">
+                                      <Image src="/images/album1.jpg" alt="album1" width={40} height={40} />
+                                    </div>
+                                    <div className="bg-default-200 mb-2 rounded-lg w-16 h-16">
+                                      <Image src="/images/album1.jpg" alt="album1" width={40} height={40} />
+                                    </div>
+                                    <div className="bg-default-200 mb-2 rounded-lg w-16 h-16">
+                                      <Image src="/images/album1.jpg" alt="album1" width={40} height={40} />
+                                    </div>
+                                    
+                                  </div>
+                                </AccordionItem>
+                              </Accordion>
                             </div>
                         </div>
                         {/* <div className="bg-white w-64  rounded-lg flex flex-col">

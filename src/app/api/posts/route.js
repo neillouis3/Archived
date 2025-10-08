@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import Posts from "@lib/models/posts";
 import connection from "../../../lib/mongo";
-import mongoose from "mongoose";
+
 
 export async function GET(req) {
   try {

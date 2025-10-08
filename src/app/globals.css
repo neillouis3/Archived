@@ -7,8 +7,16 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-
-    --color-background: #F3F4F6;
-    --shadow-3xl: 0 35px 35px rgba(0, 0, 0, 0.25); 
-}
+    --color-background: #f3f4f6;
+    --color-foreground: #171717;
+    --color-darkbackground: #121212;
+    --color-darkforeground: #ededed;
+    
+    --animate-slide-in: slide-in 0.5s ease-in-out;
+    
+    @keyframes slide-in {
+        0% { transform: translate(100%, 100%); }
+        100% { transform: translate(0, 0); }
+    }
+    }
 

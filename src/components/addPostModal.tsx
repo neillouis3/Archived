@@ -19,7 +19,7 @@ export default function AddPostModal({
   fullName?: string;
 } = {}) {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
-  const { user, isLoaded } = useUser();
+  const {user} = useUser();
 
 
   const resolvedClerkId = user?.id ?? "none";

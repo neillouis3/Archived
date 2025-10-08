@@ -11,15 +11,15 @@ export default function ImageCard({
   alt = "Not loading"
 }: ImageCardProps) {
   return (
-    <div className="h-fit mb-1 w-full">
-      <Card isFooterBlurred className="border-none" radius="none">
+    <div className="h-fit mb-1 z-8 w-full">
+
         <Image
           alt={alt}
           className=""
-          radius="none"
+          radius="md"
           src={src}
         />
-      </Card>
+
     </div>
     
   );
