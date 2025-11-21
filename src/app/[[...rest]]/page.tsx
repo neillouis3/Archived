@@ -24,7 +24,7 @@ export default function Home() {
             width={250}
           />
         </div>
-        <div className="flex justify-center w-full px-16">
+        <div className="flex justify-center w-full text-foreground px-16">
           <p>Welcome to Milestones! This is a demo of the app.</p>
         </div>
         

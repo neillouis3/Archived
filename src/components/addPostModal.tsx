@@ -55,6 +55,7 @@ export default function AddPostModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           authorClerkId: resolvedClerkId,
+          fullName: resolvedFullName,
           username: resolvedUsername,
           avatarUrl: resolvedImageUrl,
           title: title,
@@ -90,8 +91,8 @@ export default function AddPostModal({
 
   return (
     <>
-      <Button onPress={onOpen} isIconOnly color="primary" size="sm">
-        <PlusIcon />
+      <Button onPress={onOpen}  startContent={<PlusIcon />} color="primary" size="sm">
+        Post a milestone
       </Button>
 
       <Modal isOpen={isOpen} size="5xl" onOpenChange={onOpenChange}>

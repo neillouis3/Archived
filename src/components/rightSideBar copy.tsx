@@ -1,7 +1,7 @@
 "use client";
 import React, { SVGProps} from "react";
 import AddPostModal from '@components/addPostModal'
-import { Avatar, Button, Link, Listbox, ListboxItem } from "@heroui/react";
+import { Avatar, Button, Listbox, ListboxItem } from "@heroui/react";
 import Image from "next/image";
 import { PlusIcon } from "./icons";
 
@@ -30,11 +30,11 @@ export default function RightSideBar() {
 
 
     return (
-            <div className="pt-20 pb-8 px-4 lg:h-screen max-lg:border-t-1 max-lg:border-t-default-300  flex flex-col items-center lg:justify-end z-1 right-0  top-0 fixed  lg:top-0 transition-opacity duration-500">
+            <div className="pt-20 pb-8 px-8 lg:h-screen max-lg:border-t-1 max-lg:border-t-default-300 lg:w-[30vw] flex flex-col items-center lg:justify-end z-1 right-0  top-0 fixed  lg:top-0 transition-opacity duration-500">
                 <div className="flex flex-col w-full h-full items-start justify-between">
-                    <div className="flex flex-col  w-64 h-full ">
+                    <div className="flex flex-col h-full gap-4">
                         
-                        <div className="bg-background h-fit rounded-lg text-sm shadow-md p-1 mb-4" >
+                        <div className="bg-white h-fit rounded-lg w-64 text-sm shadow-md p-1" >
                             
                             <Listbox >
                                 
@@ -50,8 +50,8 @@ export default function RightSideBar() {
                         </div>
 
                         
-                        <div className="bg-background h-full rounded-lg w-full text-sm shadow-md p-4" >
-                            <p className="text-xs text-default-400">What's happening</p>
+                        <div className="bg-white h-full rounded-lg w-full text-sm shadow-md p-4 mb-8" >
+                            <p className="text-sm font-bold">People you may know</p>
                             <div className="flex flex-col gap-4 mt-4">
                               <div className="flex flex-row justify-between items-center">
                                 <div className="flex flex-row items-center gap-2">
@@ -86,12 +86,9 @@ export default function RightSideBar() {
 
                             </div>
                         </div>
-                        <p className="text-xs mt-4">About • Privacy • Terms • Policies • Accessibility</p>
-                    <p className="text-xs mt-1 ">Designed & built by <Link size="sm" className="text-xs hover:cursor-pointer">@neillouis3</Link> for Sophia</p>
-                   
                     </div>
 
-
+                    <p className="text-xs mt-auto">Designed & built by @neillouis3 for Sophia</p>
                 </div>
             </div>
     );

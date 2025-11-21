@@ -55,6 +55,7 @@ export async function POST(req) {
     
     const {
       authorClerkId,
+      fullName,
       username,
       avatarUrl,
       title,
@@ -89,6 +90,7 @@ export async function POST(req) {
 
     const newPost = await Posts.create({
       authorClerkId,
+      fullName,
       username,
       avatarUrl,
       title,

@@ -11,13 +11,14 @@ export default function ImageCard({
   alt = "Not loading"
 }: ImageCardProps) {
   return (
-    <div className="h-fit mb-1 z-8 w-full">
+    <div className="h-fit   w-full">
 
         <Image
           alt={alt}
-          className=""
+          className="aspect-square object-cover"
           radius="md"
           src={src}
+
         />
 
     </div>

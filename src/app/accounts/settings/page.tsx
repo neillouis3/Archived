@@ -50,15 +50,15 @@ export default function UserProfilePage() {
   };
 
   return (
-    <div className="flex w-full h-screen gap-16">
+    <div className="flex w-full flex-col items-center h-screen gap-16">
       <LeftSideBar onTabChange={setActiveTab} />
 
-      <div className="w-[70vw] h-full ml-auto pb-32 pr-64 py-8 flex flex-col">
+      <div className="w-[45vw] h-full  pb-4  py-4 flex flex-col">
         {activeTab === "profile" && isLoaded && user && (
-          <div className="w-full h-full bg-white rounded-2xl shadow-lg py-4 px-8 flex flex-col justify-between">
+          <div className="w-full h-full bg-background rounded-2xl shadow-lg py-4 px-4 flex flex-col justify-between">
             <div>
               <h1 className="text-lg font-bold">Edit profile</h1>
-              <div className="bg-[#f4f4f5] w-full h-fit px-4 py-4 mt-12 mb-8 flex flex-row gap-4 items-center rounded-2xl">
+              <div className="bg-midground w-full h-fit px-4 py-4 mt-12 mb-8 flex flex-row gap-4 items-center rounded-2xl">
                 <div className="h-full ">
                     <Image  radius="full" width={60} src={user?.imageUrl} />
                     </div>              

@@ -1,5 +1,5 @@
 "use client";
-import {Link, Navbar, NavbarContent, NavbarItem, NavbarBrand, Input} from "@heroui/react";
+import {Navbar, NavbarContent, NavbarItem, NavbarBrand, Input} from "@heroui/react";
 import ProfileIcon from "./profileIcon";
 import { useUser } from "@clerk/nextjs";
 import NotificationIcon from "./notification";
@@ -21,11 +21,11 @@ export default function NavBar() {
   const { user } = useUser();
   
   return (
-    <Navbar maxWidth="2xl" isBlurred={false}  disableAnimation={true} isBordered classNames={{base: "bg-white dark:bg-darkbackground"}}> 
+    <Navbar maxWidth="full" isBlurred={false}  disableAnimation={true} isBordered classNames={{base: "bg-background"}}> 
       <NavbarBrand>
-        <Link href="/home">
+        <div onClick={() => window.location.href = "/home"} className="cursor-pointer">
           <h1 className="text-2xl font-bold text-gray-500">milestones</h1>
-        </Link>
+        </div>
       </NavbarBrand>
 
       <NavbarContent justify="end">

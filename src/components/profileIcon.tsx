@@ -137,7 +137,7 @@ export default function ProfileIcon(
           <DropdownItem
             key="new"
             startContent={<AddNoteIcon className={iconClasses} />}
-            href="/accounts/profile"
+            onClick={() => window.location.href = "/accounts/profile"}
             
           >
             Profile
@@ -145,7 +145,7 @@ export default function ProfileIcon(
           <DropdownItem
             key="copy"
             startContent={<CopyDocumentIcon className={iconClasses} />}
-            href="/accounts/settings"
+            onClick={() => window.location.href = "/accounts/settings"}
           >
             Settings
           </DropdownItem>

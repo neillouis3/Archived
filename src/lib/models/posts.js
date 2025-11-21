@@ -8,6 +8,7 @@ const mediaSchema = new mongoose.Schema({
 
 const postsSchema = new mongoose.Schema({
   authorClerkId: { type: String, required: true },
+  fullName: { type: String, required: true },
   username: { type: String, required: true },
   avatarUrl: { type: String },
   title: { type: String },

@@ -36,15 +36,16 @@ export default function Home() {
 
 
   return (
-    <div className="flex flex-col w-full h-full  gap-16 items-center justify-center">
-           <LeftSideBar username={user?.username ?? undefined} fullName={user?.fullName ?? undefined} imageUrl={user?.imageUrl ?? undefined} />
-           <RightSideBar username={user?.username ?? undefined} fullName={user?.fullName ?? undefined} imageUrl={user?.imageUrl ?? undefined} />
+    <div className="flex flex-col w-full h-full items-center justify-center">
+           <LeftSideBar username={user?.username ?? undefined} fullName={user?.fullName ?? undefined} imageUrl={user?.imageUrl ?? undefined} bio={user?.publicMetadata?.bio as string} />
+           <RightSideBar/>
       
       {loading ? (<div className="h-screen"></div>) :
-      (<div className=" w-[40vw] h-full py-8 flex flex-col gap-4 items-center">
+      (<div className=" w-[45vw] h-full py-4 flex flex-col gap-4 items-center ">
           
         {posts.map((post) =>
           <AlbumPost
+            fullName={post.fullName}
             key={post._id}
             title={post.title}
             description={post.body}

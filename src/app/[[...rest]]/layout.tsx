@@ -29,7 +29,7 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <div className="h-screen flex flex-col bg-white dark:bg-darkback_ground w-screen items-center overflow-y-clip ">
+          <div className="h-screen flex flex-col bg-white bg-background text-foreground  w-screen items-center overflow-y-clip ">
             <div className="h-full w-[55%]">
               {children}
             </div>
