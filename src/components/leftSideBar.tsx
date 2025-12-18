@@ -36,7 +36,7 @@ export default function leftSideBar({ imageUrl, username, fullName, bio }: { ima
             <div className="pt-20 pb-4 px-4 lg:h-screen max-lg:border-t-1 max-lg:border-t-default-300 lg:w-[30vw]  flex flex-col items-center lg:justify-end z-1 left-0  bottom-0 fixed  lg:top-0 transition-opacity duration-500">
                 <div className="flex flex-col w-full h-full  justify-between ">
                     <div className="flex flex-col h-full gap-4">
-                        <div className="bg-background w-64 h-full py-6 rounded-xl gap-4 flex flex-col shadow-md">
+                        <div className="bg-midground w-64 h-full py-6 rounded-xl gap-4 flex flex-col ">
                             <div className="px-6">
                                 <div className=" mb-2">
                                         <Avatar size="lg" isBordered color="default" src={resolvedImageUrl} />
@@ -53,17 +53,17 @@ export default function leftSideBar({ imageUrl, username, fullName, bio }: { ima
                                 </div>
                                 
                                 {/* <p className="text-sm">{bio}</p> */}
-                                <div className="flex flex-col   mt-2 -mx-2 px-2 py-2 rounded-lg h-fit gap-2">
+                                {/* <div className="flex flex-col   mt-2 -mx-2 px-2 py-2 rounded-lg h-fit gap-2">
                                   <p className="text-sm">{bio}</p>
-                                </div>
+                                </div> */}
 
-                                <div className="flex flex-col justify-center items-center  mt-4 -mx-2 px-2 py-2 rounded-lg h-fit gap-2">
+                                {/* <div className="flex flex-col justify-center items-center  mt-4 -mx-2 px-2 py-2 rounded-lg h-fit gap-2">
                                   <div className="flex flex-row justify-between items-center w-full">
                                     <p className="text-sm text-default-400"><span className="font-bold text-default-700">202</span> posts</p>
                                     <p className="text-sm text-default-400"><span className="font-bold text-default-700">202</span> followers</p>
                                     <p className="text-sm text-default-400"><span className="font-bold text-default-700">202</span> following</p>
                                   </div>
-                                </div>
+                                </div> */}
                             </div>
                             <div className="w-full px-4 mt-24 flex flex-col justify-between h-full ">
                               <div className="">

@@ -71,7 +71,7 @@ export const ShareIcon = (props: SVGProps<SVGSVGElement>) => {
 export default function LeftSideBar({ onTabChange, imageUrl, username, fullName, bio }: { onTabChange: (key: string) => void, imageUrl?: string; username?: string; fullName?: string; bio?: string }) {
   return (
     <div className="pt-20 pb-4 px-4 lg:h-screen lg:w-[30vw] flex flex-col  fixed left-0 bottom-0 lg:top-0 z-12">
-      <div className="flex flex-col w-64 h-full bg-background items-end justify-between rounded-2xl shadow-lg p-4">
+      <div className="flex flex-col w-64 h-full bg-midground items-end justify-between rounded-2xl  p-4">
         <div className="flex flex-col w-full gap-4">
           <Listbox
             aria-label="Sidebar options"

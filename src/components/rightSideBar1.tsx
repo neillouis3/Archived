@@ -35,7 +35,7 @@ export default function RightSideBar() {
                     <div className="flex flex-col h-full w-64 ">
                         
 
-                        <div className="bg-background h-fit rounded-lg w-full text-sm shadow-md p-4 " >
+                        <div className="bg-midground h-fit rounded-lg w-full text-sm  p-4 " >
                             <p className="text-xs text-default-400">People you may know</p>
                             <div className="flex flex-col gap-2 mt-4">
                               <div className="flex flex-row justify-between items-center">

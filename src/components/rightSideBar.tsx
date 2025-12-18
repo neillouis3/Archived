@@ -34,7 +34,7 @@ export default function RightSideBar() {
                 <div className="flex flex-col w-full h-full items-start justify-between">
                     <div className="flex flex-col  w-64 h-full ">
                         
-                        <div className="bg-background h-fit rounded-lg text-sm shadow-md p-1 mb-4" >
+                        <div className="bg-midground h-fit rounded-lg text-sm p-1 mb-4" >
                             
                             <Listbox >
                                 
@@ -50,7 +50,7 @@ export default function RightSideBar() {
                         </div>
 
                         
-                        <div className="bg-background h-full rounded-lg w-full text-sm shadow-md p-4" >
+                        <div className="bg-midground h-full rounded-lg w-full text-sm  p-4" >
                             <p className="text-xs text-default-400">What's happening</p>
                             <div className="flex flex-col gap-4 mt-4">
                               <div className="flex flex-row justify-between items-center">

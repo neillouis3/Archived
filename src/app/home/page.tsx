@@ -41,7 +41,7 @@ export default function Home() {
            <RightSideBar/>
       
       {loading ? (<div className="h-screen"></div>) :
-      (<div className=" w-[45vw] h-full py-4 flex flex-col gap-4 items-center ">
+      (<div className=" w-[40vw] h-full py-4 flex flex-col gap-4 items-center ">
           
         {posts.map((post) =>
           <AlbumPost
