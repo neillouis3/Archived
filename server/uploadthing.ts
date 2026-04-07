@@ -13,7 +13,7 @@ export function getUtapi() {
           "Or set UPLOADTHING_TOKEN to the base64 blob from the dashboard — it will be decoded automatically."
       );
     }
-    utapiInstance = new UTApi({ apiKey });
+    utapiInstance = new UTApi({ token: apiKey });
   }
   return utapiInstance;
 }

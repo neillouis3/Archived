@@ -17,8 +17,9 @@ export async function uploadFiles(formData: FormData) {
   const list = Array.isArray(response) ? response : [response];
   const urls: string[] = [];
   for (const r of list) {
-    if (r && r.error === null && r.data && typeof r.data.url === "string") {
-      urls.push(r.data.url);
+    if (r && r.error === null && r.data) {
+      const u = r.data.ufsUrl ?? r.data.url;
+      if (typeof u === "string") urls.push(u);
     }
   }
 
