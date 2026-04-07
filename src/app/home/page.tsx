@@ -7,6 +7,12 @@ import { Button, Skeleton } from "@heroui/react";
 import ArchiveLeftSidebar from "@/components/leftSideBar";
 import ArchiveRightSidebar from "@/components/rightSideBar";
 import ArchivePost from "@/components/albumPost";
+import {
+  type FeedPost,
+  feedPostMediaEntryUrl,
+  feedPostMediaUrls,
+  type PostsListResponse,
+} from "@/types/feedPost";
 import { PostGridCard, postGridClassName } from "@/components/postGridCard";
 import { subscribeArchiveFeedRefresh } from "@/lib/feedRefresh";
 import { SidebarProvider } from "@/components/sidebarContext";
@@ -72,7 +78,7 @@ export default function Home() {
   const { isLoaded } = useUser();
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<FeedPost[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [feedType, setFeedType] = useState<"following" | "discover">("following");
@@ -103,8 +109,8 @@ export default function Home() {
           setHasMore(false);
           return;
         }
-        const data = await res.json();
-        const rows = data.results || [];
+        const data = (await res.json()) as PostsListResponse;
+        const rows = Array.isArray(data.results) ? data.results : [];
         if (append) {
           setPosts((prev) => [...prev, ...rows]);
           setPage(nextPage);
@@ -124,10 +130,6 @@ export default function Home() {
     },
     [isLoaded, feedType]
   );
-
-  const refetchPosts = useCallback(() => {
-    void fetchPostsPage(1, false);
-  }, [fetchPostsPage]);
 
   useEffect(() => {
     void fetchPostsPage(1, false);
@@ -230,7 +232,7 @@ export default function Home() {
                         fullName={post.fullName}
                         title={post.title ?? ""}
                         description={post.body ?? ""}
-                        mediaUrl={post.media.map((m: any) => m.url).filter(Boolean)}
+                        mediaUrl={feedPostMediaUrls(post.media)}
                         username={post.username}
                         imageUrl={post.avatarUrl}
                         createdAt={post.createdAt}
@@ -262,11 +264,11 @@ export default function Home() {
                   ) : (
                     <div className={postGridClassName}>
                       {posts.flatMap((post) =>
-                        (post.media || []).map((m: any, idx: number) => (
+                        (post.media || []).map((m, idx: number) => (
                           <PostGridCard
                             key={`${post._id}-${idx}`}
                             href={`/post/${encodeURIComponent(String(post._id))}`}
-                            src={m.url || m}
+                            src={feedPostMediaEntryUrl(m)}
                             alt={post.title || `Post by ${post.username || "author"}`}
                             caption={post.username ? String(post.username) : undefined}
                           />

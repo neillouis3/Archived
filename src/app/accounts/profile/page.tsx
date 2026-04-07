@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import NextLink from "next/link";
 import { useUser } from "@clerk/nextjs";
 import {
@@ -15,6 +16,11 @@ import ImageGrid from "@/components/imageGrid";
 import ArchivePost from "@/components/albumPost";
 import { SidebarProvider } from "@/components/sidebarContext";
 import { subscribeArchiveFeedRefresh } from "@/lib/feedRefresh";
+import {
+  type FeedPost,
+  feedPostMediaUrls,
+  type PostsListResponse,
+} from "@/types/feedPost";
 
 // ── icons ──────────────────────────────────────────────────────────────────
 const LinkIcon = () => (
@@ -76,7 +82,7 @@ type CollectionTab = "all" | "public" | "friends" | "private";
 export default function ProfilePage() {
   const { isSignedIn, user, isLoaded } = useUser();
   const [viewMode, setViewMode] = useState<"grid" | "feed">("grid");
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<FeedPost[]>([]);
   const [collectionTab, setCollectionTab] = useState<CollectionTab>("all");
   const [followStats, setFollowStats] = useState<{
     followerCount: number;
@@ -96,8 +102,8 @@ export default function ProfilePage() {
       const res = await fetch(`/api/posts?${qs.toString()}`, {
         credentials: "include",
       });
-      const data = await res.json();
-      setPosts(data.results || []);
+      const data = (await res.json()) as PostsListResponse;
+      setPosts(Array.isArray(data.results) ? data.results : []);
     } catch (err) {
       console.error(err);
     }
@@ -181,10 +187,13 @@ export default function ProfilePage() {
           {/* Cover / hero area */}
           <div className="relative h-36 sm:h-48 bg-stone-200 overflow-hidden">
             {coverImageUrl ? (
-              <img
+              <Image
                 src={coverImageUrl}
                 alt=""
-                className="absolute inset-0 w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="100vw"
+                priority
               />
             ) : (
               <div
@@ -210,9 +219,11 @@ export default function ProfilePage() {
             {/* Avatar — overlaps cover */}
             <div className="flex items-end justify-between -mt-10 mb-4">
               <div className="relative">
-                <img
+                <Image
                   src={user.imageUrl}
                   alt={user.fullName ?? "Profile"}
+                  width={80}
+                  height={80}
                   className="w-20 h-20 rounded-full object-cover border-4 border-[#F7F6F2]"
                 />
               </div>
@@ -397,7 +408,7 @@ export default function ProfilePage() {
                       fullName={post.fullName}
                       title={post.title ?? ""}
                       description={post.body ?? ""}
-                      mediaUrl={post.media.map((m: any) => m.url).filter(Boolean)}
+                      mediaUrl={feedPostMediaUrls(post.media)}
                       username={post.username}
                       imageUrl={post.avatarUrl}
                       createdAt={post.createdAt}

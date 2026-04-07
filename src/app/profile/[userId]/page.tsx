@@ -1,6 +1,7 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
+import Image from "next/image";
 import NextLink from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -12,6 +13,11 @@ import ArchivePost from "@/components/albumPost";
 import FollowButton from "@/components/FollowButton";
 import FriendButton from "@/components/FriendButton";
 import { SidebarProvider } from "@/components/sidebarContext";
+import {
+  type FeedPost,
+  feedPostMediaUrls,
+  type PostsListResponse,
+} from "@/types/feedPost";
 
 const GridIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
@@ -44,7 +50,7 @@ export default function PublicProfilePage() {
   const [profile, setProfile] = useState<ProfileUser | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(true);
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<FeedPost[]>([]);
   const [viewMode, setViewMode] = useState<"grid" | "feed">("grid");
   const [followStats, setFollowStats] = useState<{
     followerCount: number;
@@ -89,8 +95,10 @@ export default function PublicProfilePage() {
         }
 
         if (postsRes.ok && !cancelled) {
-          const postsData = await postsRes.json();
-          if (!cancelled) setPosts(postsData.results || []);
+          const postsData = (await postsRes.json()) as PostsListResponse;
+          if (!cancelled) {
+            setPosts(Array.isArray(postsData.results) ? postsData.results : []);
+          }
         } else if (!cancelled) {
           setPosts([]);
         }
@@ -198,10 +206,13 @@ export default function PublicProfilePage() {
 
             <div className="relative h-36 sm:h-48 bg-stone-200 overflow-hidden">
               {profile.coverImageUrl ? (
-                <img
+                <Image
                   src={profile.coverImageUrl}
                   alt=""
-                  className="absolute inset-0 w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="100vw"
+                  priority
                 />
               ) : (
                 <div
@@ -218,9 +229,11 @@ export default function PublicProfilePage() {
             <div className="px-4 pb-6 sm:px-8 border-b border-stone-200/80">
               <div className="flex items-end justify-between -mt-10 mb-4 gap-4 flex-wrap">
                 <div className="relative">
-                  <img
+                  <Image
                     src={profile.imageUrl}
                     alt={profile.fullName}
+                    width={80}
+                    height={80}
                     className="w-20 h-20 rounded-full object-cover border-4 border-[#F7F6F2]"
                   />
                 </div>
@@ -306,7 +319,7 @@ export default function PublicProfilePage() {
                         fullName={post.fullName}
                         title={post.title ?? ""}
                         description={post.body ?? ""}
-                        mediaUrl={post.media.map((m: any) => m.url).filter(Boolean)}
+                        mediaUrl={feedPostMediaUrls(post.media)}
                         username={post.username}
                         imageUrl={post.avatarUrl}
                         createdAt={post.createdAt}

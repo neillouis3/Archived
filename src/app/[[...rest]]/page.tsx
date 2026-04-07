@@ -1,6 +1,7 @@
 "use client";
 
 import { SignIn, useUser } from "@clerk/nextjs";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 
 // Ambient photo tiles shown behind the sign-in form
@@ -33,7 +34,7 @@ export default function LandingPage() {
         {ambientImages.map((src, i) => (
           <div
             key={i}
-            className="relative overflow-hidden bg-stone-200"
+            className="relative aspect-square overflow-hidden bg-stone-200"
             style={{
               animationName: "fadeSlideIn",
               animationDuration: "0.8s",
@@ -42,10 +43,12 @@ export default function LandingPage() {
               animationDelay: `${i * 60}ms`,
             }}
           >
-            <img
+            <Image
               src={src}
               alt=""
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
+              sizes="(max-width: 1024px) 0px, 33vw"
               style={{
                 filter: "brightness(0.92) saturate(0.75) contrast(1.04)",
               }}

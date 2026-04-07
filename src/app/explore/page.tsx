@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useState, useEffect, useCallback, type FormEvent } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
@@ -11,6 +12,11 @@ import type { UserSearchHit } from "@/components/UserSearch";
 import { subscribeArchiveFeedRefresh } from "@/lib/feedRefresh";
 import { PostGridCard, postGridClassName } from "@/components/postGridCard";
 import { ExploreSearchBar } from "@/components/exploreSearchBar";
+import {
+  type FeedPost,
+  feedPostMediaEntryUrl,
+  type PostsListResponse,
+} from "@/types/feedPost";
 
 function ExplorePageInner() {
   const router = useRouter();
@@ -19,7 +25,7 @@ function ExplorePageInner() {
   const { isSignedIn, isLoaded } = useUser();
 
   const [input, setInput] = useState(q);
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<FeedPost[]>([]);
   const [postsLoading, setPostsLoading] = useState(true);
   const [peopleResults, setPeopleResults] = useState<UserSearchHit[]>([]);
   const [peopleLoading, setPeopleLoading] = useState(false);
@@ -36,8 +42,8 @@ function ExplorePageInner() {
       const res = await fetch(`/api/posts?${qs.toString()}`, {
         credentials: "include",
       });
-      const data = await res.json();
-      setPosts(data.results || []);
+      const data = (await res.json()) as PostsListResponse;
+      setPosts(Array.isArray(data.results) ? data.results : []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -100,14 +106,20 @@ function ExplorePageInner() {
   }
 
   const allImages = posts.flatMap((post) =>
-    (post.media || []).map((m: any, idx: number) => ({
-      url: m.url || m,
-      postId: post._id,
-      title: post.title,
-      username: post.username,
-      authorClerkId: post.authorClerkId as string | undefined,
-      imageIndex: idx,
-    }))
+    (post.media || []).flatMap((m, idx) => {
+      const url = feedPostMediaEntryUrl(m);
+      if (!url) return [];
+      return [
+        {
+          url,
+          postId: post._id,
+          title: post.title,
+          username: post.username,
+          authorClerkId: post.authorClerkId,
+          imageIndex: idx,
+        },
+      ];
+    })
   );
 
   const resultLabel =
@@ -175,9 +187,11 @@ function ExplorePageInner() {
                             href={`/profile/${encodeURIComponent(u.id)}`}
                             className="flex items-center gap-3 px-4 py-3 hover:bg-stone-50/80 transition-colors"
                           >
-                            <img
+                            <Image
                               src={u.imageUrl}
                               alt=""
+                              width={44}
+                              height={44}
                               className="w-11 h-11 rounded-full object-cover ring-1 ring-stone-200/60"
                             />
                             <div className="min-w-0 flex-1">

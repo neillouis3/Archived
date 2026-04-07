@@ -8,6 +8,7 @@ import ArchivePost from "@/components/albumPost";
 import { SidebarProvider } from "@/components/sidebarContext";
 import { SidebarInsetSpacer } from "@/components/sidebarInsetSpacer";
 import ArchiveRightSidebar from "@/components/rightSideBar";
+import { type FeedPost, feedPostMediaUrls } from "@/types/feedPost";
 
 export default function PostPermalinkPage() {
   const params = useParams();
@@ -15,7 +16,7 @@ export default function PostPermalinkPage() {
   const raw = params?.id;
   const postId = typeof raw === "string" ? raw : Array.isArray(raw) ? raw[0] : "";
 
-  const [post, setPost] = useState<any | null>(null);
+  const [post, setPost] = useState<FeedPost | null>(null);
   const [error, setError] = useState<"missing" | "notfound" | "failed" | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -46,11 +47,11 @@ export default function PostPermalinkPage() {
           setError("failed");
           return;
         }
-        const data = await res.json();
+        const data = (await res.json()) as FeedPost;
         if (!cancelled) {
           setPost(data);
           setError(null);
-          const title = data?.title || data?.body?.slice?.(0, 40) || "Post";
+          const title = data.title || data.body?.slice(0, 40) || "Post";
           document.title = `${title} | Archive`;
         }
       } catch {
@@ -132,7 +133,7 @@ export default function PostPermalinkPage() {
                   fullName={post.fullName}
                   title={post.title ?? ""}
                   description={post.body ?? ""}
-                  mediaUrl={(post.media || []).map((m: { url?: string }) => m.url).filter(Boolean)}
+                  mediaUrl={feedPostMediaUrls(post.media)}
                   username={post.username}
                   imageUrl={post.avatarUrl}
                   createdAt={post.createdAt}
