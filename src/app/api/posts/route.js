@@ -1,44 +1,92 @@
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import Posts from "@lib/models/posts";
 import connection from "../../../lib/mongo";
+import { embedEngagementInPosts } from "@lib/postEngagementBatch";
+import { buildPostsListFilter } from "@lib/socialQueries";
 
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 export async function GET(req) {
   try {
     await connection();
 
+    const { userId: viewerClerkId } = await auth();
+
     const { searchParams } = new URL(req.url);
     const authorClerkId = searchParams.get("authorClerkId");
     const tag = searchParams.get("tag");
-    const visibility = searchParams.get("visibility");
+    const collection = searchParams.get("collection");
+    const followingParam =
+      searchParams.get("following") === "true" ||
+      searchParams.get("feed") === "following";
     const clerkId = searchParams.get("clerkId");
+    const rawSearch =
+      searchParams.get("search") || searchParams.get("q") || "";
+    const search = rawSearch.trim();
 
-    // Pagination
-    const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 100);
-    const page = Math.max(parseInt(searchParams.get("page") || "1"), 1);
+    const limit = Math.min(parseInt(searchParams.get("limit") || "20", 10), 100);
+    const page = Math.max(parseInt(searchParams.get("page") || "1", 10), 1);
     const skip = (page - 1) * limit;
+    const skipTotal =
+      searchParams.get("skipTotal") === "1" ||
+      searchParams.get("skipTotal") === "true";
 
-    // Build filter
-    const filter = {}; // start empty
-    if (authorClerkId) filter.authorClerkId = authorClerkId;
-    if (tag) filter.tags = { $in: [tag] };
-    if (visibility) filter.visibility = visibility;
+    let baseFilter;
+    try {
+      baseFilter = await buildPostsListFilter({
+        authorClerkId,
+        followingFeed: followingParam,
+        viewerClerkId,
+        collectionVisibility: collection,
+      });
+    } catch (e) {
+      if (e?.message === "UNAUTHORIZED") {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      if (e?.message === "FORBIDDEN_COLLECTION") {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+      throw e;
+    }
 
-    // Fetch posts
-    const results = await Posts.find(filter)
+    const parts = [baseFilter];
+    if (tag) parts.push({ tags: { $in: [tag] } });
+    if (search) {
+      const rx = new RegExp(escapeRegex(search), "i");
+      parts.push({
+        $or: [
+          { title: rx },
+          { body: rx },
+          { username: rx },
+          { fullName: rx },
+          { tags: rx },
+        ],
+      });
+    }
+
+    const filter = parts.length === 1 ? parts[0] : { $and: parts };
+
+    const query = Posts.find(filter)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .lean();
 
-    // Optionally filter media by clerkId
+    const [results, total] = await Promise.all([
+      query,
+      skipTotal ? Promise.resolve(-1) : Posts.countDocuments(filter),
+    ]);
+
     if (clerkId) {
-      results.forEach(post => {
-        post.media = post.media.filter(m => m.clerkId === clerkId);
-      });
+      for (const post of results) {
+        post.media = post.media.filter((m) => m.clerkId === clerkId);
+      }
     }
 
-    const total = await Posts.countDocuments(filter);
+    await embedEngagementInPosts(results, viewerClerkId);
 
     return NextResponse.json({ results, page, limit, total }, { status: 200 });
   } catch (err) {
@@ -51,8 +99,13 @@ export async function POST(req) {
   try {
     await connection();
 
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await req.json();
-    
+
     const {
       authorClerkId,
       fullName,
@@ -62,31 +115,35 @@ export async function POST(req) {
       body: postBody,
       media = [],
       tags = [],
-      visibility,
+      visibility: rawVisibility,
+      location: rawLocation,
       pinned,
       status,
     } = body;
 
-    // Basic validations
-    if (!authorClerkId) {
+    if (!authorClerkId || authorClerkId !== userId) {
       return NextResponse.json(
-        { error: "authorClerkId required" },
-        { status: 400 }
+        { error: "authorClerkId must match signed-in user" },
+        { status: 403 }
       );
     }
 
     if (!postBody) {
-      return NextResponse.json(
-        { error: "body required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "body required" }, { status: 400 });
     }
 
-    // Attach clerkId to media
+    const allowedVis = ["public", "friends", "private"];
+    const visibility = allowedVis.includes(rawVisibility)
+      ? rawVisibility
+      : "public";
+
     const mediaWithClerkId = media.map((url) => ({
       url,
       clerkId: authorClerkId,
     }));
+
+    const location =
+      typeof rawLocation === "string" && rawLocation.trim() ? rawLocation.trim() : undefined;
 
     const newPost = await Posts.create({
       authorClerkId,
@@ -95,6 +152,7 @@ export async function POST(req) {
       avatarUrl,
       title,
       body: postBody,
+      location,
       media: mediaWithClerkId,
       tags,
       visibility,

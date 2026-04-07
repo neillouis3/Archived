@@ -13,15 +13,21 @@ const postsSchema = new mongoose.Schema({
   avatarUrl: { type: String },
   title: { type: String },
   body: { type: String, required: true },
+  location: { type: String },
   media: [mediaSchema],
   tags: [String],
-  visibility: { type: String, default: "public" },
+  visibility: {
+    type: String,
+    enum: ["public", "friends", "private"],
+    default: "public",
+  },
   pinned: { type: Boolean, default: false },
   status: { type: String, default: "active" },
 }, { timestamps: true });
 
-
-
+postsSchema.index({ authorClerkId: 1, createdAt: -1 });
+postsSchema.index({ visibility: 1, createdAt: -1 });
+postsSchema.index({ createdAt: -1 });
 
 const Posts = mongoose.models.posts || mongoose.model("posts", postsSchema)
 

@@ -1,190 +1,233 @@
-"use client"
+"use client";
 import React, { useState } from "react";
 import {
-  Modal, ModalContent, ModalHeader, ModalBody, ModalFooter,
-  Button, useDisclosure, User, Input, Textarea,
+  Modal,
+  Button,
+  Label,
+  Separator,
+  useOverlayState,
 } from "@heroui/react";
 import Dropzone from "@components/dropbox";
 import { uploadFiles } from "@components/uploadFiles";
 import { useUser } from "@clerk/nextjs";
-import { PlusIcon } from "./icons"; // adjust imports
+import { dispatchArchiveFeedRefresh } from "@/lib/feedRefresh";
+import { PlusIcon } from "./icons";
 
 export default function AddPostModal({
   imageUrl,
   username,
   fullName,
+  triggerStyle = "button",
 }: {
   imageUrl?: string;
   username?: string;
   fullName?: string;
+  triggerStyle?: "button" | "input";
 } = {}) {
-  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
-  const {user} = useUser();
-
+  const state = useOverlayState({ defaultOpen: false });
+  const { user } = useUser();
 
   const resolvedClerkId = user?.id ?? "none";
   const resolvedImageUrl = imageUrl ?? "https://i.pravatar.cc/150?u=placeholder";
   const resolvedUsername = username ? `@${username}` : "@username";
   const resolvedFullName = fullName ?? "Your Name";
-  
-
 
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [rejected, setRejected] = useState([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [visibility, setVisibility] = useState<"public" | "friends" | "private">(
+    "public"
+  );
 
   const handlePost = async () => {
-
     setLoading(true);
-
     try {
-      // 1️⃣ Upload files to UploadThing
       let mediaUrls: string[] = [];
       if (files.length > 0) {
         const formData = new FormData();
-        files.forEach((file) => formData.append("files", file));
-        mediaUrls = await uploadFiles(formData); // ufsUrl array
-        console.log("Uploaded media URLs:", mediaUrls);
+        files.forEach((f) => formData.append("files", f));
+        mediaUrls = await uploadFiles(formData);
       }
 
-      // 2️⃣ Create the post via API
       const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           authorClerkId: resolvedClerkId,
           fullName: resolvedFullName,
           username: resolvedUsername,
           avatarUrl: resolvedImageUrl,
-          title: title,
+          title,
           body: description,
           media: mediaUrls,
-          visibility: "public",
+          visibility,
         }),
       });
-      
-      if (!res.ok) {
-        const text = await res.text(); // log raw response
-        console.error("API error response:", text);
-        throw new Error(`Failed to create post: ${res.status}`);
-      }
-      
-      const newPost = await res.json();
-      console.log("Post created:", newPost);
 
+      if (!res.ok) throw new Error(`Failed to create post: ${res.status}`);
 
-      // 3️⃣ Reset form
       setFiles([]);
-     
-      onClose();
-
-      alert("Post created successfully!");
-    } catch (err: any) {
+      setTitle("");
+      setDescription("");
+      setVisibility("public");
+      state.close();
+      dispatchArchiveFeedRefresh();
+    } catch (err: unknown) {
       console.error(err);
-      alert(`Error: ${err.message}`);
+      const message = err instanceof Error ? err.message : String(err);
+      alert(`Error: ${message}`);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <>
-      <Button onPress={onOpen}  startContent={<PlusIcon />} color="primary" size="sm">
-        Post a milestone
-      </Button>
+    <Modal state={state}>
+      {triggerStyle === "input" ? (
+        <button
+          type="button"
+          className="w-full text-left bg-stone-100/60 border border-stone-200 rounded-full px-4 py-2.5 text-sm text-stone-400 hover:bg-stone-100 hover:border-stone-300 transition-colors"
+        >
+          Share a milestone...
+        </button>
+      ) : (
+        <Button className="bg-stone-800 hover:bg-stone-700 text-white text-xs tracking-[0.15em] uppercase rounded-xl px-4 py-2.5 h-auto gap-2">
+          <PlusIcon />
+          Post
+        </Button>
+      )}
 
-      <Modal isOpen={isOpen} size="5xl" onOpenChange={onOpenChange}>
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">Post milestones</ModalHeader>
-              <ModalBody>
-                <div className="flex flex-row gap-4 h-fit">
-                  <div className="flex-2/3 h-64 flex justify-center items-center ">
-                    <Dropzone
-                      files={files}
-                      setFiles={setFiles}
-                      rejected={rejected}
-                      setRejected={setRejected}
-                      className="w-full h-96"
-                    />
-                  </div>
-                  <div className="flex-1/3 flex flex-col ">
-                    <div className="w-full">
-                      <User
-                        avatarProps={{ src: resolvedImageUrl }}
-                        description={resolvedUsername}
-                        name={resolvedFullName}
+      <Modal.Backdrop>
+        <Modal.Container className="w-full max-w-full p-4 sm:p-6">
+          <Modal.Dialog className="bg-white rounded-2xl shadow-2xl overflow-hidden w-full max-w-[min(70vw,56rem)] min-w-0 mx-auto">
+            {({ close }) => (
+              <>
+                <Modal.Header className="px-6 py-4 border-b border-stone-200 flex items-center justify-between gap-3">
+                  <Modal.Heading
+                    className="text-xl font-light text-stone-800"
+                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                  >
+                    Post milestones
+                  </Modal.Heading>
+                  <Modal.CloseTrigger className="text-stone-400 hover:text-stone-700 transition-colors shrink-0 p-1 min-w-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                    </svg>
+                  </Modal.CloseTrigger>
+                </Modal.Header>
+
+                <Modal.Body className="p-6 overflow-y-auto max-h-[70vh]">
+                  <div className="flex flex-col lg:flex-row gap-6">
+                    <div className="flex-1 min-h-80 min-w-0">
+                      <Dropzone
+                        className=""
+                        files={files}
+                        setFiles={setFiles}
+                        rejected={rejected}
+                        setRejected={setRejected}
                       />
                     </div>
-                   
 
-                    <Input
-                      className="mt-4"
-                      size="sm"
-                      placeholder='"A title for your milestone"'
-                      type="text"
-                      variant="flat"
-                      label="Title"
-                      isRequired
-                      value={title}
-                      onValueChange={setTitle}
+                    <div className="flex-1 flex flex-col gap-4 min-w-0">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={resolvedImageUrl}
+                          alt={resolvedFullName}
+                          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                        />
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-sm font-semibold text-stone-700 truncate">{resolvedFullName}</span>
+                          <span className="text-xs text-stone-400 truncate">{resolvedUsername}</span>
+                        </div>
+                      </div>
 
-                      
-                    />
-                    <Textarea
-                      className="mt-2 max-w-xs"
-                      placeholder='"Describe what the milestone is about"'
-                      maxRows={5}
-                      value={description}
-                      label="Description"
-                      isRequired
-                      onValueChange={setDescription}
+                      <Separator />
 
-                      
-                    />
-                    {/* <Input
-                      className="mt-2"
-                      size="sm"
-                      placeholder="Add location"
-                      type="text"
-                      variant="flat"
-                      endContent={<MailIcon />}
+                      <div className="flex flex-col gap-1.5">
+                        <Label className="text-xs font-medium text-stone-600 tracking-wide">Title</Label>
+                        <input
+                          type="text"
+                          placeholder="A title for your milestone"
+                          value={title}
+                          onChange={(e) => setTitle(e.target.value)}
+                          className="bg-stone-100/60 border border-stone-200 rounded-xl px-4 py-2.5 text-sm text-stone-700 placeholder:text-stone-300 outline-none focus:border-stone-400 transition-colors"
+                        />
+                      </div>
 
-                      
-                    />
-                    <Input
-                      className="mt-2"
-                      size="sm"
-                      placeholder="Add tags"
-                      type="text"
-                      variant="flat"
-                      endContent={<div className="text-default-400 mr-1">#</div>}
-                      
-                    /> */}
-                    
+                      <div className="flex flex-col gap-1.5">
+                        <Label className="text-xs font-medium text-stone-600 tracking-wide">Description</Label>
+                        <textarea
+                          placeholder="Describe what the milestone is about"
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          rows={7}
+                          className="bg-stone-100/60 border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-700 placeholder:text-stone-300 outline-none resize-none focus:border-stone-400 transition-colors"
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label className="text-xs font-medium text-stone-600 tracking-wide">Who can see this</Label>
+                        <div className="flex flex-col gap-2">
+                          {(
+                            [
+                              { value: "public" as const, label: "Public", hint: "Anyone" },
+                              { value: "friends" as const, label: "Friends", hint: "Accepted friends only" },
+                              { value: "private" as const, label: "Private", hint: "Only you" },
+                            ] as const
+                          ).map(({ value, label, hint }) => (
+                            <label
+                              key={value}
+                              className={`flex items-start gap-3 rounded-xl border px-3 py-2.5 cursor-pointer transition-colors ${
+                                visibility === value
+                                  ? "border-stone-500 bg-stone-50"
+                                  : "border-stone-200 hover:border-stone-300"
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                name="post-visibility"
+                                value={value}
+                                checked={visibility === value}
+                                onChange={() => setVisibility(value)}
+                                className="mt-1"
+                              />
+                              <span className="flex flex-col min-w-0">
+                                <span className="text-sm text-stone-800">{label}</span>
+                                <span className="text-xs text-stone-400">{hint}</span>
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </ModalBody>
-              <ModalFooter>
-                <Button className="text-zinc-400" variant="light" onPress={onClose}>
-                  Save to drafts
-                </Button>
-                <Button
-                  variant="solid"
-                  color="primary"
-                  onPress={handlePost}
-                  disabled={loading}
-                >
-                  {loading ? "Posting..." : "Post"}
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
-    </>
+                </Modal.Body>
+
+                <Modal.Footer className="px-6 py-4 border-t border-stone-200 flex items-center justify-end gap-3">
+                  <Button
+                    variant="ghost"
+                    onPress={close}
+                    className="text-stone-400 hover:text-stone-600 text-xs"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onPress={handlePost}
+                    isPending={loading}
+                    isDisabled={loading}
+                    className="bg-stone-800 hover:bg-stone-700 disabled:bg-stone-300 text-white text-xs tracking-[0.15em] uppercase rounded-xl px-6"
+                  >
+                    {loading ? "Posting..." : "Post"}
+                  </Button>
+                </Modal.Footer>
+              </>
+            )}
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
+    </Modal>
   );
 }

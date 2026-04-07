@@ -1,6 +1,6 @@
 "use server";
 
-import { utapi } from "../../server/uploadthing";
+import { getUtapi } from "../../server/uploadthing";
 
 export async function uploadFiles(formData: FormData) {
   // Filter only File instances
@@ -8,13 +8,19 @@ export async function uploadFiles(formData: FormData) {
     (f): f is File => f instanceof File
   );
 
+  // Get UTApi instance (lazy initialization)
+  const utapi = getUtapi();
+
   // Upload the files
   const response = await utapi.uploadFiles(files); // UploadedFileResult[]
 
-  // Extract the new URL field ufsUrl
-  const urls = response
-    .filter(r => r.error === null) // only successful uploads
-    .map(r => r.data.ufsUrl); // use ufsUrl instead of url/appUrl
+  const list = Array.isArray(response) ? response : [response];
+  const urls: string[] = [];
+  for (const r of list) {
+    if (r && r.error === null && r.data && typeof r.data.url === "string") {
+      urls.push(r.data.url);
+    }
+  }
 
-  return urls; // string[]
+  return urls;
 }

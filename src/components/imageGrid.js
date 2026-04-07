@@ -1,5 +1,4 @@
 "use client";
-import { Image } from "@heroui/react";
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { createPortal } from "react-dom";
@@ -42,7 +41,7 @@ function Cards({ mediaUrls, setIndex }) {
                 }}
                 layoutId={card.id}
               >
-                 <Image src={card.url} radius="none" isZoomed className="w-full block" />
+                 <img src={card.url} className="w-full block object-cover" alt="Gallery" />
               </motion.div>
             </div>
           </>
@@ -96,7 +95,7 @@ function ModalCard({ index, cards }) {
               ease: "easeInOut"
             }}
           >
-            <Image src={media.url} radius="none" className="h-[50vh]"  />
+            <img src={media.url} className="h-[50vh] object-contain" alt="Media" />
           </motion.div>
         )}
       </motion.div>
@@ -105,30 +104,67 @@ function ModalCard({ index, cards }) {
 }
 
 
-export default function ImageGrid({ authorClerkId }) {
+/**
+ * @param {{ authorClerkId?: string, collection?: 'public' | 'friends' | 'private' | null, refreshNonce?: number }} props
+ */
+export default function ImageGrid({ authorClerkId, collection = null, refreshNonce = 0 }) {
 
   const [mediaUrls, setMediaUrls] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [index, setIndex] = useState(false);
 
   useEffect(() => {
+    if (!authorClerkId) {
+      setMediaUrls([]);
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
     const fetchMedia = async () => {
-      const res = await fetch(`/api/media/${authorClerkId}`);
-      const data = await res.json();
-  
-      if (data.success) {
-        // Map each URL to an object with id
-        const mediaWithIds = data.mediaUrls.map((url, index) => ({
-          id: index + 1, // 1, 2, 3...
-          url,
-        }));
-        setMediaUrls(mediaWithIds);
+      try {
+        const qs =
+          collection && ["public", "friends", "private"].includes(collection)
+            ? `?collection=${encodeURIComponent(collection)}`
+            : "";
+        const res = await fetch(
+          `/api/media/${encodeURIComponent(authorClerkId)}${qs}`,
+          {
+            credentials: "include",
+          }
+        );
+        const data = await res.json();
+        if (cancelled) return;
+        if (data.success && Array.isArray(data.mediaUrls)) {
+          const mediaWithIds = data.mediaUrls.map((url, i) => ({
+            id: `media-${i}-${url}`,
+            url,
+          }));
+          setMediaUrls(mediaWithIds);
+        } else {
+          setMediaUrls([]);
+        }
+      } catch {
+        if (!cancelled) setMediaUrls([]);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     };
-  
     fetchMedia();
-  }, [authorClerkId]);
-  
-  if (!mediaUrls.length) return <p className="text-gray-500">No media found.</p>;
+    return () => { cancelled = true; };
+  }, [authorClerkId, collection, refreshNonce]);
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full">
+        {[...Array(8)].map((_, i) => (
+          <div key={i} className="aspect-square bg-stone-100 rounded-lg animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+
+  if (!mediaUrls.length) return <p className="text-stone-400 text-sm">No media yet.</p>;
 
   return(
 

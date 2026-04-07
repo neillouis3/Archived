@@ -1,24 +1,45 @@
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import mongoose from "mongoose";
 import Posts from "@lib/models/posts";
 import connection from "../../../../lib/mongo";
+import { buildAuthorPostsFilter, areFriends } from "@lib/socialQueries";
 
+const VIS = ["public", "friends", "private"] as const;
 
 export async function GET(
   req: Request,
-  { params }: { params: { authorClerkId: string } }
+  { params }: { params: Promise<{ authorClerkId: string }> }
 ) {
   try {
     await connection();
 
-    const { authorClerkId } = params;
+    const { authorClerkId } = await params;
+    const { userId: viewerClerkId } = await auth();
+    const collection = new URL(req.url).searchParams.get("collection");
 
-    // Find all posts by this author, only selecting the media field
-    const posts = await Posts.find({ authorClerkId }).select("media");
+    const friend =
+      viewerClerkId && viewerClerkId !== authorClerkId
+        ? await areFriends(viewerClerkId, authorClerkId)
+        : false;
 
-    // Flatten all media arrays and extract the URLs
-    const mediaUrls = posts.flatMap((post: any) =>
-      (post.media || []).map((m:any) => m.url)
+    let filter: Record<string, unknown> = buildAuthorPostsFilter(
+      viewerClerkId ?? null,
+      authorClerkId,
+      friend
+    );
+
+    if (
+      viewerClerkId === authorClerkId &&
+      collection &&
+      (VIS as readonly string[]).includes(collection)
+    ) {
+      filter = { ...filter, visibility: collection };
+    }
+
+    const posts = await Posts.find(filter).select("media").lean();
+
+    const mediaUrls = posts.flatMap((post) =>
+      ((post as { media?: { url: string }[] }).media || []).map((m) => m.url)
     );
 
     return NextResponse.json({ success: true, mediaUrls });

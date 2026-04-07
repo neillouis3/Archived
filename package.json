@@ -10,20 +10,20 @@
   },
   "dependencies": {
     "@clerk/backend": "^2.15.0",
-    "@clerk/nextjs": "^6.32.0",
-    "@heroui/react": "^2.8.4",
-    "@heroui/select": "^2.4.25",
-    "@uploadthing/react": "^7.3.1",
+    "@clerk/nextjs": "^6.39.1",
+    "@heroicons/react": "^2.2.0",
+    "@heroui/react": "3.0.2",
+    "@heroui/styles": "3.0.2",
+    "@uploadthing/react": "^6.6.0",
     "framer-motion": "^12.23.13",
     "mongodb": "^6.19.0",
     "mongoose": "^8.18.0",
-    "motion": "^12.23.24",
-    "next": "^15.5.3",
+    "next": "^15.5.14",
     "next-themes": "^0.4.6",
-    "react": "19.1.1",
-    "react-dom": "19.1.1",
+    "react": "^19.1.4",
+    "react-dom": "^19.1.4",
     "react-dropzone": "^14.3.8",
-    "uploadthing": "^7.7.2"
+    "uploadthing": "^6.12.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -32,8 +32,11 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.3.2",
+    "eslint-config-next": "15.5.14",
     "tailwindcss": "^4",
     "typescript": "^5.9.2"
+  },
+  "overrides": {
+    "prop-types": "15.7.2"
   }
 }

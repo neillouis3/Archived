@@ -1,13 +1,38 @@
-import { SignUp } from '@clerk/nextjs'
+import Link from "next/link";
+import { SignUp } from "@clerk/nextjs";
+import { clerkAuthAppearance } from "@/lib/clerkAuthAppearance";
 
-
-export default function Home() {
+export default function RegisterPage() {
   return (
-      <div className="flex flex-col items-center mt-20 w-full h-full">
-        <SignUp />
+    <div
+      className="min-h-[100dvh] w-full bg-[#F7F6F2] text-stone-800 flex flex-col"
+      style={{ fontFamily: "'DM Sans', sans-serif" }}
+    >
+      <header className="shrink-0 flex flex-col items-center px-6 pt-10 pb-6 sm:pt-14">
+        <Link
+          href="/"
+          className="font-light tracking-[0.35em] uppercase text-stone-800 text-xl sm:text-2xl
+                     hover:text-stone-600 transition-colors"
+          style={{ fontFamily: "'DM Serif Display', serif" }}
+        >
+          Archive
+        </Link>
+        <p className="mt-3 text-center text-xs text-stone-400 max-w-sm leading-relaxed">
+          Create an account to start archiving
+        </p>
+      </header>
 
-      </div>
-    
-
+      <main className="flex-1 flex flex-col items-center justify-start sm:justify-center px-4 pb-12 sm:pb-16 pt-2">
+        <div className="w-full max-w-[420px]">
+          <SignUp
+            appearance={clerkAuthAppearance}
+            routing="path"
+            path="/accounts/register"
+            signInUrl="/accounts/login"
+            fallbackRedirectUrl="/home"
+          />
+        </div>
+      </main>
+    </div>
   );
 }

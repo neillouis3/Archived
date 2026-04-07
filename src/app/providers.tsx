@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {HeroUIProvider} from "@heroui/system";
+import { RouterProvider, I18nProvider } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 
@@ -14,8 +14,12 @@ export function Providers({children}: ProvidersProps) {
   const router = useRouter();
 
   return (
-    <HeroUIProvider navigate={router.push}>
-      <NextThemesProvider attribute="class" defaultTheme="light"           disableTransitionOnChange >{children}</NextThemesProvider>
-    </HeroUIProvider>
+    <RouterProvider navigate={router.push}>
+      <I18nProvider locale="en-US">
+        <NextThemesProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
+          {children}
+        </NextThemesProvider>
+      </I18nProvider>
+    </RouterProvider>
   );
 }
