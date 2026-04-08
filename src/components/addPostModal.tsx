@@ -12,7 +12,7 @@ import { useUser } from "@clerk/nextjs";
 import { dispatchArchiveFeedRefresh } from "@/lib/feedRefresh";
 import {
   pickUploadThingPublicUrl,
-  useUploadThing,
+  uploadFilesToUploadThing,
 } from "@/lib/uploadthingReact";
 import { PlusIcon } from "./icons";
 
@@ -30,7 +30,6 @@ export default function AddPostModal({
   const state = useOverlayState({ defaultOpen: false });
   const { user } = useUser();
 
-  const resolvedClerkId = user?.id ?? "none";
   const resolvedImageUrl = imageUrl ?? "https://i.pravatar.cc/150?u=placeholder";
   const resolvedUsername = username ? `@${username}` : "@username";
   const resolvedFullName = fullName ?? "Your Name";
@@ -44,21 +43,20 @@ export default function AddPostModal({
     "public"
   );
 
-  const { startUpload, isUploading } = useUploadThing("postMedia", {
-    onUploadError: (e) => {
-      console.error(e);
-    },
-  });
-
   const handlePost = async () => {
+    if (!user?.id) {
+      alert("Sign in to post.");
+      return;
+    }
     if (files.length === 0) {
       alert("Add at least one photo to post.");
       return;
     }
     setLoading(true);
     try {
-      const uploaded = await startUpload(files);
-      const mediaUrls = (uploaded ?? [])
+      /** Use imperative helper so failures throw; `useUploadThing().startUpload` swallows errors and returns `undefined`. */
+      const uploaded = await uploadFilesToUploadThing("postMedia", { files });
+      const mediaUrls = uploaded
         .map((item) => pickUploadThingPublicUrl(item))
         .filter(Boolean);
       if (!mediaUrls.length) {
@@ -70,7 +68,7 @@ export default function AddPostModal({
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          authorClerkId: resolvedClerkId,
+          authorClerkId: user.id,
           fullName: resolvedFullName,
           username: resolvedUsername,
           avatarUrl: resolvedImageUrl,
@@ -230,15 +228,11 @@ export default function AddPostModal({
                   </Button>
                   <Button
                     onPress={handlePost}
-                    isPending={loading || isUploading}
-                    isDisabled={loading || isUploading || files.length === 0}
+                    isPending={loading}
+                    isDisabled={loading || files.length === 0}
                     className="bg-stone-800 hover:bg-stone-700 disabled:bg-stone-300 text-white text-xs tracking-[0.15em] uppercase rounded-xl px-6"
                   >
-                    {loading || isUploading
-                      ? isUploading
-                        ? "Uploading..."
-                        : "Posting..."
-                      : "Post"}
+                    {loading ? "Working…" : "Post"}
                   </Button>
                 </Modal.Footer>
               </>
