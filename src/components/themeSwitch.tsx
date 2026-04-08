@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { Button } from "@heroui/react";
-import { SunIcon, MoonIcon } from "@heroicons/react/24/outline";
+import { Moon02Icon, Sun02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 
 export function ThemeSwitcher({ menuRow }: { menuRow?: boolean }) {
   const { resolvedTheme, setTheme } = useTheme();
@@ -13,7 +14,7 @@ export function ThemeSwitcher({ menuRow }: { menuRow?: boolean }) {
 
   const toggle = () => setTheme(resolvedTheme === "dark" ? "light" : "dark");
   const isDark = resolvedTheme === "dark";
-  const Icon = isDark ? SunIcon : MoonIcon;
+  const icon = isDark ? Sun02Icon : Moon02Icon;
   const label = isDark ? "Light mode" : "Dark mode";
 
   const rowClass =
@@ -30,7 +31,7 @@ export function ThemeSwitcher({ menuRow }: { menuRow?: boolean }) {
   if (menuRow) {
     return (
       <Button variant="ghost" size="sm" onPress={toggle} className={rowClass}>
-        <Icon className="w-[17px] h-[17px] text-stone-400 flex-shrink-0" />
+        <HugeiconsIcon icon={icon} size={17} className="text-stone-400 flex-shrink-0" />
         {label}
       </Button>
     );
@@ -38,7 +39,7 @@ export function ThemeSwitcher({ menuRow }: { menuRow?: boolean }) {
 
   return (
     <Button isIconOnly variant="ghost" size="sm" onPress={toggle} aria-label={label}>
-      <Icon className="w-5 h-5 text-stone-500" />
+      <HugeiconsIcon icon={icon} size={20} className="text-stone-500" />
     </Button>
   );
 }

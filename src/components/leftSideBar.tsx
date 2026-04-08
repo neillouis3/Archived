@@ -11,16 +11,17 @@ import AddPostModal from "./addPostModal";
 import { ThemeSwitcher } from "./themeSwitch";
 import { Button, Separator } from "@heroui/react";
 import {
-  BellIcon,
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
+  ArrowDown01Icon,
+  Logout01Icon,
+  Menu01Icon,
+  Cancel01Icon,
+  Notification01Icon,
   UserIcon,
-  Cog6ToothIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ChevronDownIcon,
-  ArrowRightOnRectangleIcon,
-  Bars3Icon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+  Settings02Icon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { archiveNavItems } from "@/lib/archiveNav";
 
 const PROFILE_MENU_ID = "sidebar-profile-menu";
@@ -104,7 +105,7 @@ function MobileArchiveNav({
           className="flex h-10 w-10 items-center justify-center rounded-lg text-stone-600 hover:bg-stone-100/90"
           aria-label="Open menu"
         >
-          <Bars3Icon className="h-6 w-6" />
+          <HugeiconsIcon icon={Menu01Icon} size={24} />
         </button>
         <Link
           href="/home"
@@ -119,7 +120,7 @@ function MobileArchiveNav({
           className="relative flex h-10 w-10 items-center justify-center rounded-lg text-stone-500 hover:bg-stone-100/90"
           aria-label="Notifications"
         >
-          <BellIcon className="h-5 w-5" />
+          <HugeiconsIcon icon={Notification01Icon} size={20} />
           {unreadNotif > 0 ? (
             <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-stone-800 ring-2 ring-[#F7F6F2]" />
           ) : null}
@@ -159,13 +160,13 @@ function MobileArchiveNav({
                   className="flex h-9 w-9 items-center justify-center rounded-lg text-stone-500 hover:bg-stone-100"
                   aria-label="Close menu"
                 >
-                  <XMarkIcon className="h-5 w-5" />
+                  <HugeiconsIcon icon={Cancel01Icon} size={20} />
                 </button>
               </div>
 
               <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 py-3">
                 {archiveNavItems.map((item) => {
-                  const Icon = item.icon;
+                  const icon = item.icon;
                   const isActive =
                     pathname === item.href ||
                     (item.href !== "/home" && pathname.startsWith(item.href)) ||
@@ -187,7 +188,11 @@ function MobileArchiveNav({
                           : "text-stone-600 hover:bg-stone-100/70 hover:text-stone-800"
                       }`}
                     >
-                      <Icon className={`h-[18px] w-[18px] shrink-0 ${isActive ? "text-stone-700" : "text-stone-400"}`} />
+                      <HugeiconsIcon
+                        icon={icon}
+                        size={18}
+                        className={`shrink-0 ${isActive ? "text-stone-700" : "text-stone-400"}`}
+                      />
                       <span className={`text-sm tracking-wide ${isActive ? "font-medium" : ""}`}>{item.label}</span>
                       {notifBadge ? (
                         <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-stone-800 px-1 text-[9px] text-white">
@@ -218,9 +223,9 @@ function MobileArchiveNav({
                     <div className="flex flex-col gap-0.5">
                       {[
                         { icon: UserIcon, label: "Your profile", href: "/accounts/profile" },
-                        { icon: Cog6ToothIcon, label: "Settings", href: "/accounts/settings" },
-                        { icon: BellIcon, label: "Notifications", href: "/notifications" },
-                      ].map(({ icon: Icon, label, href }) => (
+                        { icon: Settings02Icon, label: "Settings", href: "/accounts/settings" },
+                        { icon: Notification01Icon, label: "Notifications", href: "/notifications" },
+                      ].map(({ icon, label, href }) => (
                         <Button
                           key={href}
                           variant="ghost"
@@ -231,7 +236,7 @@ function MobileArchiveNav({
                           }}
                           className="h-9 w-full justify-start gap-2.5 rounded-lg px-2.5 text-xs font-normal text-stone-600 hover:bg-stone-100/90"
                         >
-                          <Icon className="h-[17px] w-[17px] shrink-0 text-stone-400" />
+                          <HugeiconsIcon icon={icon} size={17} className="shrink-0 text-stone-400" />
                           {label}
                         </Button>
                       ))}
@@ -244,7 +249,7 @@ function MobileArchiveNav({
                         size="sm"
                         className="h-9 w-full justify-start gap-2 rounded-lg px-2.5 text-xs font-normal text-red-700/90 hover:bg-red-50/90"
                       >
-                        <ArrowRightOnRectangleIcon className="h-[17px] w-[17px] shrink-0" />
+                        <HugeiconsIcon icon={Logout01Icon} size={17} className="shrink-0" />
                         Log out
                       </Button>
                     </SignOutButton>
@@ -354,13 +359,17 @@ export default function ArchiveLeftSidebar() {
               aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
               className="ml-auto rounded-lg p-1.5 text-stone-400 transition-colors hover:bg-stone-100/80 hover:text-stone-600"
             >
-              {isCollapsed ? <ChevronRightIcon className="h-4 w-4" /> : <ChevronLeftIcon className="h-4 w-4" />}
+              {isCollapsed ? (
+                <HugeiconsIcon icon={ArrowRight01Icon} size={16} />
+              ) : (
+                <HugeiconsIcon icon={ArrowLeft01Icon} size={16} />
+              )}
             </button>
           </div>
 
           <nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-1">
             {archiveNavItems.map((item) => {
-              const Icon = item.icon;
+              const icon = item.icon;
               const isActive =
                 pathname === item.href ||
                 (item.href !== "/home" && pathname.startsWith(item.href)) ||
@@ -383,7 +392,11 @@ export default function ArchiveLeftSidebar() {
                   ${isActive ? "bg-stone-100/90 text-stone-800" : "text-stone-500 hover:bg-stone-100/70 hover:text-stone-700"}
                 `}
                 >
-                  <Icon className={`h-[18px] w-[18px] flex-shrink-0 ${isActive ? "text-stone-700" : "text-stone-400"}`} />
+                  <HugeiconsIcon
+                    icon={icon}
+                    size={18}
+                    className={`flex-shrink-0 ${isActive ? "text-stone-700" : "text-stone-400"}`}
+                  />
                   <AnimatePresence mode="wait">
                     {!isCollapsed && (
                       <motion.span
@@ -473,8 +486,10 @@ export default function ArchiveLeftSidebar() {
                 )}
               </AnimatePresence>
               {!isCollapsed && user && (
-                <ChevronDownIcon
-                  className={`h-4 w-4 flex-shrink-0 text-stone-400 transition-transform ${profileMenuOpen ? "rotate-180" : ""}`}
+                <HugeiconsIcon
+                  icon={ArrowDown01Icon}
+                  size={16}
+                  className={`flex-shrink-0 text-stone-400 transition-transform ${profileMenuOpen ? "rotate-180" : ""}`}
                   aria-hidden
                 />
               )}
@@ -498,9 +513,9 @@ export default function ArchiveLeftSidebar() {
                 <div className="flex flex-col gap-0.5 px-1 pt-2">
                   {[
                     { icon: UserIcon, label: "Your profile", href: "/accounts/profile" },
-                    { icon: Cog6ToothIcon, label: "Settings", href: "/accounts/settings" },
-                    { icon: BellIcon, label: "Notifications", href: "/notifications" },
-                  ].map(({ icon: Icon, label, href }) => (
+                    { icon: Settings02Icon, label: "Settings", href: "/accounts/settings" },
+                    { icon: Notification01Icon, label: "Notifications", href: "/notifications" },
+                  ].map(({ icon, label, href }) => (
                     <Button
                       key={href}
                       variant="ghost"
@@ -511,7 +526,7 @@ export default function ArchiveLeftSidebar() {
                       }}
                       className="h-8 w-full justify-start gap-2.5 rounded-lg px-2.5 text-xs font-normal text-stone-600 hover:bg-stone-100/90"
                     >
-                      <Icon className="h-[17px] w-[17px] flex-shrink-0 text-stone-400" />
+                      <HugeiconsIcon icon={icon} size={17} className="flex-shrink-0 text-stone-400" />
                       {label}
                     </Button>
                   ))}
@@ -525,7 +540,7 @@ export default function ArchiveLeftSidebar() {
                       size="sm"
                       className="h-8 w-full justify-start rounded-lg px-2.5 text-xs font-normal text-red-700/90 hover:bg-red-50/90"
                     >
-                      <ArrowRightOnRectangleIcon className="h-[17px] w-[17px] flex-shrink-0" />
+                      <HugeiconsIcon icon={Logout01Icon} size={17} className="flex-shrink-0" />
                       Log out
                     </Button>
                   </SignOutButton>

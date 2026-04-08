@@ -2,7 +2,8 @@
 
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { MoonIcon, SunIcon } from "@heroicons/react/24/outline";
+import { Moon02Icon, Sun02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 
 type Props = {
   className?: string;
@@ -50,9 +51,9 @@ export function ThemeSwitcher({ className = "", menuRow }: Props) {
         aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       >
         {isDark ? (
-          <SunIcon className="h-[17px] w-[17px] shrink-0 text-stone-400" />
+          <HugeiconsIcon icon={Sun02Icon} size={17} className="shrink-0 text-stone-400" />
         ) : (
-          <MoonIcon className="h-[17px] w-[17px] shrink-0 text-stone-400" />
+          <HugeiconsIcon icon={Moon02Icon} size={17} className="shrink-0 text-stone-400" />
         )}
         <span>{isDark ? "Light mode" : "Dark mode"}</span>
       </button>
@@ -68,9 +69,9 @@ export function ThemeSwitcher({ className = "", menuRow }: Props) {
                   bg-stone-100/80 p-2 text-stone-600 transition-colors hover:bg-stone-200/60 ${className}`}
     >
       {isDark ? (
-        <SunIcon className="h-4 w-4" />
+        <HugeiconsIcon icon={Sun02Icon} size={16} />
       ) : (
-        <MoonIcon className="h-4 w-4" />
+        <HugeiconsIcon icon={Moon02Icon} size={16} />
       )}
     </button>
   );
