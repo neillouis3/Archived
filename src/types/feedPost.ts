@@ -1,7 +1,14 @@
 import type { PostEngagementSnapshot } from "@/components/albumPost";
 
-/** One media slot from GET /api/posts (object with url or legacy string). */
-export type FeedPostMediaEntry = { url?: string } | string;
+/** One media slot from GET /api/posts (object with url / ufsUrl or legacy string). */
+export type FeedPostMediaEntry = { url?: string; ufsUrl?: string } | string;
+
+function normalizeMediaUrl(u: string): string {
+  const t = u.trim();
+  if (!t) return "";
+  if (t.startsWith("//")) return `https:${t}`;
+  return t;
+}
 
 export type FeedPost = {
   _id: string;
@@ -19,8 +26,9 @@ export type FeedPost = {
 };
 
 export function feedPostMediaEntryUrl(m: FeedPostMediaEntry): string {
-  if (typeof m === "string") return m;
-  return m.url ?? "";
+  if (typeof m === "string") return normalizeMediaUrl(m);
+  const raw = m.url ?? m.ufsUrl ?? "";
+  return normalizeMediaUrl(typeof raw === "string" ? raw : "");
 }
 
 export function feedPostMediaUrls(media: FeedPostMediaEntry[] | undefined): string[] {

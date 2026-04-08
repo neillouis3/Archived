@@ -5,6 +5,43 @@ import Posts from "@lib/models/posts";
 import connection from "../../../../lib/mongo";
 import { getPostIfVisible } from "@lib/postAccess";
 import { embedEngagementInPosts } from "@lib/postEngagementBatch";
+import { getUtapi } from "../../../../../server/uploadthing";
+
+function maybeExtractUploadThingFileKey(url) {
+  if (typeof url !== "string" || !url.trim()) return null;
+  const value = url.trim();
+
+  try {
+    const parsed = new URL(value);
+    const pathParts = parsed.pathname.split("/").filter(Boolean);
+    const fIdx = pathParts.indexOf("f");
+    if (fIdx >= 0 && pathParts[fIdx + 1]) {
+      return decodeURIComponent(pathParts[fIdx + 1]);
+    }
+    if (pathParts[0] === "a" && pathParts[2]) {
+      return decodeURIComponent(pathParts[2]);
+    }
+  } catch {
+    /* ignore non-URL values */
+  }
+
+  return null;
+}
+
+function mediaUrlsFromPost(post) {
+  if (!post?.media || !Array.isArray(post.media)) return [];
+  const urls = [];
+  for (const item of post.media) {
+    if (typeof item === "string") {
+      urls.push(item);
+      continue;
+    }
+    if (item && typeof item === "object" && typeof item.url === "string") {
+      urls.push(item.url);
+    }
+  }
+  return urls;
+}
 
 export async function GET(_req, context) {
   try {
@@ -49,6 +86,19 @@ export async function DELETE(_req, context) {
     }
     if (post.authorClerkId !== userId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const mediaUrls = mediaUrlsFromPost(post);
+    const fileKeys = Array.from(
+      new Set(mediaUrls.map(maybeExtractUploadThingFileKey).filter(Boolean))
+    );
+    if (fileKeys.length > 0) {
+      try {
+        await getUtapi().deleteFiles(fileKeys);
+      } catch (uploadErr) {
+        // Post deletion should still succeed even if remote media cleanup fails.
+        console.error("DELETE /api/posts/[id] upload cleanup error:", uploadErr);
+      }
     }
 
     await Posts.deleteOne({ _id: id });

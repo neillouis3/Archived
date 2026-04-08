@@ -9,6 +9,25 @@ function escapeRegex(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+/** Non-empty image URLs only; `null` if there is nothing to attach (invalid for new posts). */
+function normalizePostMediaForCreate(media, authorClerkId) {
+  const raw = Array.isArray(media) ? media : [];
+  const urls = [];
+  for (const item of raw) {
+    if (typeof item === "string") {
+      const u = item.trim();
+      if (u) urls.push(u);
+      continue;
+    }
+    if (item && typeof item === "object" && typeof item.url === "string") {
+      const u = item.url.trim();
+      if (u) urls.push(u);
+    }
+  }
+  if (urls.length === 0) return null;
+  return urls.map((url) => ({ url, clerkId: authorClerkId }));
+}
+
 export async function GET(req) {
   try {
     await connection();
@@ -137,10 +156,13 @@ export async function POST(req) {
       ? rawVisibility
       : "public";
 
-    const mediaWithClerkId = media.map((url) => ({
-      url,
-      clerkId: authorClerkId,
-    }));
+    const mediaWithClerkId = normalizePostMediaForCreate(media, authorClerkId);
+    if (!mediaWithClerkId) {
+      return NextResponse.json(
+        { error: "At least one image is required" },
+        { status: 400 }
+      );
+    }
 
     const location =
       typeof rawLocation === "string" && rawLocation.trim() ? rawLocation.trim() : undefined;

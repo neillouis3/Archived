@@ -1,27 +1,29 @@
-"use server";
+/**
+ * Uploads files via POST /api/upload-files (Route Handler).
+ * Avoids calling a "use server" action from the client, which requires an RSC
+ * response — HTML/JSON error pages surface as "An unexpected response was received from the server."
+ */
+export async function uploadFiles(formData: FormData): Promise<string[]> {
+  const res = await fetch("/api/upload-files", {
+    method: "POST",
+    body: formData,
+    credentials: "include",
+  });
 
-import { getUtapi } from "../../server/uploadthing";
+  const data = (await res.json().catch(() => null)) as
+    | { urls?: string[]; error?: string }
+    | null;
 
-export async function uploadFiles(formData: FormData) {
-  // Filter only File instances
-  const files = formData.getAll("files").filter(
-    (f): f is File => f instanceof File
-  );
-
-  // Get UTApi instance (lazy initialization)
-  const utapi = getUtapi();
-
-  // Upload the files
-  const response = await utapi.uploadFiles(files); // UploadedFileResult[]
-
-  const list = Array.isArray(response) ? response : [response];
-  const urls: string[] = [];
-  for (const r of list) {
-    if (r && r.error === null && r.data) {
-      const u = r.data.ufsUrl ?? r.data.url;
-      if (typeof u === "string") urls.push(u);
-    }
+  if (!res.ok) {
+    const msg =
+      (data && typeof data.error === "string" && data.error) ||
+      `Upload failed (${res.status})`;
+    throw new Error(msg);
   }
 
-  return urls;
+  if (!data || !Array.isArray(data.urls)) {
+    throw new Error("Invalid upload response");
+  }
+
+  return data.urls;
 }

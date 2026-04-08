@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:delete-posts-without-media": "node --env-file=.env scripts/delete-posts-without-media.mjs"
   },
   "dependencies": {
     "@clerk/backend": "^2.15.0",

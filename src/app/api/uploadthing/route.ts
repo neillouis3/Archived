@@ -1,9 +1,9 @@
 import { createRouteHandler } from "uploadthing/next";
-import { ensureUploadThingSecretInEnv } from "@/lib/uploadthingEnv";
+import { ensureUploadThingTokenInEnv } from "@/lib/uploadthingEnv";
 
 import { ourFileRouter } from "./core";
 
-ensureUploadThingSecretInEnv();
+ensureUploadThingTokenInEnv();
 
 // Export routes for Next App Router
 export const { GET, POST } = createRouteHandler({
