@@ -7,7 +7,10 @@ import { SidebarInsetSpacer } from "@/components/sidebarInsetSpacer";
 import { DatePicker, Separator } from "@heroui/react";
 import { DateValue, parseDate } from "@internationalized/date";
 import { SidebarProvider } from "@/components/sidebarContext";
-import { uploadFiles } from "@/components/uploadFiles";
+import {
+  pickUploadThingPublicUrl,
+  uploadFilesToUploadThing,
+} from "@/lib/uploadthingReact";
 import {
   emptySocialMedia,
   parseSocialMedia,
@@ -116,10 +119,8 @@ export default function SettingsPage() {
     if (!file || !user) return;
     setCoverUploading(true);
     try {
-      const fd = new FormData();
-      fd.append("files", file);
-      const urls = await uploadFiles(fd);
-      const url = urls[0];
+      const uploaded = await uploadFilesToUploadThing("postMedia", { files: [file] });
+      const url = pickUploadThingPublicUrl(uploaded[0]);
       if (!url) throw new Error("Upload failed");
       const res = await fetch("/api/updateUser", {
         method: "POST",

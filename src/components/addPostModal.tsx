@@ -8,9 +8,12 @@ import {
   useOverlayState,
 } from "@heroui/react";
 import Dropzone from "@components/dropbox";
-import { uploadFiles } from "@components/uploadFiles";
 import { useUser } from "@clerk/nextjs";
 import { dispatchArchiveFeedRefresh } from "@/lib/feedRefresh";
+import {
+  pickUploadThingPublicUrl,
+  useUploadThing,
+} from "@/lib/uploadthingReact";
 import { PlusIcon } from "./icons";
 
 export default function AddPostModal({
@@ -41,6 +44,12 @@ export default function AddPostModal({
     "public"
   );
 
+  const { startUpload, isUploading } = useUploadThing("postMedia", {
+    onUploadError: (e) => {
+      console.error(e);
+    },
+  });
+
   const handlePost = async () => {
     if (files.length === 0) {
       alert("Add at least one photo to post.");
@@ -48,9 +57,10 @@ export default function AddPostModal({
     }
     setLoading(true);
     try {
-      const formData = new FormData();
-      files.forEach((f) => formData.append("files", f));
-      const mediaUrls = await uploadFiles(formData);
+      const uploaded = await startUpload(files);
+      const mediaUrls = (uploaded ?? [])
+        .map((item) => pickUploadThingPublicUrl(item))
+        .filter(Boolean);
       if (!mediaUrls.length) {
         throw new Error("Upload did not return any image URLs. Try again.");
       }
@@ -220,11 +230,15 @@ export default function AddPostModal({
                   </Button>
                   <Button
                     onPress={handlePost}
-                    isPending={loading}
-                    isDisabled={loading || files.length === 0}
+                    isPending={loading || isUploading}
+                    isDisabled={loading || isUploading || files.length === 0}
                     className="bg-stone-800 hover:bg-stone-700 disabled:bg-stone-300 text-white text-xs tracking-[0.15em] uppercase rounded-xl px-6"
                   >
-                    {loading ? "Posting..." : "Post"}
+                    {loading || isUploading
+                      ? isUploading
+                        ? "Uploading..."
+                        : "Posting..."
+                      : "Post"}
                   </Button>
                 </Modal.Footer>
               </>
