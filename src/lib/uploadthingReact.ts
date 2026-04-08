@@ -9,11 +9,6 @@ import type { OurFileRouter } from "@/app/api/uploadthing/core";
 export const { useUploadThing, uploadFiles: uploadFilesToUploadThing } =
   generateReactHelpers<OurFileRouter>({
     url: "/api/uploadthing",
-    fetch: (input, init) =>
-      fetch(input, {
-        ...init,
-        credentials: "include",
-      }),
   });
 
 export function pickUploadThingPublicUrl(

@@ -16,6 +16,19 @@ import {
 } from "@/lib/uploadthingReact";
 import { PlusIcon } from "./icons";
 
+function getReadableErrorMessage(err: unknown): string {
+  if (err instanceof Error) {
+    const msg = err.message?.trim();
+    if (msg) return msg;
+    // UploadThing and fetch wrappers sometimes nest details in `cause`.
+    const cause = (err as { cause?: unknown }).cause;
+    if (cause instanceof Error && cause.message?.trim()) return cause.message.trim();
+    if (typeof cause === "string" && cause.trim()) return cause.trim();
+  }
+  if (typeof err === "string" && err.trim()) return err.trim();
+  return "Upload failed. Please try again in a moment.";
+}
+
 export default function AddPostModal({
   imageUrl,
   username,
@@ -89,7 +102,7 @@ export default function AddPostModal({
       dispatchArchiveFeedRefresh();
     } catch (err: unknown) {
       console.error(err);
-      const message = err instanceof Error ? err.message : String(err);
+      const message = getReadableErrorMessage(err);
       alert(`Error: ${message}`);
     } finally {
       setLoading(false);
