@@ -45,12 +45,6 @@ const DotsIcon = () => (
   </svg>
 );
 
-const ShareIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 5.314 9.566 5.314m0-10.622L7.217 3.093m9.566 5.314a2.25 2.25 0 1 0-1.091 4.218 2.25 2.25 0 0 0 1.09-4.218Z" />
-  </svg>
-);
-
 const PinIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3 shrink-0 text-stone-300">
     <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
@@ -145,7 +139,6 @@ function ArchivePost({
   const [commentText, setCommentText] = useState("");
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
-  const [shareHint, setShareHint] = useState<string | null>(null);
   const commentsLoadedRef = useRef(false);
 
   useEffect(() => {
@@ -211,18 +204,6 @@ function ArchivePost({
   const media = mediaUrl.filter(Boolean);
 
   const signedIn = Boolean(user);
-
-  async function copyPostLink() {
-    if (typeof window === "undefined" || !postId) return;
-    const url = `${window.location.origin}/post/${postId}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      setShareHint("Copied link");
-    } catch {
-      setShareHint("Copy failed");
-    }
-    window.setTimeout(() => setShareHint(null), 2000);
-  }
 
   async function toggleLike() {
     if (!signedIn || !postId || actionLoading) return;
@@ -306,74 +287,65 @@ function ArchivePost({
 
   return (
     <article className="flex flex-col">
-      <div className="flex items-center gap-2.5 mb-3">
+      <div className="mb-3 flex w-full items-center gap-2.5">
         {profileHref ? (
           <Link
             href={profileHref}
-            className="flex items-center gap-2.5 min-w-0 flex-1 max-w-[calc(100%-4rem)] rounded-lg -m-1 p-1 hover:bg-stone-100/80 transition-colors group/author"
+            className="group/author -m-1 flex min-w-0 flex-1 items-center gap-2.5 rounded-lg p-1 transition-colors hover:bg-stone-100/80"
             aria-label={`View ${resolvedUsername}'s profile`}
           >
             <img
               src={resolvedImage}
               alt=""
-              className="w-7 h-7 flex-shrink-0 rounded-full object-cover ring-1 ring-transparent group-hover/author:ring-stone-300 transition-[box-shadow]"
+              className="h-7 w-7 flex-shrink-0 rounded-full object-cover ring-1 ring-transparent transition-[box-shadow] group-hover/author:ring-stone-300"
             />
-            <span className="text-xs font-medium text-stone-700 truncate group-hover/author:text-stone-900 group-hover/author:underline underline-offset-2 decoration-stone-300">
+            <span className="truncate text-xs font-medium text-stone-700 underline-offset-2 decoration-stone-300 group-hover/author:text-stone-900 group-hover/author:underline">
               {resolvedUsername}
             </span>
           </Link>
         ) : (
-          <>
+          <div className="flex min-w-0 flex-1 items-center gap-2.5">
             <img
               src={resolvedImage}
               alt={resolvedUsername}
-              className="w-7 h-7 flex-shrink-0 rounded-full object-cover"
+              className="h-7 w-7 flex-shrink-0 rounded-full object-cover"
             />
-            <span className="text-xs font-medium text-stone-700">{resolvedUsername}</span>
-          </>
-        )}
-        {postId ? (
-          <Link
-            href={`/post/${postId}`}
-            className="text-xs text-stone-300 ml-auto hover:text-stone-500 transition-colors shrink-0"
-          >
-            {formatDate(createdAt)}
-          </Link>
-        ) : (
-          <span className="text-xs text-stone-300 ml-auto">{formatDate(createdAt)}</span>
+            <span className="truncate text-xs font-medium text-stone-700">{resolvedUsername}</span>
+          </div>
         )}
 
-        {isOwner ? (
-          <EditPostModal
-            state={editModalState}
-            trigger={
-              <Button
-                isIconOnly
-                variant="ghost"
-                size="sm"
-                className="text-stone-300 hover:text-stone-500 w-6 h-6 min-w-0 rounded-md ml-1"
-                aria-label="Edit post"
-              >
-                <DotsIcon />
-              </Button>
-            }
-            postId={postId}
-            initialBio={displayBody}
-            initialLocation={displayLocation}
-            initialVisibility={displayVisibility}
-            onSaved={(data) => {
-              setDisplayBody(data.body);
-              setDisplayLocation(data.location ?? "");
-              setDisplayVisibility(data.visibility);
-            }}
-            onDeleted={() => {
-              onPostDeleted?.(postId);
-              if (!onPostDeleted) window.location.reload();
-            }}
-          />
-        ) : (
-          <span className="w-6 h-6 min-w-[1.5rem] ml-1 shrink-0" aria-hidden />
-        )}
+        <div className="flex shrink-0 items-center gap-0.5">
+          <span className="text-xs text-stone-300">{formatDate(createdAt)}</span>
+          {isOwner ? (
+            <EditPostModal
+              state={editModalState}
+              trigger={
+                <Button
+                  isIconOnly
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 min-w-0 rounded-md text-stone-300 hover:text-stone-500"
+                  aria-label="Edit post"
+                >
+                  <DotsIcon />
+                </Button>
+              }
+              postId={postId}
+              initialBio={displayBody}
+              initialLocation={displayLocation}
+              initialVisibility={displayVisibility}
+              onSaved={(data) => {
+                setDisplayBody(data.body);
+                setDisplayLocation(data.location ?? "");
+                setDisplayVisibility(data.visibility);
+              }}
+              onDeleted={() => {
+                onPostDeleted?.(postId);
+                if (!onPostDeleted) window.location.reload();
+              }}
+            />
+          ) : null}
+        </div>
       </div>
 
       <div className="relative w-full bg-white border border-stone-200/80 overflow-hidden">
@@ -457,25 +429,7 @@ function ArchivePost({
           </Tooltip.Content>
         </Tooltip>
 
-        <span className="flex-1 min-w-2" aria-hidden />
-
-        <Tooltip>
-          <Tooltip.Trigger>
-            <Button
-              isIconOnly
-              variant="ghost"
-              size="sm"
-              isDisabled={!isLoaded || !postId}
-              onPress={copyPostLink}
-              className="text-stone-400 hover:text-stone-600 w-7 h-7 min-w-0 rounded-md"
-            >
-              <ShareIcon />
-            </Button>
-          </Tooltip.Trigger>
-          <Tooltip.Content placement="top">
-            <p className="text-xs">{shareHint || "Copy link to post"}</p>
-          </Tooltip.Content>
-        </Tooltip>
+        <span className="min-w-2 flex-1" aria-hidden />
 
         <Tooltip>
           <Tooltip.Trigger>
