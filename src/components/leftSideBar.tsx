@@ -366,7 +366,7 @@ export default function ArchiveLeftSidebar() {
               isCollapsed ? "flex-col items-center gap-2" : "items-center justify-between"
             }`}
           >
-            <SidebarLogo size={isCollapsed ? 32 : 88} className={isCollapsed ? "" : "pl-1"} />
+            <SidebarLogo size={isCollapsed ? 32 : 80} className={isCollapsed ? "" : "pl-1"} />
             <button
               type="button"
               onClick={toggleSidebar}
