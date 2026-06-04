@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSidebar } from "./sidebarContext";
 import Link from "next/link";
+import Image from "next/image";
 import { useUser, SignOutButton } from "@clerk/nextjs";
 import AddPostModal from "./addPostModal";
 import { ThemeSwitcher } from "./themeSwitch";
@@ -25,6 +26,28 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { archiveNavItems } from "@/lib/archiveNav";
 
 const PROFILE_MENU_ID = "sidebar-profile-menu";
+
+function SidebarLogo({
+  size = 32,
+  className,
+  onNavigate,
+}: {
+  size?: number;
+  className?: string;
+  onNavigate?: () => void;
+}) {
+  return (
+    <Link href="/home" className={className} onClick={onNavigate}>
+      <Image
+        src="/archive-logo.png"
+        alt="Archive"
+        width={size}
+        height={size}
+        className="object-contain"
+      />
+    </Link>
+  );
+}
 
 function useUnreadNotifCount(user: ReturnType<typeof useUser>["user"], pathname: string) {
   const [unreadNotif, setUnreadNotif] = useState(0);
@@ -107,13 +130,7 @@ function MobileArchiveNav({
         >
           <HugeiconsIcon icon={Menu01Icon} size={24} />
         </button>
-        <Link
-          href="/home"
-          className="text-sm font-medium text-stone-500"
-          style={{ fontFamily: "'DM Serif Display', serif" }}
-        >
-          Archive
-        </Link>
+        <SidebarLogo size={28} className="shrink-0" />
         <div className="flex-1" />
         <Link
           href="/notifications"
@@ -148,12 +165,7 @@ function MobileArchiveNav({
               className="absolute left-0 top-0 flex h-full w-[min(20rem,88vw)] flex-col border-r border-stone-200/80 bg-white shadow-2xl pt-[env(safe-area-inset-top)]"
             >
               <div className="flex items-center justify-between border-b border-stone-200/60 px-3 py-3">
-                <span
-                  className="pl-1 text-xs text-stone-400"
-                  style={{ fontFamily: "'DM Serif Display', serif" }}
-                >
-                  Archive
-                </span>
+                <SidebarLogo size={28} className="pl-1" onNavigate={closeMobileNav} />
                 <button
                   type="button"
                   onClick={closeMobileNav}
@@ -349,20 +361,19 @@ export default function ArchiveLeftSidebar() {
         className="fixed left-0 top-0 z-40 hidden h-screen shrink-0 border-r border-stone-200/80 bg-white lg:flex lg:flex-col"
       >
         <div className="flex h-full flex-col px-2 pb-4 pt-6">
-          <div className="mb-4 flex items-center justify-between px-1">
-            {!isCollapsed && (
-              <span
-                className="pl-2 text-xs text-stone-400"
-                style={{ fontFamily: "'DM Serif Display', serif" }}
-              >
-                Archive
-              </span>
-            )}
+          <div
+            className={`mb-4 flex px-1 ${
+              isCollapsed ? "flex-col items-center gap-2" : "items-center justify-between"
+            }`}
+          >
+            <SidebarLogo size={isCollapsed ? 32 : 28} className={isCollapsed ? "" : "pl-1"} />
             <button
               type="button"
               onClick={toggleSidebar}
               aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-              className="ml-auto rounded-lg p-1.5 text-stone-400 transition-colors hover:bg-stone-100/80 hover:text-stone-600"
+              className={`rounded-lg p-1.5 text-stone-400 transition-colors hover:bg-stone-100/80 hover:text-stone-600 ${
+                isCollapsed ? "" : "ml-auto"
+              }`}
             >
               {isCollapsed ? (
                 <HugeiconsIcon icon={ArrowRight01Icon} size={16} />

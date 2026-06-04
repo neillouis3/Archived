@@ -2,119 +2,46 @@
 
 import { SignIn } from "@clerk/nextjs";
 import Image from "next/image";
-import { clerkAuthAppearance } from "@/lib/clerkAuthAppearance";
 import SignedOutGate from "@/components/signedOutGate";
-
-// Ambient photo tiles shown behind the sign-in form
-const ambientImages = [
-  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=70",
-  "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&q=70",
-  "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=400&q=70",
-  "https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=400&q=70",
-  "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=400&q=70",
-  "https://images.unsplash.com/photo-1505765050516-f72dcac9c60e?w=400&q=70",
-  "https://images.unsplash.com/photo-1434725039720-aaad6dd32dfe?w=400&q=70",
-  "https://images.unsplash.com/photo-1518098268026-4e89f1a2cd8e?w=400&q=70",
-  "https://images.unsplash.com/photo-1490750967868-88df5691cc40?w=400&q=70",
-  "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=400&q=70",
-  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70",
-  "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?w=400&q=70",
-];
+import { clerkAuthAppearance } from "@/lib/clerkAuthAppearance";
 
 export default function LandingPage() {
   return (
     <SignedOutGate
       fallback={
-        <div
-          className="flex w-full h-screen items-center justify-center"
-          style={{ background: "#ffffff" }}
-        />
+        <div className="flex h-screen w-full items-center justify-center bg-white" />
       }
     >
-    <div
-      className="relative flex w-full h-screen overflow-hidden"
-      style={{ fontFamily: "'DM Sans', sans-serif", background: "#ffffff" }}
-    >
-      {/* Left panel — mosaic */}
-      <div className="hidden lg:grid lg:flex-1 grid-cols-3 gap-0.5 overflow-hidden">
-        {ambientImages.map((src, i) => (
-          <div
-            key={i}
-            className="relative aspect-square overflow-hidden bg-stone-200"
-            style={{
-              animationName: "fadeSlideIn",
-              animationDuration: "0.8s",
-              animationTimingFunction: "ease",
-              animationFillMode: "both",
-              animationDelay: `${i * 60}ms`,
+      <div
+        className="flex min-h-screen w-full flex-col items-center justify-center bg-white px-4 py-12"
+        style={{ fontFamily: "'DM Sans', sans-serif" }}
+      >
+        <Image
+          src="/archive-logo.png"
+          alt="Archive"
+          width={120}
+          height={120}
+          priority
+          className="mb-10"
+        />
+
+        <div className="w-full max-w-[420px]">
+          <SignIn
+            appearance={{
+              ...clerkAuthAppearance,
+              elements: {
+                ...clerkAuthAppearance.elements,
+                headerTitle: "hidden",
+                headerSubtitle: "hidden",
+              },
             }}
-          >
-            <Image
-              src={src}
-              alt=""
-              fill
-              className="object-cover"
-              sizes="(max-width: 1024px) 0px, 33vw"
-              style={{
-                filter: "brightness(0.92) saturate(0.75) contrast(1.04)",
-              }}
-            />
-          </div>
-        ))}
-
-        {/* Fade-right vignette */}
-        <div
-          className="absolute inset-y-0 left-0 pointer-events-none"
-          style={{
-            width: "66.666%",
-            background:
-              "linear-gradient(to right, transparent 60%, #ffffff 100%)",
-          }}
-        />
-      </div>
-
-      {/* Right panel — sign in */}
-      <div className="flex flex-col items-center justify-center w-full lg:w-[480px] flex-shrink-0 px-10 py-12 relative z-10">
-        {/* Wordmark */}
-        <div className="mb-10 text-center">
-          <h1
-            className="text-3xl font-light text-stone-800 mb-1"
-            style={{ fontFamily: "'DM Serif Display', serif" }}
-          >
-            Archive
-          </h1>
-          <p className="text-xs text-stone-400">
-            A place for your moments
-          </p>
+            routing="path"
+            path="/"
+            signUpUrl="/accounts/register"
+            fallbackRedirectUrl="/home"
+          />
         </div>
-
-        <SignIn
-          appearance={{
-            ...clerkAuthAppearance,
-            elements: {
-              ...clerkAuthAppearance.elements,
-              headerTitle: "hidden",
-              headerSubtitle: "hidden",
-            },
-          }}
-          routing="path"
-          path="/"
-          signUpUrl="/accounts/register"
-          fallbackRedirectUrl="/home"
-        />
-
-        <p className="mt-8 text-xs text-stone-300">
-          Archive © 2025
-        </p>
       </div>
-
-      <style>{`
-        @keyframes fadeSlideIn {
-          from { opacity: 0; transform: scale(1.04); }
-          to   { opacity: 1; transform: scale(1); }
-        }
-      `}</style>
-    </div>
     </SignedOutGate>
   );
 }
