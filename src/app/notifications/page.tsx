@@ -7,7 +7,7 @@ import ArchiveLeftSidebar from "@/components/leftSideBar";
 import ArchiveRightSidebar from "@/components/rightSideBar";
 import { SidebarProvider } from "@/components/sidebarContext";
 import { SidebarInsetSpacer } from "@/components/sidebarInsetSpacer";
-import { Button, Tabs, Skeleton, Chip } from "@heroui/react";
+import { Button, Tabs, Skeleton } from "@heroui/react";
 import FollowButton from "@/components/FollowButton";
 
 type NotifRow = {
@@ -157,13 +157,9 @@ export default function NotificationsPage() {
 
                 {user && unreadCount > 0 ? (
                   <div className="flex flex-wrap items-center gap-3">
-                    <Chip
-                      variant="soft"
-                      size="sm"
-                      className="bg-stone-800 text-white text-xs"
-                    >
+                    <span className="inline-flex items-center rounded-full bg-stone-800 px-2.5 py-1 text-xs font-medium text-white tabular-nums">
                       {unreadCount} unread
-                    </Chip>
+                    </span>
                     <Button
                       variant="ghost"
                       size="sm"

@@ -139,7 +139,9 @@ function MobileArchiveNav({
         >
           <HugeiconsIcon icon={Notification01Icon} size={20} />
           {unreadNotif > 0 ? (
-            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-stone-800 ring-2 ring-white" />
+            <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-stone-800 px-0.5 text-[10px] font-medium leading-none text-white ring-2 ring-white tabular-nums">
+              {unreadNotif > 9 ? "9+" : unreadNotif}
+            </span>
           ) : null}
         </Link>
       </header>
@@ -429,21 +431,14 @@ export default function ArchiveLeftSidebar() {
                     )}
                   </AnimatePresence>
                   {hasBadge && isCollapsed && (
-                    <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-stone-600" />
+                    <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-stone-800 px-0.5 text-[10px] font-medium leading-none text-white ring-2 ring-white tabular-nums">
+                      {Number(notifBadge) > 9 ? "9+" : notifBadge}
+                    </span>
                   )}
                   {hasBadge && !isCollapsed && (
-                    <AnimatePresence mode="wait">
-                      <motion.span
-                        key="badge"
-                        initial={{ opacity: 0, width: 0 }}
-                        animate={{ opacity: 1, width: "auto" }}
-                        exit={{ opacity: 0, width: 0 }}
-                        transition={{ duration: 0.15 }}
-                        className="ml-auto flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-stone-800 text-xs text-white"
-                      >
-                        {notifBadge}
-                      </motion.span>
-                    </AnimatePresence>
+                    <span className="ml-auto flex h-5 min-w-5 flex-shrink-0 items-center justify-center rounded-full bg-stone-800 px-1.5 text-xs font-medium text-white tabular-nums">
+                      {notifBadge}
+                    </span>
                   )}
                 </Link>
               );

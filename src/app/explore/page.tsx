@@ -136,25 +136,25 @@ function ExplorePageInner() {
 
           <div className="flex-1 min-w-0 flex flex-col items-center border-x-0 sm:border-x sm:border-stone-200/80">
             <div className="w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
-              <div className="mb-6 sm:mb-8 flex flex-col gap-4 sm:gap-6">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <h1
-                      className="text-2xl sm:text-3xl font-light text-stone-800 mb-2"
-                      style={{ fontFamily: "'DM Serif Display', serif" }}
-                    >
-                      Explore
-                    </h1>
-                    <p className="text-sm text-stone-400">
-                      {q && !postsLoading
-                        ? allImages.length === 1
-                          ? "1 image"
-                          : `${allImages.length} images`
-                        : "Search posts, tags, and people"}
-                    </p>
-                  </div>
+              <div className="mb-6 sm:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h1
+                    className="text-2xl sm:text-3xl font-light text-stone-800 mb-2"
+                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                  >
+                    Explore
+                  </h1>
+                  <p className="text-sm text-stone-400">
+                    {q && !postsLoading
+                      ? allImages.length === 1
+                        ? "1 image"
+                        : `${allImages.length} images`
+                      : "Search posts, tags, and people"}
+                  </p>
                 </div>
+              </div>
 
+              <div className="mb-6 sm:mb-8">
                 <ExploreSearchBar
                   variant="full"
                   inputId="explore-search"
@@ -167,7 +167,7 @@ function ExplorePageInner() {
               </div>
 
               {showPeopleBlock && (
-                <section className="mb-8 sm:mb-10" aria-label="People results">
+                <section className="mb-6 sm:mb-8" aria-label="People results">
                   <h2 className="text-xs text-stone-400 mb-3">People</h2>
                   {peopleLoading ? (
                     <p className="text-xs text-stone-400">Searching people…</p>
@@ -232,6 +232,8 @@ function ExplorePageInner() {
               </section>
             </div>
           </div>
+
+          <div className="hidden xl:block xl:w-64 2xl:w-72 flex-shrink-0" aria-hidden />
         </div>
       </div>
     </SidebarProvider>
@@ -247,9 +249,9 @@ function ExploreFallback() {
           <SidebarInsetSpacer />
           <div className="flex-1 min-w-0 flex flex-col items-center border-x-0 sm:border-x sm:border-stone-200/80">
             <div className="w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
-              <div className="mb-6 sm:mb-8 flex flex-col gap-4 sm:gap-6">
+              <div className="mb-6 sm:mb-8">
                 <div className="h-8 w-32 bg-stone-100 rounded animate-pulse mb-2" />
-                <div className="h-4 w-48 bg-stone-100 rounded animate-pulse" />
+                <div className="h-4 w-48 bg-stone-100 rounded animate-pulse mb-4" />
                 <div className="h-12 w-full bg-stone-100 rounded-xl animate-pulse" />
               </div>
               <div className={postGridClassName}>
@@ -259,6 +261,8 @@ function ExploreFallback() {
               </div>
             </div>
           </div>
+
+          <div className="hidden xl:block xl:w-64 2xl:w-72 flex-shrink-0" aria-hidden />
         </div>
       </div>
     </SidebarProvider>
