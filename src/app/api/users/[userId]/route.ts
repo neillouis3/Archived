@@ -22,6 +22,20 @@ export async function GET(
     const coverRaw = u.publicMetadata?.coverImageUrl;
     const coverImageUrl =
       typeof coverRaw === "string" && coverRaw.trim() ? coverRaw.trim() : null;
+    const schoolOrWorkRaw = u.publicMetadata?.schoolOrWork;
+    const schoolOrWork =
+      typeof schoolOrWorkRaw === "string" && schoolOrWorkRaw.trim()
+        ? schoolOrWorkRaw.trim()
+        : null;
+    const locationRaw = u.publicMetadata?.location;
+    const location =
+      typeof locationRaw === "string" && locationRaw.trim() ? locationRaw.trim() : null;
+    const websiteRaw = u.publicMetadata?.website;
+    const website =
+      typeof websiteRaw === "string" && websiteRaw.trim() ? websiteRaw.trim() : null;
+    const birthdayRaw = u.publicMetadata?.birthday;
+    const birthday =
+      typeof birthdayRaw === "string" && birthdayRaw.trim() ? birthdayRaw.trim() : null;
 
     return NextResponse.json(
       {
@@ -35,6 +49,10 @@ export async function GET(
         imageUrl: u.imageUrl,
         bio: bio || null,
         coverImageUrl,
+        schoolOrWork,
+        location,
+        website,
+        birthday,
       },
       { status: 200 }
     );

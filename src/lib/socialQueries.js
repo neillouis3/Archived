@@ -6,7 +6,11 @@ export async function getFollowingClerkIds(viewerClerkId) {
   const rows = await Follows.find({ followerClerkId: viewerClerkId })
     .select("followingClerkId")
     .lean();
-  return rows.map((r) => r.followingClerkId);
+  // Defensive: exclude self if it ever ended up in the collection
+  // (self-follow should be prevented, but older data might exist).
+  return rows
+    .map((r) => r.followingClerkId)
+    .filter((id) => id && id !== viewerClerkId);
 }
 
 /** @returns {Promise<Set<string>>} */
@@ -49,27 +53,32 @@ export async function isFollowing(followerClerkId, followingClerkId) {
 }
 
 /**
- * Following feed: own posts (any visibility) + followed users' public +
- * friends-only from followed users who are also accepted friends.
+ * Following feed: followed users' public + friends-only from followed users who are also accepted friends.
  * @param {string} viewerClerkId
  * @param {string[]} followingIds
  * @param {Set<string>} friendIdSet
  */
 export function buildFollowingFeedFilter(viewerClerkId, followingIds, friendIdSet) {
   const followedFriends = followingIds.filter((id) => friendIdSet.has(id));
+  // Always exclude the viewer's own posts from the following feed (even if
+  // data issues ever re-introduce self-follow or similar).
   return {
-    $or: [
-      { authorClerkId: viewerClerkId },
+    $and: [
+      { authorClerkId: { $ne: viewerClerkId } },
       {
-        $and: [
-          { authorClerkId: { $in: followingIds } },
-          { visibility: "public" },
-        ],
-      },
-      {
-        $and: [
-          { authorClerkId: { $in: followedFriends } },
-          { visibility: "friends" },
+        $or: [
+          {
+            $and: [
+              { authorClerkId: { $in: followingIds } },
+              { visibility: "public" },
+            ],
+          },
+          {
+            $and: [
+              { authorClerkId: { $in: followedFriends } },
+              { visibility: "friends" },
+            ],
+          },
         ],
       },
     ],
@@ -145,5 +154,27 @@ export async function buildPostsListFilter(opts) {
     return buildFollowingFeedFilter(viewerClerkId, followingIds, friendSet);
   }
 
+  // Discover feed (public): do not show the viewer their own posts.
+  if (viewerClerkId) {
+    return { visibility: "public", authorClerkId: { $ne: viewerClerkId } };
+  }
   return { visibility: "public" };
+}
+
+/**
+ * Posts the viewer is allowed to see (own, public, or friends-only when friends with author).
+ * @param {object[]} posts
+ * @param {string} viewerClerkId
+ * @param {Set<string>} friendIdSet accepted friends of viewer
+ */
+export function filterPostsVisibleToViewer(posts, viewerClerkId, friendIdSet) {
+  if (!viewerClerkId || !posts?.length) return [];
+  return posts.filter((p) => {
+    const author = p.authorClerkId;
+    if (author === viewerClerkId) return true;
+    const v = p.visibility;
+    if (v === "public") return true;
+    if (v === "friends") return friendIdSet.has(author);
+    return false;
+  });
 }

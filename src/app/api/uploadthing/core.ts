@@ -15,7 +15,22 @@ export const ourFileRouter = {
     })
     .onUploadComplete(async ({ metadata, file }) => {
       const url = file.ufsUrl ?? file.url;
-      return { uploadedBy: metadata.userId, url };
+      // Include `key` so mobile can reuse this slug for single-image uploads (e.g. banners)
+      // and still support server-side deletion.
+      return { uploadedBy: metadata.userId, url, key: (file as { key?: string }).key };
+    }),
+  bannerMedia: f({
+    image: { maxFileSize: "16MB", maxFileCount: 1 },
+  })
+    .middleware(async () => {
+      const { userId } = await auth();
+      if (!userId) throw new UploadThingError("Unauthorized");
+      return { userId };
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      const url = file.ufsUrl ?? file.url;
+      // file.key exists in UploadThing response (used for deletion)
+      return { uploadedBy: metadata.userId, url, key: (file as { key?: string }).key };
     }),
 } satisfies FileRouter;
 

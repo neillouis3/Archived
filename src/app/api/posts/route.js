@@ -1,9 +1,15 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import Posts from "@lib/models/posts";
+import PostLikes from "@lib/models/postLikes";
+import PostSaves from "@lib/models/postSaves";
 import connection from "../../../lib/mongo";
 import { embedEngagementInPosts } from "@lib/postEngagementBatch";
-import { buildPostsListFilter } from "@lib/socialQueries";
+import {
+  buildPostsListFilter,
+  filterPostsVisibleToViewer,
+  getAcceptedFriendClerkIdsSet,
+} from "@lib/socialQueries";
 
 function escapeRegex(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -52,6 +58,61 @@ export async function GET(req) {
     const skipTotal =
       searchParams.get("skipTotal") === "1" ||
       searchParams.get("skipTotal") === "true";
+
+    const engagementRaw = searchParams.get("engagement");
+    const engagementType =
+      engagementRaw === "saved" || engagementRaw === "liked" ? engagementRaw : null;
+
+    if (engagementType) {
+      if (!viewerClerkId) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      const Model = engagementType === "saved" ? PostSaves : PostLikes;
+      const fetchRows = Math.min(Math.max(limit * 20, limit), 500);
+      const rows = await Model.find({ clerkId: viewerClerkId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(fetchRows)
+        .select("postId")
+        .lean();
+
+      if (rows.length === 0) {
+        return NextResponse.json(
+          { results: [], page, limit, total: skipTotal ? -1 : 0 },
+          { status: 200 }
+        );
+      }
+
+      const uniqueIds = [...new Set(rows.map((r) => r.postId).filter(Boolean))];
+      const postsRaw = await Posts.find({ _id: { $in: uniqueIds } }).lean();
+      const friendSet = await getAcceptedFriendClerkIdsSet(viewerClerkId);
+      const visiblePosts = filterPostsVisibleToViewer(
+        postsRaw,
+        viewerClerkId,
+        friendSet
+      );
+      const visibleById = new Map(
+        visiblePosts.map((p) => [String(p._id), p])
+      );
+
+      const ordered = [];
+      const seen = new Set();
+      for (const row of rows) {
+        const id = String(row.postId);
+        if (seen.has(id)) continue;
+        const p = visibleById.get(id);
+        if (!p) continue;
+        seen.add(id);
+        ordered.push(p);
+        if (ordered.length >= limit) break;
+      }
+
+      await embedEngagementInPosts(ordered, viewerClerkId);
+      return NextResponse.json(
+        { results: ordered, page, limit, total: skipTotal ? -1 : ordered.length },
+        { status: 200 }
+      );
+    }
 
     let baseFilter;
     try {
@@ -147,9 +208,7 @@ export async function POST(req) {
       );
     }
 
-    if (!postBody) {
-      return NextResponse.json({ error: "body required" }, { status: 400 });
-    }
+    const bodyText = typeof postBody === "string" ? postBody.trim() : "";
 
     const allowedVis = ["public", "friends", "private"];
     const visibility = allowedVis.includes(rawVisibility)
@@ -167,20 +226,24 @@ export async function POST(req) {
     const location =
       typeof rawLocation === "string" && rawLocation.trim() ? rawLocation.trim() : undefined;
 
-    const newPost = await Posts.create({
+    const createPayload = {
       authorClerkId,
       fullName,
       username,
       avatarUrl,
-      title,
-      body: postBody,
+      body: bodyText,
       location,
       media: mediaWithClerkId,
       tags,
       visibility,
       pinned,
       status,
-    });
+    };
+    if (typeof title === "string" && title.trim()) {
+      createPayload.title = title.trim();
+    }
+
+    const newPost = await Posts.create(createPayload);
 
     return NextResponse.json(newPost, { status: 201 });
   } catch (err) {

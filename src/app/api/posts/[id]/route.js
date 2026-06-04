@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import Posts from "@lib/models/posts";
+import Notifications from "@lib/models/notifications";
 import connection from "../../../../lib/mongo";
 import { getPostIfVisible } from "@lib/postAccess";
 import { embedEngagementInPosts } from "@lib/postEngagementBatch";
@@ -101,7 +102,10 @@ export async function DELETE(_req, context) {
       }
     }
 
-    await Posts.deleteOne({ _id: id });
+    await Promise.all([
+      Posts.deleteOne({ _id: id }),
+      Notifications.deleteMany({ postId: id }),
+    ]);
     return NextResponse.json({ ok: true }, { status: 200 });
   } catch (err) {
     console.error("DELETE /api/posts/[id] error:", err);
@@ -140,10 +144,7 @@ export async function PATCH(req, context) {
       $set.title = typeof title === "string" ? title.trim() : "";
     }
     if (postBody !== undefined) {
-      if (typeof postBody !== "string" || !postBody.trim()) {
-        return NextResponse.json({ error: "body must be a non-empty string" }, { status: 400 });
-      }
-      $set.body = postBody.trim();
+      $set.body = typeof postBody === "string" ? postBody.trim() : "";
     }
     if (rawVisibility !== undefined) {
       const allowedVis = ["public", "friends", "private"];

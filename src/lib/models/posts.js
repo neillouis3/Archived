@@ -12,7 +12,7 @@ const postsSchema = new mongoose.Schema({
   username: { type: String, required: true },
   avatarUrl: { type: String },
   title: { type: String },
-  body: { type: String, required: true },
+  body: { type: String, default: "" },
   location: { type: String },
   media: [mediaSchema],
   tags: [String],

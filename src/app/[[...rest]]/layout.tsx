@@ -10,7 +10,7 @@ export default function AuthCatchAllLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <div className="h-screen flex flex-col bg-white text-foreground w-screen items-center overflow-y-auto">
-      <div className="w-screen px-34 py-17">{children}</div>
+      <div className="w-screen">{children}</div>
     </div>
   );
 }
