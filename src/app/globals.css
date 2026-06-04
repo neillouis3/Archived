@@ -10,6 +10,12 @@
     --font-sans: var(--font-geist-sans);
     --font-mono: var(--font-geist-mono);
   }
+
+  :root {
+    --background: #ffffff;
+    --midground: #ffffff;
+    --foreground: #171717;
+  }
   
   
   /* Dark mode via manual theme toggle */
@@ -22,7 +28,7 @@
   /* Light mode via manual theme toggle (overrides system dark mode) */
   .light {
     --background: #ffffff;
-    --midground: #f3f4f6;
+    --midground: #ffffff;
     --foreground: #171717;
   }
   

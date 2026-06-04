@@ -5,7 +5,7 @@ import { clerkAuthAppearance } from "@/lib/clerkAuthAppearance";
 export default function RegisterPage() {
   return (
     <div
-      className="min-h-[100dvh] w-full bg-[#F7F6F2] text-stone-800 flex flex-col"
+      className="min-h-[100dvh] w-full bg-white text-stone-800 flex flex-col"
       style={{ fontFamily: "'DM Sans', sans-serif" }}
     >
       <header className="shrink-0 flex flex-col items-center px-6 pt-10 pb-6 sm:pt-14">

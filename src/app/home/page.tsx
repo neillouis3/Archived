@@ -152,7 +152,7 @@ export default function Home() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-[#F7F6F2]">
+      <div className="min-h-screen bg-white">
         <div className="w-full flex flex-row max-w-[1600px] mx-auto">
 
           {/* Left Sidebar */}
@@ -230,7 +230,6 @@ export default function Home() {
                         postId={String(post._id)}
                         authorClerkId={post.authorClerkId}
                         fullName={post.fullName}
-                        title={post.title ?? ""}
                         description={post.body ?? ""}
                         mediaUrl={feedPostMediaUrls(post.media)}
                         username={post.username}
@@ -269,7 +268,10 @@ export default function Home() {
                             key={`${post._id}-${idx}`}
                             href={`/post/${encodeURIComponent(String(post._id))}`}
                             src={feedPostMediaEntryUrl(m)}
-                            alt={post.title || `Post by ${post.username || "author"}`}
+                            alt={
+                              (post.body && String(post.body).trim().slice(0, 60)) ||
+                              `Post by ${post.username || "author"}`
+                            }
                             caption={post.username ? String(post.username) : undefined}
                           />
                         ))

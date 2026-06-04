@@ -89,7 +89,7 @@ export default function UserSearch({
         className={
           isSidebar
             ? `flex items-center gap-2 rounded-lg border border-stone-200/90 bg-white/80 px-2.5 py-2 focus-within:border-stone-300 ${inputClassName}`
-            : `flex items-center gap-3 rounded-xl border border-stone-200/90 bg-[#F7F6F2] px-4 py-3 focus-within:border-stone-300 focus-within:shadow-[0_0_0_3px_rgba(120,113,108,0.12)] ${inputClassName}`
+            : `flex items-center gap-3 rounded-xl border border-stone-200/90 bg-white px-4 py-3 focus-within:border-stone-300 focus-within:shadow-[0_0_0_3px_rgba(120,113,108,0.12)] ${inputClassName}`
         }
       >
         <svg

@@ -145,7 +145,7 @@ export default function PublicProfilePage() {
 
   if (me?.id === userId) {
     return (
-      <div className="min-h-screen bg-[#F7F6F2] flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <p className="text-xs text-stone-400">Opening your profile…</p>
       </div>
     );
@@ -154,7 +154,7 @@ export default function PublicProfilePage() {
   if (loadingProfile) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen bg-[#F7F6F2]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+        <div className="min-h-screen bg-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
           <div className="w-full flex flex-row max-w-[1600px] mx-auto">
             <ArchiveLeftSidebar />
             <SidebarInsetSpacer />
@@ -172,7 +172,7 @@ export default function PublicProfilePage() {
   if (notFound || !profile) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen bg-[#F7F6F2]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+        <div className="min-h-screen bg-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
           <div className="w-full flex flex-row max-w-[1600px] mx-auto">
             <ArchiveLeftSidebar />
             <SidebarInsetSpacer />
@@ -196,7 +196,7 @@ export default function PublicProfilePage() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-[#F7F6F2]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <div className="min-h-screen bg-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
         <div className="w-full flex flex-row max-w-[1600px] mx-auto">
 
           <ArchiveLeftSidebar />
@@ -234,7 +234,7 @@ export default function PublicProfilePage() {
                     alt={profile.fullName}
                     width={80}
                     height={80}
-                    className="w-20 h-20 rounded-full object-cover border-4 border-[#F7F6F2]"
+                    className="w-20 h-20 rounded-full object-cover border-4 border-white"
                   />
                 </div>
                 <div className="flex items-center gap-2 pb-1 flex-wrap justify-end">
@@ -285,7 +285,7 @@ export default function PublicProfilePage() {
                     type="button"
                     onClick={() => setViewMode("grid")}
                     className={`p-1.5 rounded-lg transition-colors ${
-                      viewMode === "grid" ? "bg-stone-100 text-stone-800" : "text-stone-400 hover:text-stone-700"
+                      viewMode === "grid" ? "bg-white ring-1 ring-inset ring-stone-200 text-stone-800" : "text-stone-400 hover:text-stone-700"
                     }`}
                   >
                     <GridIcon />
@@ -294,7 +294,7 @@ export default function PublicProfilePage() {
                     type="button"
                     onClick={() => setViewMode("feed")}
                     className={`p-1.5 rounded-lg transition-colors ${
-                      viewMode === "feed" ? "bg-stone-100 text-stone-800" : "text-stone-400 hover:text-stone-700"
+                      viewMode === "feed" ? "bg-white ring-1 ring-inset ring-stone-200 text-stone-800" : "text-stone-400 hover:text-stone-700"
                     }`}
                   >
                     <ListIcon />
@@ -317,7 +317,6 @@ export default function PublicProfilePage() {
                         postId={String(post._id)}
                         authorClerkId={post.authorClerkId}
                         fullName={post.fullName}
-                        title={post.title ?? ""}
                         description={post.body ?? ""}
                         mediaUrl={feedPostMediaUrls(post.media)}
                         username={post.username}

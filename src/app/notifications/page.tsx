@@ -138,7 +138,7 @@ export default function NotificationsPage() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-[#F7F6F2]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <div className="min-h-screen bg-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
         <div className="w-full flex flex-row max-w-[1600px] mx-auto">
           <ArchiveLeftSidebar />
           <SidebarInsetSpacer />
@@ -265,7 +265,7 @@ function NotifList({
 
   if (rows.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-72 text-center rounded-2xl border border-stone-200/80 bg-[#FDFCF9]">
+      <div className="flex flex-col items-center justify-center h-72 text-center rounded-2xl border border-stone-200/80 bg-white">
         <p className="text-[10px] tracking-[0.3em] uppercase text-stone-300 mb-1">{emptyLabel}</p>
         <p className="text-xs text-stone-400">You&apos;re all caught up</p>
       </div>
@@ -273,10 +273,10 @@ function NotifList({
   }
 
   return (
-    <ul className="flex flex-col rounded-2xl border border-stone-200/80 bg-[#FDFCF9] overflow-hidden divide-y divide-stone-100">
+    <ul className="flex flex-col rounded-2xl border border-stone-200/80 bg-white overflow-hidden divide-y divide-stone-100">
       {rows.map((n) => (
         <li key={n._id}>
-          <div className={`flex items-start gap-3 p-4 transition-colors hover:bg-stone-50/90 ${!n.read ? "bg-stone-50/40" : ""}`}>
+          <div className={`flex items-start gap-3 p-4 transition-colors hover:bg-stone-50/90 ${!n.read ? "bg-white border-l-2 border-stone-300" : ""}`}>
             <Link
               href={`/profile/${encodeURIComponent(n.actorClerkId)}`}
               onClick={() => { if (!n.read) onMarkRead(n._id); }}

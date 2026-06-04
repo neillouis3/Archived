@@ -99,7 +99,6 @@ interface ArchivePostProps {
   postId: string;
   authorClerkId?: string;
   fullName: string;
-  title: string;
   description: string;
   mediaUrl: string[];
   username: string;
@@ -116,7 +115,6 @@ function ArchivePost({
   postId,
   authorClerkId,
   fullName: _fullName,
-  title,
   description,
   mediaUrl,
   username,
@@ -129,7 +127,6 @@ function ArchivePost({
 }: ArchivePostProps) {
   const { user, isLoaded } = useUser();
   const editModalState = useOverlayState({ defaultOpen: false });
-  const [displayTitle, setDisplayTitle] = useState(title);
   const [displayBody, setDisplayBody] = useState(description);
   const [displayLocation, setDisplayLocation] = useState(locationProp ?? "");
   const [displayVisibility, setDisplayVisibility] = useState(() =>
@@ -198,11 +195,10 @@ function ArchivePost({
   ]);
 
   useEffect(() => {
-    setDisplayTitle(title);
     setDisplayBody(description);
     setDisplayLocation(locationProp ?? "");
     setDisplayVisibility(parseVisibility(visibilityProp));
-  }, [postId, title, description, locationProp, visibilityProp]);
+  }, [postId, description, locationProp, visibilityProp]);
 
   const isOwner = Boolean(isLoaded && user?.id && authorClerkId && user.id === authorClerkId);
 
@@ -362,12 +358,10 @@ function ArchivePost({
               </Button>
             }
             postId={postId}
-            initialTitle={displayTitle}
             initialBio={displayBody}
             initialLocation={displayLocation}
             initialVisibility={displayVisibility}
             onSaved={(data) => {
-              setDisplayTitle(data.title ?? "");
               setDisplayBody(data.body);
               setDisplayLocation(data.location ?? "");
               setDisplayVisibility(data.visibility);
@@ -382,13 +376,17 @@ function ArchivePost({
         )}
       </div>
 
-      <div className="relative w-full bg-stone-100 overflow-hidden">
+      <div className="relative w-full bg-white border border-stone-200/80 overflow-hidden">
         <div className="relative aspect-square w-full">
           {media.length > 0 ? (
             <>
               <img
                 src={media[Math.min(activeImg, media.length - 1)]}
-                alt={displayTitle || "Post"}
+                alt={
+                  displayBody.trim()
+                    ? displayBody.trim().slice(0, 80)
+                    : `Post by ${resolvedUsername}`
+                }
                 className="w-full h-full object-cover"
                 style={{ filter: "brightness(0.97) contrast(1.02) saturate(0.92)" }}
               />
@@ -400,7 +398,7 @@ function ArchivePost({
               />
             </>
           ) : (
-            <div className="flex h-full w-full min-h-[12rem] items-center justify-center bg-stone-100 px-4 text-center text-xs text-stone-400">
+            <div className="flex h-full w-full min-h-[12rem] items-center justify-center bg-white border border-stone-200/80 px-4 text-center text-xs text-stone-400">
               No photo for this post
             </div>
           )}
@@ -515,25 +513,25 @@ function ArchivePost({
       )}
 
       <div className="mt-1.5">
-        {displayTitle && (
-          <p className="text-xs text-stone-700">
-            {profileHref ? (
-              <Link
-                href={profileHref}
-                className="font-medium text-stone-700 hover:text-stone-900 hover:underline underline-offset-2 decoration-stone-300"
-                aria-label={`View ${resolvedUsername}'s profile`}
-              >
-                {resolvedUsername}
-              </Link>
-            ) : (
-              <span className="font-medium">{resolvedUsername}</span>
-            )}{" "}
-            <span className="text-stone-500">{displayTitle}</span>
-          </p>
-        )}
-        {displayBody && (
-          <p className="text-xs text-stone-400 mt-0.5 leading-relaxed line-clamp-2">{displayBody}</p>
-        )}
+        <p className="text-xs text-stone-700 leading-relaxed">
+          {profileHref ? (
+            <Link
+              href={profileHref}
+              className="font-medium text-stone-700 hover:text-stone-900 hover:underline underline-offset-2 decoration-stone-300"
+              aria-label={`View ${resolvedUsername}'s profile`}
+            >
+              {resolvedUsername}
+            </Link>
+          ) : (
+            <span className="font-medium">{resolvedUsername}</span>
+          )}
+          {displayBody.trim() ? (
+            <>
+              {" "}
+              <span className="font-normal text-stone-500 line-clamp-3">{displayBody.trim()}</span>
+            </>
+          ) : null}
+        </p>
         {displayLocation.trim() && (
           <p className="text-[10px] text-stone-400 mt-1 flex items-center gap-1 tracking-wide">
             <PinIcon />
@@ -579,7 +577,7 @@ function ArchivePost({
                   onChange={(e) => setCommentText(e.target.value)}
                   placeholder="Add a comment…"
                   rows={2}
-                  className="flex-1 min-w-0 bg-stone-100/60 border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-700 placeholder:text-stone-300 outline-none focus:border-stone-400 resize-none"
+                  className="flex-1 min-w-0 bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-700 placeholder:text-stone-300 outline-none focus:border-stone-400 resize-none"
                 />
                 <Button
                   size="sm"

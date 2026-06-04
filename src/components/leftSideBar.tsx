@@ -98,7 +98,7 @@ function MobileArchiveNav({
 
   return (
     <>
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-[55] flex min-h-[calc(3.5rem+env(safe-area-inset-top,0px))] items-center gap-3 border-b border-stone-200/80 bg-[#F7F6F2]/95 px-3 pt-[env(safe-area-inset-top,0px)] backdrop-blur-md supports-[backdrop-filter]:bg-[#F7F6F2]/90">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-[55] flex min-h-[calc(3.5rem+env(safe-area-inset-top,0px))] items-center gap-3 border-b border-stone-200/80 bg-white/95 px-3 pt-[env(safe-area-inset-top,0px)] backdrop-blur-md supports-[backdrop-filter]:bg-white/90">
         <button
           type="button"
           onClick={() => setMobileNavOpen(true)}
@@ -122,7 +122,7 @@ function MobileArchiveNav({
         >
           <HugeiconsIcon icon={Notification01Icon} size={20} />
           {unreadNotif > 0 ? (
-            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-stone-800 ring-2 ring-[#F7F6F2]" />
+            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-stone-800 ring-2 ring-white" />
           ) : null}
         </Link>
       </header>
@@ -145,7 +145,7 @@ function MobileArchiveNav({
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", stiffness: 380, damping: 36 }}
-              className="absolute left-0 top-0 flex h-full w-[min(20rem,88vw)] flex-col border-r border-stone-200/80 bg-[#F7F6F2] shadow-2xl pt-[env(safe-area-inset-top)]"
+              className="absolute left-0 top-0 flex h-full w-[min(20rem,88vw)] flex-col border-r border-stone-200/80 bg-white shadow-2xl pt-[env(safe-area-inset-top)]"
             >
               <div className="flex items-center justify-between border-b border-stone-200/60 px-3 py-3">
                 <span
@@ -184,8 +184,8 @@ function MobileArchiveNav({
                       onClick={closeMobileNav}
                       className={`flex items-center gap-3 rounded-lg px-3 py-3 transition-colors ${
                         isActive
-                          ? "bg-stone-100/90 text-stone-800"
-                          : "text-stone-600 hover:bg-stone-100/70 hover:text-stone-800"
+                          ? "bg-white ring-1 ring-inset ring-stone-200 text-stone-800"
+                          : "text-stone-600 hover:bg-stone-50/80 hover:text-stone-800"
                       }`}
                     >
                       <HugeiconsIcon
@@ -341,7 +341,7 @@ export default function ArchiveLeftSidebar() {
         initial={false}
         animate={{ width: isCollapsed ? 72 : 260 }}
         transition={{ type: "spring", stiffness: 420, damping: 38 }}
-        className="fixed left-0 top-0 z-40 hidden h-screen shrink-0 border-r border-stone-200/80 bg-[#F7F6F2] lg:flex lg:flex-col"
+        className="fixed left-0 top-0 z-40 hidden h-screen shrink-0 border-r border-stone-200/80 bg-white lg:flex lg:flex-col"
       >
         <div className="flex h-full flex-col px-2 pb-4 pt-6">
           <div className="mb-4 flex items-center justify-between px-1">
@@ -389,7 +389,7 @@ export default function ArchiveLeftSidebar() {
                   className={`
                   group relative flex items-center gap-3 rounded-lg transition-colors
                   ${isCollapsed ? "justify-center px-1 py-2.5" : "px-2.5 py-2.5"}
-                  ${isActive ? "bg-stone-100/90 text-stone-800" : "text-stone-500 hover:bg-stone-100/70 hover:text-stone-700"}
+                  ${isActive ? "bg-white ring-1 ring-inset ring-stone-200 text-stone-800" : "text-stone-500 hover:bg-stone-50/80 hover:text-stone-700"}
                 `}
                 >
                   <HugeiconsIcon
@@ -464,7 +464,7 @@ export default function ArchiveLeftSidebar() {
               flex w-full items-center gap-3 rounded-lg text-left transition-colors
               ${user ? "cursor-pointer hover:bg-stone-100/80" : "cursor-default opacity-60"}
               ${isCollapsed ? "justify-center px-1 py-1.5" : "px-2 py-2"}
-              ${profileMenuOpen && user ? "bg-stone-100/80" : ""}
+              ${profileMenuOpen && user ? "bg-white ring-1 ring-inset ring-stone-200" : ""}
             `}
             >
               <span className="h-7 w-7 flex-shrink-0 overflow-hidden rounded-full ring-1 ring-stone-200/60">

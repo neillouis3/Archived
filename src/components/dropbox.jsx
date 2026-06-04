@@ -49,7 +49,7 @@ const Dropzone = ({ files, setFiles, rejected, setRejected, className }) => {
       {/* Drop zone */}
       <div
         className={`mb-6 rounded-xl border-2 border-dashed transition-colors p-8 flex flex-col items-center justify-center gap-3
-          ${isDragActive ? "border-stone-400 bg-stone-100" : "border-stone-200 bg-stone-50/60"}`}
+          ${isDragActive ? "border-stone-400 bg-white" : "border-stone-200 bg-white"}`}
       >
         <input {...getInputProps()} />
         <CopyDocumentIcon />

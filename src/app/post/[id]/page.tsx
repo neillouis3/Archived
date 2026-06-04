@@ -51,8 +51,9 @@ export default function PostPermalinkPage() {
         if (!cancelled) {
           setPost(data);
           setError(null);
-          const title = data.title || data.body?.slice(0, 40) || "Post";
-          document.title = `${title} | Archive`;
+          const docTitle =
+            data.body?.trim().slice(0, 48) || `Post · ${data.username || "Archive"}`;
+          document.title = `${docTitle} | Archive`;
         }
       } catch {
         if (!cancelled) {
@@ -72,7 +73,7 @@ export default function PostPermalinkPage() {
   if (!postId || error === "missing") {
     return (
       <SidebarProvider>
-        <div className="min-h-screen bg-[#F7F6F2] flex items-center justify-center px-6">
+        <div className="min-h-screen bg-white flex items-center justify-center px-6">
           <p className="text-xs text-stone-400">Invalid post link.</p>
         </div>
       </SidebarProvider>
@@ -81,7 +82,7 @@ export default function PostPermalinkPage() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-[#F7F6F2]">
+      <div className="min-h-screen bg-white">
         <div className="w-full flex flex-row max-w-[1600px] mx-auto">
           <ArchiveLeftSidebar />
           <SidebarInsetSpacer />
@@ -131,7 +132,6 @@ export default function PostPermalinkPage() {
                   postId={String(post._id)}
                   authorClerkId={post.authorClerkId}
                   fullName={post.fullName}
-                  title={post.title ?? ""}
                   description={post.body ?? ""}
                   mediaUrl={feedPostMediaUrls(post.media)}
                   username={post.username}

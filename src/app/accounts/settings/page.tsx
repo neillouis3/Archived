@@ -182,7 +182,7 @@ export default function SettingsPage() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-[#F7F6F2]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <div className="min-h-screen bg-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
         <div className="w-full flex flex-row max-w-[1600px] mx-auto">
 
         {/* Left sidebar */}
@@ -202,8 +202,8 @@ export default function SettingsPage() {
                   onClick={() => setActiveTab(key)}
                   className={`flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-lg px-3 py-2.5 text-xs transition-colors text-left lg:w-full
                     ${activeTab === key
-                      ? "bg-stone-100 text-stone-800 font-medium"
-                      : "text-stone-400 hover:text-stone-700 hover:bg-stone-100/60"
+                      ? "bg-white ring-1 ring-inset ring-stone-200 text-stone-800 font-medium"
+                      : "text-stone-400 hover:text-stone-700 hover:bg-white"
                     }`}
                 >
                   <Icon />
@@ -230,7 +230,7 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Avatar row */}
-                <div className="flex items-center gap-5 p-5 bg-stone-100/60 rounded-xl border border-stone-200/60">
+                <div className="flex items-center gap-5 p-5 bg-white rounded-xl border border-stone-200/60">
                   <img
                     src={user.imageUrl}
                     alt="Avatar"
@@ -308,7 +308,7 @@ export default function SettingsPage() {
                     placeholder="Tell people a little about yourself..."
                     rows={4}
                     maxLength={200}
-                    className="w-full bg-stone-100/60 border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-700 placeholder-stone-300 outline-none resize-none focus:border-stone-400 transition-colors"
+                    className="w-full bg-white border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-700 placeholder-stone-300 outline-none resize-none focus:border-stone-400 transition-colors"
                   />
                   <p className="text-[10px] text-stone-300 text-right">{bio.length}/200</p>
                 </div>
@@ -321,7 +321,7 @@ export default function SettingsPage() {
                     value={website}
                     onChange={(e) => setWebsite(e.target.value)}
                     placeholder="https://example.com"
-                    className="w-full bg-stone-100/60 border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-700 placeholder-stone-300 outline-none focus:border-stone-400 transition-colors"
+                    className="w-full bg-white border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-700 placeholder-stone-300 outline-none focus:border-stone-400 transition-colors"
                   />
                 </div>
 
@@ -333,7 +333,7 @@ export default function SettingsPage() {
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     placeholder="City or region"
-                    className="w-full bg-stone-100/60 border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-700 placeholder-stone-300 outline-none focus:border-stone-400 transition-colors"
+                    className="w-full bg-white border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-700 placeholder-stone-300 outline-none focus:border-stone-400 transition-colors"
                   />
                 </div>
 
@@ -345,7 +345,7 @@ export default function SettingsPage() {
                     value={schoolOrWork}
                     onChange={(e) => setSchoolOrWork(e.target.value)}
                     placeholder="University, company, or studio"
-                    className="w-full bg-stone-100/60 border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-700 placeholder-stone-300 outline-none focus:border-stone-400 transition-colors"
+                    className="w-full bg-white border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-700 placeholder-stone-300 outline-none focus:border-stone-400 transition-colors"
                   />
                 </div>
 
@@ -363,7 +363,7 @@ export default function SettingsPage() {
                           value={social[key]}
                           onChange={(e) => setSocial((s) => ({ ...s, [key]: e.target.value }))}
                           placeholder={placeholder}
-                          className="w-full bg-stone-100/60 border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-700 placeholder-stone-300 outline-none focus:border-stone-400 transition-colors"
+                          className="w-full bg-white border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-700 placeholder-stone-300 outline-none focus:border-stone-400 transition-colors"
                           autoComplete="off"
                         />
                       </div>
@@ -377,7 +377,7 @@ export default function SettingsPage() {
                   <DatePicker
                     value={birthday || undefined}
                     onChange={setBirthday}
-                    className="max-w-sm bg-stone-100/60 border border-stone-200 shadow-none hover:border-stone-400 rounded-xl text-sm text-stone-700"
+                    className="max-w-sm bg-white border border-stone-200 shadow-none hover:border-stone-400 rounded-xl text-sm text-stone-700"
                   />
                 </div>
 
@@ -413,8 +413,8 @@ export default function SettingsPage() {
                   appearance={{
                     variables: {
                       colorPrimary: "#44403c",
-                      colorBackground: "#F7F6F2",
-                      colorInputBackground: "#EDEAE3",
+                      colorBackground: "#ffffff",
+                      colorInputBackground: "#ffffff",
                       colorInputText: "#3a3530",
                       fontFamily: "'DM Sans', sans-serif",
                       borderRadius: "0.75rem",

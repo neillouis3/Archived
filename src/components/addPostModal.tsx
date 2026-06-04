@@ -50,7 +50,6 @@ export default function AddPostModal({
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [rejected, setRejected] = useState([]);
-  const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [visibility, setVisibility] = useState<"public" | "friends" | "private">(
     "public"
@@ -85,7 +84,6 @@ export default function AddPostModal({
           fullName: resolvedFullName,
           username: resolvedUsername,
           avatarUrl: resolvedImageUrl,
-          title,
           body: description,
           media: mediaUrls,
           visibility,
@@ -95,7 +93,6 @@ export default function AddPostModal({
       if (!res.ok) throw new Error(`Failed to create post: ${res.status}`);
 
       setFiles([]);
-      setTitle("");
       setDescription("");
       setVisibility("public");
       state.close();
@@ -114,7 +111,7 @@ export default function AddPostModal({
       {triggerStyle === "input" ? (
         <button
           type="button"
-          className="w-full text-left bg-stone-100/60 border border-stone-200 rounded-full px-4 py-2.5 text-sm text-stone-400 hover:bg-stone-100 hover:border-stone-300 transition-colors"
+          className="w-full text-left bg-white border border-stone-200 rounded-full px-4 py-2.5 text-sm text-stone-400 hover:bg-stone-100 hover:border-stone-300 transition-colors"
         >
           Share a milestone...
         </button>
@@ -172,24 +169,15 @@ export default function AddPostModal({
                       <Separator />
 
                       <div className="flex flex-col gap-1.5">
-                        <Label className="text-xs font-medium text-stone-600 tracking-wide">Title</Label>
-                        <input
-                          type="text"
-                          placeholder="A title for your milestone"
-                          value={title}
-                          onChange={(e) => setTitle(e.target.value)}
-                          className="bg-stone-100/60 border border-stone-200 rounded-xl px-4 py-2.5 text-sm text-stone-700 placeholder:text-stone-300 outline-none focus:border-stone-400 transition-colors"
-                        />
-                      </div>
-
-                      <div className="flex flex-col gap-1.5">
-                        <Label className="text-xs font-medium text-stone-600 tracking-wide">Description</Label>
+                        <Label className="text-xs font-medium text-stone-600 tracking-wide">
+                          Description <span className="font-normal text-stone-400">(optional)</span>
+                        </Label>
                         <textarea
-                          placeholder="Describe what the milestone is about"
+                          placeholder="Add a caption (optional)"
                           value={description}
                           onChange={(e) => setDescription(e.target.value)}
                           rows={7}
-                          className="bg-stone-100/60 border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-700 placeholder:text-stone-300 outline-none resize-none focus:border-stone-400 transition-colors"
+                          className="bg-white border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-700 placeholder:text-stone-300 outline-none resize-none focus:border-stone-400 transition-colors"
                         />
                       </div>
 
@@ -207,7 +195,7 @@ export default function AddPostModal({
                               key={value}
                               className={`flex items-start gap-3 rounded-xl border px-3 py-2.5 cursor-pointer transition-colors ${
                                 visibility === value
-                                  ? "border-stone-500 bg-stone-50"
+                                  ? "border-stone-500 bg-white"
                                   : "border-stone-200 hover:border-stone-300"
                               }`}
                             >

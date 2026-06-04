@@ -59,9 +59,9 @@ export function ExploreSearchBar({
         <div
           className={
             isSidebar
-              ? `flex min-w-0 items-center gap-2 rounded-xl border border-stone-200/90 bg-[#F7F6F2] px-3 py-2.5
+              ? `flex min-w-0 items-center gap-2 rounded-xl border border-stone-200/90 bg-white px-3 py-2.5
                  transition-shadow focus-within:border-stone-300 focus-within:shadow-[0_0_0_3px_rgba(120,113,108,0.12)]`
-              : `flex flex-1 min-w-0 items-center gap-3 rounded-xl border border-stone-200/90 bg-[#F7F6F2] px-4 py-3
+              : `flex flex-1 min-w-0 items-center gap-3 rounded-xl border border-stone-200/90 bg-white px-4 py-3
                  transition-shadow focus-within:border-stone-300 focus-within:shadow-[0_0_0_3px_rgba(120,113,108,0.12)]`
           }
         >
@@ -109,9 +109,9 @@ export function ExploreSearchBar({
               onClick={onReset}
               className={
                 isSidebar
-                  ? `w-full rounded-xl border border-stone-200/90 bg-[#F7F6F2] px-4 py-2 text-[10px] tracking-[0.1em] uppercase
+                  ? `w-full rounded-xl border border-stone-200/90 bg-white px-4 py-2 text-[10px] tracking-[0.1em] uppercase
                      text-stone-500 transition-colors hover:border-stone-300 hover:text-stone-700`
-                  : `flex-1 sm:flex-initial rounded-xl border border-stone-200/90 bg-[#F7F6F2] px-5 py-3 text-[11px] tracking-[0.12em] uppercase
+                  : `flex-1 sm:flex-initial rounded-xl border border-stone-200/90 bg-white px-5 py-3 text-[11px] tracking-[0.12em] uppercase
                      text-stone-500 transition-colors hover:border-stone-300 hover:text-stone-700`
               }
             >

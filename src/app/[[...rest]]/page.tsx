@@ -27,13 +27,13 @@ export default function LandingPage() {
       fallback={
         <div
           className="flex w-full h-screen items-center justify-center"
-          style={{ background: "#F7F6F2" }}
+          style={{ background: "#ffffff" }}
         />
       }
     >
     <div
       className="relative flex w-full h-screen overflow-hidden"
-      style={{ fontFamily: "'DM Sans', sans-serif", background: "#F7F6F2" }}
+      style={{ fontFamily: "'DM Sans', sans-serif", background: "#ffffff" }}
     >
       {/* Left panel — mosaic */}
       <div className="hidden lg:grid lg:flex-1 grid-cols-3 gap-0.5 overflow-hidden">
@@ -68,7 +68,7 @@ export default function LandingPage() {
           style={{
             width: "66.666%",
             background:
-              "linear-gradient(to right, transparent 60%, #F7F6F2 100%)",
+              "linear-gradient(to right, transparent 60%, #ffffff 100%)",
           }}
         />
       </div>

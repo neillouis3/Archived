@@ -15,7 +15,7 @@ export function PostGridCard({ href, src, alt, caption }: PostGridCardProps) {
   return (
     <Link
       href={href}
-      className="relative aspect-square overflow-hidden group block bg-stone-100 rounded-sm ring-1 ring-stone-200/40"
+      className="relative aspect-square overflow-hidden group block bg-white rounded-sm ring-1 ring-stone-200/40"
       aria-label={alt}
     >
       <img

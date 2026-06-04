@@ -113,7 +113,10 @@ function ExplorePageInner() {
         {
           url,
           postId: post._id,
-          title: post.title,
+          bodySnippet:
+            typeof post.body === "string" && post.body.trim()
+              ? post.body.trim().slice(0, 60)
+              : "",
           username: post.username,
           authorClerkId: post.authorClerkId,
           imageIndex: idx,
@@ -129,14 +132,14 @@ function ExplorePageInner() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-[#F7F6F2]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <div className="min-h-screen bg-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
         <div className="w-full flex flex-row max-w-[1600px] mx-auto">
           <ArchiveLeftSidebar />
           <SidebarInsetSpacer />
 
           <div className="flex-1 min-w-0 flex flex-col border-x-0 sm:border-x sm:border-stone-200/80">
             <div className="w-full max-w-6xl mx-auto px-4 py-6 sm:px-6 sm:py-10">
-              <header className="mb-6 sm:mb-8 rounded-2xl border border-stone-200/80 bg-[#FDFCF9] px-4 py-6 sm:px-8 sm:py-9 shadow-[0_8px_30px_rgba(28,25,23,0.04)]">
+              <header className="mb-6 sm:mb-8 rounded-2xl border border-stone-200/80 bg-white px-4 py-6 sm:px-8 sm:py-9 shadow-[0_8px_30px_rgba(28,25,23,0.04)]">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
                   <div>
                     <p className="text-[10px] tracking-[0.3em] uppercase text-stone-300 mb-2">Browse</p>
@@ -155,7 +158,7 @@ function ExplorePageInner() {
                 </div>
 
                 <p className="mt-3 text-sm text-stone-400 max-w-2xl leading-relaxed">
-                  Search public posts by title, caption, username, or tag. When you&apos;re signed in, we also
+                  Search public posts by caption, username, or tag. When you&apos;re signed in, we also
                   match people by name (same query).
                 </p>
 
@@ -180,7 +183,7 @@ function ExplorePageInner() {
                   ) : peopleResults.length === 0 ? (
                     <p className="text-sm text-stone-400">No people matched &ldquo;{q}&rdquo;.</p>
                   ) : (
-                    <ul className="flex flex-col gap-1 rounded-2xl border border-stone-200/80 bg-[#FDFCF9] overflow-hidden divide-y divide-stone-100 max-w-xl">
+                    <ul className="flex flex-col gap-1 rounded-2xl border border-stone-200/80 bg-white overflow-hidden divide-y divide-stone-100 max-w-xl">
                       {peopleResults.map((u) => (
                         <li key={u.id}>
                           <Link
@@ -215,7 +218,7 @@ function ExplorePageInner() {
                 </h2>
                 {postsLoading ? (
                   <>
-                    <div className="mb-10 rounded-2xl border border-stone-200/80 bg-[#FDFCF9] px-6 py-8 sm:px-8 animate-pulse">
+                    <div className="mb-10 rounded-2xl border border-stone-200/80 bg-white px-6 py-8 sm:px-8 animate-pulse">
                       <div className="h-3 w-16 bg-stone-200/70 rounded mb-3" />
                       <div className="h-9 w-40 bg-stone-200/70 rounded mb-4" />
                       <div className="h-4 w-full max-w-md bg-stone-100 rounded mb-6" />
@@ -243,7 +246,7 @@ function ExplorePageInner() {
                         key={`${img.postId}-${img.imageIndex}`}
                         href={`/post/${encodeURIComponent(String(img.postId))}`}
                         src={img.url}
-                        alt={img.title || `Post by ${img.username}`}
+                        alt={img.bodySnippet || `Post by ${img.username}`}
                         caption={img.username}
                       />
                     ))}
@@ -261,12 +264,12 @@ function ExplorePageInner() {
 function ExploreFallback() {
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-[#F7F6F2]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <div className="min-h-screen bg-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
         <div className="w-full flex flex-row max-w-[1600px] mx-auto">
           <ArchiveLeftSidebar />
           <SidebarInsetSpacer />
           <div className="flex-1 min-w-0 w-full max-w-6xl mx-auto border-x-0 px-4 py-6 sm:border-x sm:border-stone-200/80 sm:px-6 sm:py-10">
-            <div className="mb-10 rounded-2xl border border-stone-200/80 bg-[#FDFCF9] px-6 py-8 animate-pulse">
+            <div className="mb-10 rounded-2xl border border-stone-200/80 bg-white px-6 py-8 animate-pulse">
               <div className="h-3 w-16 bg-stone-200/70 rounded mb-3" />
               <div className="h-9 w-40 bg-stone-200/70 rounded mb-4" />
               <div className="h-4 w-2/3 max-w-md bg-stone-100 rounded mb-6" />

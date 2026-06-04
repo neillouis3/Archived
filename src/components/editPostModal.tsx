@@ -16,12 +16,10 @@ type EditPostModalProps = {
   state: ReturnType<typeof useOverlayState>;
   trigger: ReactElement;
   postId: string;
-  initialTitle: string;
   initialBio: string;
   initialLocation: string;
   initialVisibility: EditPostVisibility;
   onSaved: (data: {
-    title?: string;
     body: string;
     location?: string;
     visibility: EditPostVisibility;
@@ -33,14 +31,12 @@ export default function EditPostModal({
   state,
   trigger,
   postId,
-  initialTitle,
   initialBio,
   initialLocation,
   initialVisibility,
   onSaved,
   onDeleted,
 }: EditPostModalProps) {
-  const [title, setTitle] = useState(initialTitle);
   const [bio, setBio] = useState(initialBio);
   const [location, setLocation] = useState(initialLocation);
   const [visibility, setVisibility] = useState<EditPostVisibility>(initialVisibility);
@@ -49,24 +45,13 @@ export default function EditPostModal({
 
   useEffect(() => {
     if (!state.isOpen) return;
-    setTitle(initialTitle);
     setBio(initialBio);
     setLocation(initialLocation);
     setVisibility(initialVisibility);
-  }, [
-    state.isOpen,
-    initialTitle,
-    initialBio,
-    initialLocation,
-    initialVisibility,
-  ]);
+  }, [state.isOpen, initialBio, initialLocation, initialVisibility]);
 
   async function handleSave(close: () => void) {
     const trimmedBio = bio.trim();
-    if (!trimmedBio) {
-      alert("Bio / caption cannot be empty.");
-      return;
-    }
     setSaving(true);
     try {
       const res = await fetch(`/api/posts/${encodeURIComponent(postId)}`, {
@@ -74,7 +59,6 @@ export default function EditPostModal({
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          title: title.trim(),
           body: trimmedBio,
           location: location.trim(),
           visibility,
@@ -86,7 +70,6 @@ export default function EditPostModal({
       }
       const data = await res.json();
       onSaved({
-        title: typeof data.title === "string" ? data.title : title.trim(),
         body: typeof data.body === "string" ? data.body : trimmedBio,
         location: typeof data.location === "string" ? data.location : location.trim(),
         visibility: (["public", "friends", "private"].includes(data.visibility)
@@ -148,24 +131,15 @@ export default function EditPostModal({
 
                 <Modal.Body className="p-6 overflow-y-auto max-h-[65vh] flex flex-col gap-4">
                   <div className="flex flex-col gap-1.5">
-                    <Label className="text-xs font-medium text-stone-600 tracking-wide">Title</Label>
-                    <input
-                      type="text"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      className="bg-stone-100/60 border border-stone-200 rounded-xl px-4 py-2.5 text-sm text-stone-700 placeholder:text-stone-300 outline-none focus:border-stone-400 transition-colors"
-                      placeholder="Optional"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <Label className="text-xs font-medium text-stone-600 tracking-wide">Bio</Label>
+                    <Label className="text-xs font-medium text-stone-600 tracking-wide">
+                      Description <span className="font-normal text-stone-400">(optional)</span>
+                    </Label>
                     <textarea
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
                       rows={5}
-                      className="bg-stone-100/60 border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-700 placeholder:text-stone-300 outline-none resize-none focus:border-stone-400 transition-colors"
-                      placeholder="Caption or description"
+                      className="bg-white border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-700 placeholder:text-stone-300 outline-none resize-none focus:border-stone-400 transition-colors"
+                      placeholder="Caption (optional)"
                     />
                   </div>
 
@@ -175,7 +149,7 @@ export default function EditPostModal({
                       type="text"
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
-                      className="bg-stone-100/60 border border-stone-200 rounded-xl px-4 py-2.5 text-sm text-stone-700 placeholder:text-stone-300 outline-none focus:border-stone-400 transition-colors"
+                      className="bg-white border border-stone-200 rounded-xl px-4 py-2.5 text-sm text-stone-700 placeholder:text-stone-300 outline-none focus:border-stone-400 transition-colors"
                       placeholder="City, venue, or place"
                     />
                   </div>
@@ -196,7 +170,7 @@ export default function EditPostModal({
                           key={value}
                           className={`flex items-start gap-3 rounded-xl border px-3 py-2.5 cursor-pointer transition-colors ${
                             visibility === value
-                              ? "border-stone-500 bg-stone-50"
+                              ? "border-stone-500 bg-white"
                               : "border-stone-200 hover:border-stone-300"
                           }`}
                         >

@@ -200,7 +200,7 @@ export default function ArchiveRightSidebar() {
     : "/explore";
 
   return (
-    <aside className="fixed right-0 top-0 h-screen w-64 xl:w-72 flex flex-col bg-[#F7F6F2] overflow-y-auto border-l border-stone-200/80">
+    <aside className="fixed right-0 top-0 h-screen w-64 xl:w-72 flex flex-col bg-white overflow-y-auto border-l border-stone-200/80">
       <div className="px-5 pt-8 pb-5 border-b border-stone-200/70">
         <h2 className="text-[10px] tracking-[0.25em] uppercase text-stone-500 font-medium mb-3">
           Search
@@ -235,7 +235,7 @@ export default function ArchiveRightSidebar() {
                     No people matched.
                   </p>
                 ) : (
-                  <ul className="flex flex-col gap-0.5 rounded-lg border border-stone-200/60 bg-[#FDFCF9]/80 overflow-hidden divide-y divide-stone-100/80">
+                  <ul className="flex flex-col gap-0.5 rounded-lg border border-stone-200/60 bg-white/80 overflow-hidden divide-y divide-stone-100/80">
                     {sidebarPeople.map((u) => (
                       <li key={u.id}>
                         <Link
@@ -281,7 +281,7 @@ export default function ArchiveRightSidebar() {
                     <Link
                       key={`${t.postId}-${i}`}
                       href={`/post/${encodeURIComponent(t.postId)}`}
-                      className="aspect-square overflow-hidden bg-stone-100 rounded-sm group focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
+                      className="aspect-square overflow-hidden bg-white border border-stone-200/60 rounded-sm group focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
                     >
                       <img
                         src={t.url}
@@ -330,7 +330,7 @@ export default function ArchiveRightSidebar() {
               ))
             : tiles.length === 0
               ? (
-                  <div className="col-span-3 py-6 text-center border border-dashed border-stone-200 rounded-lg bg-[#FDFCF9]/40">
+                  <div className="col-span-3 py-6 text-center border border-dashed border-stone-200 rounded-lg bg-white/40">
                     <p className="text-[10px] text-stone-400">No public posts yet</p>
                     <Link href="/explore" className="text-[10px] text-stone-500 underline mt-1 inline-block">
                       Open explore
@@ -341,7 +341,7 @@ export default function ArchiveRightSidebar() {
                   <Link
                     key={`${t.postId}-${i}`}
                     href={`/post/${encodeURIComponent(t.postId)}`}
-                    className="aspect-square overflow-hidden bg-stone-100 group focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 rounded-sm"
+                    className="aspect-square overflow-hidden bg-white border border-stone-200/60 group focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 rounded-sm"
                     title="Open post"
                   >
                     <img
@@ -444,7 +444,7 @@ export default function ArchiveRightSidebar() {
         )}
       </div>
 
-      <div className="px-5 py-5 mt-auto border-t border-stone-200/70 bg-[#F7F6F2]/95">
+      <div className="px-5 py-5 mt-auto border-t border-stone-200/70 bg-white/95">
         <p className="text-[9px] text-stone-300 tracking-wide leading-relaxed">
           About · Privacy · Terms · Accessibility
         </p>
