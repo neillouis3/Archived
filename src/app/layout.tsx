@@ -27,6 +27,10 @@ export const metadata: Metadata = {
     template: "%s | Archive",
   },
   description: "A place for your moments.",
+  icons: {
+    icon: "/archive-logo.ico",
+    shortcut: "/archive-logo.ico",
+  },
 };
 
 export default function RootLayout({

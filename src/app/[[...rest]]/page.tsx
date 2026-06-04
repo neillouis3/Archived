@@ -9,11 +9,11 @@ export default function LandingPage() {
   return (
     <SignedOutGate
       fallback={
-        <div className="flex h-screen w-full items-center justify-center bg-white" />
+        <div className="flex h-[100vh] w-full items-center justify-center bg-white" />
       }
     >
       <div
-        className="flex min-h-screen w-full flex-col items-center justify-center bg-white px-4 py-12"
+        className="flex h-[100vh] w-full flex-col items-center justify-center overflow-y-auto bg-white px-4 py-12"
         style={{ fontFamily: "'DM Sans', sans-serif" }}
       >
         <Image
