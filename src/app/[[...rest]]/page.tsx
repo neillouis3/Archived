@@ -1,8 +1,9 @@
 "use client";
 
-import { SignIn, useUser } from "@clerk/nextjs";
+import { SignIn } from "@clerk/nextjs";
 import Image from "next/image";
-import { redirect } from "next/navigation";
+import { clerkAuthAppearance } from "@/lib/clerkAuthAppearance";
+import SignedOutGate from "@/components/signedOutGate";
 
 // Ambient photo tiles shown behind the sign-in form
 const ambientImages = [
@@ -21,10 +22,15 @@ const ambientImages = [
 ];
 
 export default function LandingPage() {
-  const { user } = useUser();
-  if (user) redirect("/home");
-
   return (
+    <SignedOutGate
+      fallback={
+        <div
+          className="flex w-full h-screen items-center justify-center"
+          style={{ background: "#F7F6F2" }}
+        />
+      }
+    >
     <div
       className="relative flex w-full h-screen overflow-hidden"
       style={{ fontFamily: "'DM Sans', sans-serif", background: "#F7F6F2" }}
@@ -84,27 +90,17 @@ export default function LandingPage() {
 
         <SignIn
           appearance={{
-            variables: {
-              colorPrimary: "#44403c",
-              colorBackground: "#F7F6F2",
-              colorInputBackground: "#EDEAE3",
-              colorInputText: "#3a3530",
-              colorTextSecondary: "#a09890",
-              fontFamily: "'DM Sans', sans-serif",
-              borderRadius: "0.5rem",
-              fontSize: "13px",
-            },
+            ...clerkAuthAppearance,
             elements: {
-              card: "shadow-none border border-stone-200/60 bg-[#F7F6F2]",
+              ...clerkAuthAppearance.elements,
               headerTitle: "hidden",
               headerSubtitle: "hidden",
-              socialButtonsBlockButton:
-                "border border-stone-200 bg-[#EDEAE3] hover:bg-stone-200 text-stone-700 text-xs tracking-wide",
-              formButtonPrimary:
-                "bg-stone-800 hover:bg-stone-700 text-white text-xs tracking-[0.1em] uppercase",
-              footerActionLink: "text-stone-600 hover:text-stone-800",
             },
           }}
+          routing="path"
+          path="/"
+          signUpUrl="/accounts/register"
+          fallbackRedirectUrl="/home"
         />
 
         <p className="mt-8 text-[9px] tracking-[0.15em] uppercase text-stone-300">
@@ -119,5 +115,6 @@ export default function LandingPage() {
         }
       `}</style>
     </div>
+    </SignedOutGate>
   );
 }

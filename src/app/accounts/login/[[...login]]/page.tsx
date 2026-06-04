@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { SignIn } from "@clerk/nextjs";
-import { clerkAuthAppearance } from "@/lib/clerkAuthAppearance";
+import LoginForm from "@/components/loginForm";
 
 export default function LoginPage() {
   return (
@@ -24,13 +23,7 @@ export default function LoginPage() {
 
       <main className="flex-1 flex flex-col items-center justify-start sm:justify-center px-4 pb-12 sm:pb-16 pt-2">
         <div className="w-full max-w-[420px]">
-          <SignIn
-            appearance={clerkAuthAppearance}
-            routing="path"
-            path="/accounts/login"
-            signUpUrl="/accounts/register"
-            fallbackRedirectUrl="/home"
-          />
+          <LoginForm />
         </div>
       </main>
     </div>
