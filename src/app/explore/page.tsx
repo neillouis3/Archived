@@ -136,25 +136,25 @@ function ExplorePageInner() {
 
           <div className="flex-1 min-w-0 flex flex-col items-center border-x-0 sm:border-x sm:border-stone-200/80">
             <div className="w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
-              <div className="mb-6 sm:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h1
-                    className="text-2xl sm:text-3xl font-light text-stone-800 mb-2"
-                    style={{ fontFamily: "'DM Serif Display', serif" }}
-                  >
-                    Explore
-                  </h1>
-                  <p className="text-sm text-stone-400">
-                    {q && !postsLoading
-                      ? allImages.length === 1
-                        ? "1 image"
-                        : `${allImages.length} images`
-                      : "Search posts, tags, and people"}
-                  </p>
+              <div className="mb-6 sm:mb-8 flex flex-col gap-4 sm:gap-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h1
+                      className="text-2xl sm:text-3xl font-light text-stone-800 mb-2"
+                      style={{ fontFamily: "'DM Serif Display', serif" }}
+                    >
+                      Explore
+                    </h1>
+                    <p className="text-sm text-stone-400">
+                      {q && !postsLoading
+                        ? allImages.length === 1
+                          ? "1 image"
+                          : `${allImages.length} images`
+                        : "Search posts, tags, and people"}
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              <div className="mb-6 sm:mb-8">
                 <ExploreSearchBar
                   variant="full"
                   inputId="explore-search"
@@ -247,11 +247,11 @@ function ExploreFallback() {
           <SidebarInsetSpacer />
           <div className="flex-1 min-w-0 flex flex-col items-center border-x-0 sm:border-x sm:border-stone-200/80">
             <div className="w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
-              <div className="mb-6 sm:mb-8">
+              <div className="mb-6 sm:mb-8 flex flex-col gap-4 sm:gap-6">
                 <div className="h-8 w-32 bg-stone-100 rounded animate-pulse mb-2" />
                 <div className="h-4 w-48 bg-stone-100 rounded animate-pulse" />
+                <div className="h-12 w-full bg-stone-100 rounded-xl animate-pulse" />
               </div>
-              <div className="mb-6 sm:mb-8 h-12 w-full bg-stone-100 rounded-xl animate-pulse" />
               <div className={postGridClassName}>
                 {[...Array(12)].map((_, i) => (
                   <div key={i} className="aspect-square bg-stone-100/90 animate-pulse rounded-sm" />

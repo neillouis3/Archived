@@ -151,7 +151,6 @@ export default function ProfilePage() {
   }, [isLoaded, user?.id]);
 
   if (!isLoaded) return null;
-  if (!isSignedIn) return <p className="text-xs text-stone-400 p-8">Please sign in.</p>;
 
   const birthday = user?.publicMetadata?.birthday
     ? new Date(user.publicMetadata.birthday as string).toLocaleDateString("en-US", {
@@ -182,8 +181,16 @@ export default function ProfilePage() {
         <SidebarInsetSpacer />
 
         {/* Main */}
-        <div className="flex-1 min-w-0 border-x-0 sm:border-x sm:border-stone-200/80">
-
+        <div className="flex-1 min-w-0 flex flex-col items-center border-x-0 sm:border-x sm:border-stone-200/80">
+          <div className="w-full max-w-6xl">
+          {!isSignedIn ? (
+            <div className="px-4 py-6 sm:px-6 sm:py-10">
+              <div className="flex flex-col items-center justify-center h-96 text-center">
+                <p className="text-xs text-stone-400">Sign in to view your profile.</p>
+              </div>
+            </div>
+          ) : (
+          <>
           {/* Cover / hero area */}
           <div className="relative h-36 sm:h-48 bg-stone-200 overflow-hidden">
             {coverImageUrl ? (
@@ -215,7 +222,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Profile info bar */}
-          <div className="px-4 pb-6 sm:px-8 border-b border-stone-200/80">
+          <div className="px-4 pb-6 sm:px-6 border-b border-stone-200/80">
             {/* Avatar — overlaps cover */}
             <div className="flex items-end justify-between -mt-10 mb-4">
               <div className="relative">
@@ -336,7 +343,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Posts section */}
-          <div className="px-4 py-6 sm:px-8">
+          <div className="px-4 py-6 sm:px-6 sm:py-10">
             <div className="flex flex-wrap items-center gap-2 mb-4">
               {(
                 [
@@ -420,6 +427,9 @@ export default function ProfilePage() {
                 )}
               </div>
             )}
+          </div>
+          </>
+          )}
           </div>
         </div>
 

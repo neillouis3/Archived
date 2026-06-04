@@ -158,10 +158,12 @@ export default function PublicProfilePage() {
           <div className="w-full flex flex-row max-w-[1600px] mx-auto">
             <ArchiveLeftSidebar />
             <SidebarInsetSpacer />
-            <div className="flex-1 min-w-0 border-x-0 px-4 py-10 sm:border-x sm:border-stone-200/80 sm:px-8 sm:py-16">
-              <div className="h-48 bg-stone-200 rounded-lg animate-pulse mb-8 max-w-xl" />
+            <div className="flex-1 min-w-0 flex flex-col items-center border-x-0 sm:border-x sm:border-stone-200/80">
+              <div className="w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+              <div className="h-48 bg-stone-200 rounded-lg animate-pulse mb-8" />
               <div className="h-6 w-48 bg-stone-200/80 rounded animate-pulse mb-2" />
               <div className="h-4 w-32 bg-stone-100 rounded animate-pulse" />
+              </div>
             </div>
           </div>
         </div>
@@ -176,7 +178,8 @@ export default function PublicProfilePage() {
           <div className="w-full flex flex-row max-w-[1600px] mx-auto">
             <ArchiveLeftSidebar />
             <SidebarInsetSpacer />
-            <div className="flex-1 min-w-0 border-x-0 px-4 py-10 text-center sm:border-x sm:border-stone-200/80 sm:px-8 sm:py-16">
+            <div className="flex-1 min-w-0 flex flex-col items-center border-x-0 sm:border-x sm:border-stone-200/80">
+              <div className="w-full max-w-6xl px-4 py-6 text-center sm:px-6 sm:py-10">
               <p className="text-xs text-stone-300 mb-2">Profile</p>
               <p className="text-sm text-stone-500 mb-6">This user could not be found.</p>
               <NextLink
@@ -185,6 +188,7 @@ export default function PublicProfilePage() {
               >
                 Explore
               </NextLink>
+              </div>
             </div>
           </div>
         </div>
@@ -202,7 +206,8 @@ export default function PublicProfilePage() {
           <ArchiveLeftSidebar />
           <SidebarInsetSpacer />
 
-          <div className="flex-1 min-w-0 border-x-0 sm:border-x sm:border-stone-200/80">
+          <div className="flex-1 min-w-0 flex flex-col items-center border-x-0 sm:border-x sm:border-stone-200/80">
+            <div className="w-full max-w-6xl">
 
             <div className="relative h-36 sm:h-48 bg-stone-200 overflow-hidden">
               {profile.coverImageUrl ? (
@@ -226,7 +231,7 @@ export default function PublicProfilePage() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/15 to-transparent pointer-events-none" />
             </div>
 
-            <div className="px-4 pb-6 sm:px-8 border-b border-stone-200/80">
+            <div className="px-4 pb-6 sm:px-6 border-b border-stone-200/80">
               <div className="flex items-end justify-between -mt-10 mb-4 gap-4 flex-wrap">
                 <div className="relative">
                   <Image
@@ -277,7 +282,7 @@ export default function PublicProfilePage() {
               </div>
             </div>
 
-            <div className="px-4 py-6 sm:px-8">
+            <div className="px-4 py-6 sm:px-6 sm:py-10">
               <div className="flex items-center justify-between mb-6">
                 <span className="text-xs text-stone-400">Posts</span>
                 <div className="flex items-center gap-1">
@@ -331,6 +336,7 @@ export default function PublicProfilePage() {
                   )}
                 </div>
               )}
+            </div>
             </div>
           </div>
 

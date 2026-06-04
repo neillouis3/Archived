@@ -132,7 +132,6 @@ export default function NotificationsPage() {
   }
 
   if (!isLoaded) return null;
-  if (!user) return <p className="text-xs text-stone-400 p-8">Please sign in to view notifications.</p>;
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -144,14 +143,11 @@ export default function NotificationsPage() {
           <SidebarInsetSpacer />
 
           <div className="flex-1 min-w-0 flex flex-col items-center border-x-0 sm:border-x sm:border-stone-200/80">
-            <div className="w-full max-w-2xl px-4 py-6 sm:px-6 sm:py-10">
-
-              {/* Page header */}
-              <div className="mb-6 sm:mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+            <div className="w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+              <div className="mb-6 sm:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-xs text-stone-300 mb-2">Activity</p>
                   <h1
-                    className="text-2xl sm:text-3xl font-light text-stone-800 mb-1"
+                    className="text-2xl sm:text-3xl font-light text-stone-800 mb-2"
                     style={{ fontFamily: "'DM Serif Display', serif" }}
                   >
                     Notifications
@@ -159,8 +155,8 @@ export default function NotificationsPage() {
                   <p className="text-sm text-stone-400">Likes, comments, follows, and friends</p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3 sm:pt-8">
-                  {unreadCount > 0 && (
+                {user && unreadCount > 0 ? (
+                  <div className="flex flex-wrap items-center gap-3">
                     <Chip
                       variant="soft"
                       size="sm"
@@ -168,8 +164,6 @@ export default function NotificationsPage() {
                     >
                       {unreadCount} unread
                     </Chip>
-                  )}
-                  {unreadCount > 0 && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -178,12 +172,16 @@ export default function NotificationsPage() {
                     >
                       Mark all read
                     </Button>
-                  )}
-                </div>
+                  </div>
+                ) : null}
               </div>
 
-              {/* HeroUI v3 Tabs */}
-              <Tabs defaultSelectedKey="all" className="w-full">
+              {!user ? (
+                <div className="flex flex-col items-center justify-center h-96 text-center">
+                  <p className="text-xs text-stone-400">Sign in to view notifications.</p>
+                </div>
+              ) : (
+                <Tabs defaultSelectedKey="all" className="w-full">
                 <Tabs.ListContainer className="mb-6 border-b border-stone-200/60">
                   <Tabs.List aria-label="Filter notifications" className="gap-4 bg-transparent p-0">
                     <Tabs.Tab
@@ -222,7 +220,7 @@ export default function NotificationsPage() {
                   />
                 </Tabs.Panel>
               </Tabs>
-
+              )}
             </div>
           </div>
 
