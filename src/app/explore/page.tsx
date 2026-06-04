@@ -125,9 +125,6 @@ function ExplorePageInner() {
     })
   );
 
-  const resultLabel =
-    allImages.length === 1 ? "1 image" : `${allImages.length} images`;
-
   const showPeopleBlock = isLoaded && isSignedIn && q.length >= 2;
 
   return (
@@ -137,46 +134,40 @@ function ExplorePageInner() {
           <ArchiveLeftSidebar />
           <SidebarInsetSpacer />
 
-          <div className="flex-1 min-w-0 flex flex-col border-x-0 sm:border-x sm:border-stone-200/80">
-            <div className="w-full max-w-6xl mx-auto px-4 py-6 sm:px-6 sm:py-10">
-              <header className="mb-6 sm:mb-8 rounded-2xl border border-stone-200/80 bg-white px-4 py-6 sm:px-8 sm:py-9 shadow-[0_8px_30px_rgba(28,25,23,0.04)]">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
-                  <div>
-                    <p className="text-xs text-stone-300 mb-2">Browse</p>
-                    <h1
-                      className="text-2xl sm:text-4xl font-light text-stone-800 tracking-tight"
-                      style={{ fontFamily: "'DM Serif Display', serif" }}
-                    >
-                      Explore
-                    </h1>
-                  </div>
-                  {!postsLoading && q && allImages.length > 0 ? (
-                    <p className="text-xs text-stone-400 mt-2 sm:mt-0 sm:pt-8">
-                      {resultLabel}
-                    </p>
-                  ) : null}
+          <div className="flex-1 min-w-0 flex flex-col items-center border-x-0 sm:border-x sm:border-stone-200/80">
+            <div className="w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+              <div className="mb-6 sm:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h1
+                    className="text-2xl sm:text-3xl font-light text-stone-800 mb-2"
+                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                  >
+                    Explore
+                  </h1>
+                  <p className="text-sm text-stone-400">
+                    {q && !postsLoading
+                      ? allImages.length === 1
+                        ? "1 image"
+                        : `${allImages.length} images`
+                      : "Search posts, tags, and people"}
+                  </p>
                 </div>
+              </div>
 
-                <p className="mt-3 text-sm text-stone-400 max-w-2xl leading-relaxed">
-                  Search public posts by caption, username, or tag. When you&apos;re signed in, we also
-                  match people by name (same query).
-                </p>
-
-                <div className="mt-6">
-                  <ExploreSearchBar
-                    variant="full"
-                    inputId="explore-search"
-                    value={input}
-                    onChange={setInput}
-                    onSubmit={applySearch}
-                    showReset={!!q}
-                    onReset={clearSearch}
-                  />
-                </div>
-              </header>
+              <div className="mb-6 sm:mb-8">
+                <ExploreSearchBar
+                  variant="full"
+                  inputId="explore-search"
+                  value={input}
+                  onChange={setInput}
+                  onSubmit={applySearch}
+                  showReset={!!q}
+                  onReset={clearSearch}
+                />
+              </div>
 
               {showPeopleBlock && (
-                <section className="mb-10" aria-label="People results">
+                <section className="mb-8 sm:mb-10" aria-label="People results">
                   <h2 className="text-xs text-stone-400 mb-3">People</h2>
                   {peopleLoading ? (
                     <p className="text-xs text-stone-400">Searching people…</p>
@@ -213,30 +204,16 @@ function ExplorePageInner() {
               )}
 
               <section aria-label="Post results">
-                <h2 className="text-xs text-stone-400 mb-3 sr-only">
-                  Posts
-                </h2>
                 {postsLoading ? (
-                  <>
-                    <div className="mb-10 rounded-2xl border border-stone-200/80 bg-white px-6 py-8 sm:px-8 animate-pulse">
-                      <div className="h-3 w-16 bg-stone-200/70 rounded mb-3" />
-                      <div className="h-9 w-40 bg-stone-200/70 rounded mb-4" />
-                      <div className="h-4 w-full max-w-md bg-stone-100 rounded mb-6" />
-                      <div className="h-12 w-full bg-stone-100 rounded-xl" />
-                    </div>
-                    <div className={postGridClassName}>
-                      {[...Array(12)].map((_, i) => (
-                        <div key={i} className="aspect-square bg-stone-100/90 animate-pulse rounded-sm" />
-                      ))}
-                    </div>
-                  </>
+                  <div className={postGridClassName}>
+                    {[...Array(12)].map((_, i) => (
+                      <div key={i} className="aspect-square bg-stone-100/90 animate-pulse rounded-sm" />
+                    ))}
+                  </div>
                 ) : allImages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-96 text-center">
-                    <p className="text-xs text-stone-300 mb-1">
-                      {q ? "No posts match" : "No public posts yet"}
-                    </p>
                     <p className="text-xs text-stone-400">
-                      {q ? "Try different words or check people above." : "Check back soon"}
+                      {q ? "No posts match your search." : "No public posts yet."}
                     </p>
                   </div>
                 ) : (
@@ -268,17 +245,18 @@ function ExploreFallback() {
         <div className="w-full flex flex-row max-w-[1600px] mx-auto">
           <ArchiveLeftSidebar />
           <SidebarInsetSpacer />
-          <div className="flex-1 min-w-0 w-full max-w-6xl mx-auto border-x-0 px-4 py-6 sm:border-x sm:border-stone-200/80 sm:px-6 sm:py-10">
-            <div className="mb-10 rounded-2xl border border-stone-200/80 bg-white px-6 py-8 animate-pulse">
-              <div className="h-3 w-16 bg-stone-200/70 rounded mb-3" />
-              <div className="h-9 w-40 bg-stone-200/70 rounded mb-4" />
-              <div className="h-4 w-2/3 max-w-md bg-stone-100 rounded mb-6" />
-              <div className="h-12 w-full bg-stone-100 rounded-xl" />
-            </div>
-            <div className={postGridClassName}>
-              {[...Array(12)].map((_, i) => (
-                <div key={i} className="aspect-square bg-stone-100/90 animate-pulse rounded-sm" />
-              ))}
+          <div className="flex-1 min-w-0 flex flex-col items-center border-x-0 sm:border-x sm:border-stone-200/80">
+            <div className="w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+              <div className="mb-6 sm:mb-8">
+                <div className="h-8 w-32 bg-stone-100 rounded animate-pulse mb-2" />
+                <div className="h-4 w-48 bg-stone-100 rounded animate-pulse" />
+              </div>
+              <div className="mb-6 sm:mb-8 h-12 w-full bg-stone-100 rounded-xl animate-pulse" />
+              <div className={postGridClassName}>
+                {[...Array(12)].map((_, i) => (
+                  <div key={i} className="aspect-square bg-stone-100/90 animate-pulse rounded-sm" />
+                ))}
+              </div>
             </div>
           </div>
         </div>
