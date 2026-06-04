@@ -88,21 +88,22 @@ export function ExploreSearchBar({
         </div>
         <div
           className={
-            isSidebar ? "flex flex-col gap-1.5 shrink-0" : "flex gap-2 shrink-0"
+            isSidebar
+              ? showReset && onReset
+                ? "flex shrink-0"
+                : "hidden"
+              : "flex gap-2 shrink-0"
           }
         >
-          <button
-            type="submit"
-            className={
-              isSidebar
-                ? `w-full rounded-xl bg-stone-800 px-4 py-2.5 text-xs font-medium
-                   text-white transition-colors hover:bg-stone-700 active:bg-stone-900`
-                : `flex-1 sm:flex-initial rounded-xl bg-stone-800 px-6 py-3 text-xs font-medium
-                   text-white transition-colors hover:bg-stone-700 active:bg-stone-900`
-            }
-          >
-            Search
-          </button>
+          {!isSidebar ? (
+            <button
+              type="submit"
+              className="flex-1 sm:flex-initial rounded-xl bg-stone-800 px-6 py-3 text-xs font-medium
+                   text-white transition-colors hover:bg-stone-700 active:bg-stone-900"
+            >
+              Search
+            </button>
+          ) : null}
           {showReset && onReset ? (
             <button
               type="button"

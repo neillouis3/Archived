@@ -302,12 +302,7 @@ export default function ArchiveRightSidebar() {
               Open full explore →
             </Link>
           </div>
-        ) : (
-          <p className="mt-3 text-xs text-stone-400 leading-relaxed">
-            Same search as Explore: posts, tags, usernames{isSignedIn ? ", and people" : ""}.
-            {!isSignedIn ? " Sign in to match people by name." : ""}
-          </p>
-        )}
+        ) : null}
       </div>
 
       <div className="px-5 py-6 border-b border-stone-200/70">
