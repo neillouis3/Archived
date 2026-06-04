@@ -95,9 +95,9 @@ export function ExploreSearchBar({
             type="submit"
             className={
               isSidebar
-                ? `w-full rounded-xl bg-stone-800 px-4 py-2.5 text-[10px] font-medium tracking-[0.12em] uppercase
+                ? `w-full rounded-xl bg-stone-800 px-4 py-2.5 text-xs font-medium
                    text-white transition-colors hover:bg-stone-700 active:bg-stone-900`
-                : `flex-1 sm:flex-initial rounded-xl bg-stone-800 px-6 py-3 text-[11px] font-medium tracking-[0.15em] uppercase
+                : `flex-1 sm:flex-initial rounded-xl bg-stone-800 px-6 py-3 text-xs font-medium
                    text-white transition-colors hover:bg-stone-700 active:bg-stone-900`
             }
           >
@@ -109,9 +109,9 @@ export function ExploreSearchBar({
               onClick={onReset}
               className={
                 isSidebar
-                  ? `w-full rounded-xl border border-stone-200/90 bg-white px-4 py-2 text-[10px] tracking-[0.1em] uppercase
+                  ? `w-full rounded-xl border border-stone-200/90 bg-white px-4 py-2 text-xs
                      text-stone-500 transition-colors hover:border-stone-300 hover:text-stone-700`
-                  : `flex-1 sm:flex-initial rounded-xl border border-stone-200/90 bg-white px-5 py-3 text-[11px] tracking-[0.12em] uppercase
+                  : `flex-1 sm:flex-initial rounded-xl border border-stone-200/90 bg-white px-5 py-3 text-xs
                      text-stone-500 transition-colors hover:border-stone-300 hover:text-stone-700`
               }
             >

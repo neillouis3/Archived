@@ -61,7 +61,7 @@ const Dropzone = ({ files, setFiles, rejected, setRejected, className }) => {
           variant="solid"
           size="sm"
           onPress={open}
-          className="bg-stone-800 hover:bg-stone-700 text-white text-xs tracking-[0.1em] uppercase rounded-lg px-4 mt-1"
+          className="bg-stone-800 hover:bg-stone-700 text-white text-xs rounded-lg px-4 mt-1"
         >
           Select from computer
         </Button>
@@ -81,7 +81,7 @@ const Dropzone = ({ files, setFiles, rejected, setRejected, className }) => {
                 ×
               </button>
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent px-2 py-1.5">
-                <p className="text-[10px] text-white/80 truncate">{file.name}</p>
+                <p className="text-xs text-white/80 truncate">{file.name}</p>
               </div>
             </li>
           ))}

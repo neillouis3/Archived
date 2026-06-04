@@ -40,7 +40,7 @@ function PostSkeleton() {
 function DiscoverEmptyState() {
   return (
     <div className="flex flex-col items-center justify-center h-96 text-center">
-      <p className="text-[10px] tracking-[0.3em] uppercase text-stone-300 mb-1">Nothing here yet</p>
+      <p className="text-xs text-stone-300 mb-1">Nothing here yet</p>
       <p className="text-xs text-stone-200">Start archiving your moments.</p>
     </div>
   );
@@ -49,7 +49,7 @@ function DiscoverEmptyState() {
 function FollowingEmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-20 px-4 text-center max-w-md mx-auto">
-      <p className="text-[10px] tracking-[0.3em] uppercase text-stone-300 mb-2">
+      <p className="text-xs text-stone-300 mb-2">
         No posts from people you follow
       </p>
       <p className="text-xs text-stone-400 leading-relaxed mb-8">
@@ -59,13 +59,13 @@ function FollowingEmptyState() {
       <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto sm:justify-center">
         <Link
           href="/explore"
-          className="rounded-xl bg-stone-800 text-white text-[10px] tracking-[0.2em] uppercase px-6 py-3 text-center hover:bg-stone-700 transition-colors"
+          className="rounded-xl bg-stone-800 text-white text-xs px-6 py-3 text-center hover:bg-stone-700 transition-colors"
         >
           Explore posts
         </Link>
         <Link
           href="/accounts/profile"
-          className="rounded-xl border border-stone-200 text-stone-600 text-[10px] tracking-[0.2em] uppercase px-6 py-3 text-center hover:bg-stone-50 transition-colors"
+          className="rounded-xl border border-stone-200 text-stone-600 text-xs px-6 py-3 text-center hover:bg-stone-50 transition-colors"
         >
           Your profile
         </Link>
@@ -169,7 +169,7 @@ export default function Home() {
               <div className="mb-6 sm:mb-8 flex flex-wrap items-center gap-4 sm:gap-6">
                 <button 
                   onClick={() => setFeedType("following")}
-                  className={`text-[10px] tracking-[0.3em] uppercase transition-colors pb-0.5 ${
+                  className={`text-xs transition-colors pb-0.5 ${
                     feedType === "following" 
                       ? "text-stone-700 font-medium border-b border-stone-700" 
                       : "text-stone-300 hover:text-stone-500"
@@ -179,7 +179,7 @@ export default function Home() {
                 </button>
                 <button 
                   onClick={() => setFeedType("discover")}
-                  className={`text-[10px] tracking-[0.3em] uppercase transition-colors pb-0.5 ${
+                  className={`text-xs transition-colors pb-0.5 ${
                     feedType === "discover" 
                       ? "text-stone-700 font-medium border-b border-stone-700" 
                       : "text-stone-300 hover:text-stone-500"
@@ -189,7 +189,7 @@ export default function Home() {
                 </button>
                 <button 
                   onClick={() => setViewMode(viewMode === "feed" ? "grid" : "feed")}
-                  className="text-[10px] tracking-[0.3em] uppercase text-stone-300 hover:text-stone-500 transition-colors pb-0.5 ml-auto flex items-center gap-1.5"
+                  className="text-xs text-stone-300 hover:text-stone-500 transition-colors pb-0.5 ml-auto flex items-center gap-1.5"
                 >
                   {viewMode === "feed" ? (
                     <>
@@ -286,7 +286,7 @@ export default function Home() {
                   {hasMore ? (
                     <Button
                       variant="ghost"
-                      className="text-[10px] tracking-[0.25em] uppercase text-stone-500 hover:text-stone-800 border border-stone-200 rounded-xl px-6 py-2"
+                      className="text-xs text-stone-500 hover:text-stone-800 border border-stone-200 rounded-xl px-6 py-2"
                       isPending={loadingMore}
                       isDisabled={loadingMore}
                       onPress={loadMore}
@@ -294,7 +294,7 @@ export default function Home() {
                       {loadingMore ? "Loading…" : "Load more"}
                     </Button>
                   ) : (
-                    <p className="text-[10px] tracking-[0.25em] uppercase text-stone-300">
+                    <p className="text-xs text-stone-300">
                       End of feed
                     </p>
                   )}

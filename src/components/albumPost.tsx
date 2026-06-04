@@ -318,7 +318,7 @@ function ArchivePost({
               alt=""
               className="w-7 h-7 flex-shrink-0 rounded-full object-cover ring-1 ring-transparent group-hover/author:ring-stone-300 transition-[box-shadow]"
             />
-            <span className="text-xs font-medium text-stone-700 tracking-wide truncate group-hover/author:text-stone-900 group-hover/author:underline underline-offset-2 decoration-stone-300">
+            <span className="text-xs font-medium text-stone-700 truncate group-hover/author:text-stone-900 group-hover/author:underline underline-offset-2 decoration-stone-300">
               {resolvedUsername}
             </span>
           </Link>
@@ -329,18 +329,18 @@ function ArchivePost({
               alt={resolvedUsername}
               className="w-7 h-7 flex-shrink-0 rounded-full object-cover"
             />
-            <span className="text-xs font-medium text-stone-700 tracking-wide">{resolvedUsername}</span>
+            <span className="text-xs font-medium text-stone-700">{resolvedUsername}</span>
           </>
         )}
         {postId ? (
           <Link
             href={`/post/${postId}`}
-            className="text-[10px] text-stone-300 ml-auto hover:text-stone-500 transition-colors shrink-0"
+            className="text-xs text-stone-300 ml-auto hover:text-stone-500 transition-colors shrink-0"
           >
             {formatDate(createdAt)}
           </Link>
         ) : (
-          <span className="text-[10px] text-stone-300 ml-auto">{formatDate(createdAt)}</span>
+          <span className="text-xs text-stone-300 ml-auto">{formatDate(createdAt)}</span>
         )}
 
         {isOwner ? (
@@ -433,7 +433,7 @@ function ArchivePost({
             </Button>
           </Tooltip.Trigger>
           <Tooltip.Content placement="top">
-            <p className="text-[11px]">
+            <p className="text-xs">
               {!signedIn ? "Sign in to like" : liked ? "Unlike" : "Like"}
             </p>
           </Tooltip.Content>
@@ -453,7 +453,7 @@ function ArchivePost({
             </Button>
           </Tooltip.Trigger>
           <Tooltip.Content placement="top">
-            <p className="text-[11px]">{!signedIn ? "Sign in to comment" : "Comments"}</p>
+            <p className="text-xs">{!signedIn ? "Sign in to comment" : "Comments"}</p>
           </Tooltip.Content>
         </Tooltip>
 
@@ -473,7 +473,7 @@ function ArchivePost({
             </Button>
           </Tooltip.Trigger>
           <Tooltip.Content placement="top">
-            <p className="text-[11px]">{shareHint || "Copy link to post"}</p>
+            <p className="text-xs">{shareHint || "Copy link to post"}</p>
           </Tooltip.Content>
         </Tooltip>
 
@@ -491,13 +491,13 @@ function ArchivePost({
             </Button>
           </Tooltip.Trigger>
           <Tooltip.Content placement="top">
-            <p className="text-[11px]">{!signedIn ? "Sign in to save" : saved ? "Unsave" : "Save"}</p>
+            <p className="text-xs">{!signedIn ? "Sign in to save" : saved ? "Unsave" : "Save"}</p>
           </Tooltip.Content>
         </Tooltip>
       </div>
 
       {!engagementLoading && (likeCount > 0 || commentCount > 0) && (
-        <p className="text-[11px] text-stone-500 mt-1">
+        <p className="text-xs text-stone-500 mt-1">
           {likeCount > 0 && (
             <span>
               {likeCount} {likeCount === 1 ? "like" : "likes"}
@@ -533,7 +533,7 @@ function ArchivePost({
           ) : null}
         </p>
         {displayLocation.trim() && (
-          <p className="text-[10px] text-stone-400 mt-1 flex items-center gap-1 tracking-wide">
+          <p className="text-xs text-stone-400 mt-1 flex items-center gap-1">
             <PinIcon />
             <span className="truncate">{displayLocation.trim()}</span>
           </p>
@@ -543,7 +543,7 @@ function ArchivePost({
           <div className="mt-3 pt-3 border-t border-stone-200/80 space-y-3">
             <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
               {comments.length === 0 ? (
-                <p className="text-[11px] text-stone-400">No comments yet.</p>
+                <p className="text-xs text-stone-400">No comments yet.</p>
               ) : (
                 comments.map((c) => (
                   <div key={c._id} className="flex gap-2 text-xs">
@@ -562,7 +562,7 @@ function ArchivePost({
                         >
                           {c.fullName}
                         </Link>
-                        <span className="text-stone-300 text-[10px] ml-1">{formatCommentTime(c.createdAt)}</span>
+                        <span className="text-stone-300 text-xs ml-1">{formatCommentTime(c.createdAt)}</span>
                       </p>
                       <p className="text-stone-500 leading-snug break-words">{c.body}</p>
                     </div>
@@ -581,7 +581,7 @@ function ArchivePost({
                 />
                 <Button
                   size="sm"
-                  className="bg-stone-800 text-white text-[10px] uppercase tracking-wide shrink-0"
+                  className="bg-stone-800 text-white text-xs shrink-0"
                   isDisabled={commentSubmitting || !commentText.trim()}
                   isPending={commentSubmitting}
                   onPress={submitComment}
@@ -590,7 +590,7 @@ function ArchivePost({
                 </Button>
               </div>
             ) : (
-              <p className="text-[11px] text-stone-400">Sign in to comment.</p>
+              <p className="text-xs text-stone-400">Sign in to comment.</p>
             )}
           </div>
         )}
@@ -599,7 +599,7 @@ function ArchivePost({
           <button
             type="button"
             onClick={toggleComments}
-            className="text-[10px] text-stone-300 mt-1 tracking-wide hover:text-stone-500 transition-colors"
+            className="text-xs text-stone-300 mt-1 hover:text-stone-500 transition-colors"
           >
             View {commentCount === 1 ? "1 comment" : `all ${commentCount} comments`}
           </button>

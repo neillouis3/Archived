@@ -116,7 +116,7 @@ export default function AddPostModal({
           Share a milestone...
         </button>
       ) : (
-        <Button className="bg-stone-800 hover:bg-stone-700 text-white text-xs tracking-[0.15em] uppercase rounded-xl px-4 py-2.5 h-auto gap-2">
+        <Button className="bg-stone-800 hover:bg-stone-700 text-white text-xs rounded-xl px-4 py-2.5 h-auto gap-2">
           <PlusIcon />
           Post
         </Button>
@@ -169,7 +169,7 @@ export default function AddPostModal({
                       <Separator />
 
                       <div className="flex flex-col gap-1.5">
-                        <Label className="text-xs font-medium text-stone-600 tracking-wide">
+                        <Label className="text-xs font-medium text-stone-600">
                           Description <span className="font-normal text-stone-400">(optional)</span>
                         </Label>
                         <textarea
@@ -182,7 +182,7 @@ export default function AddPostModal({
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <Label className="text-xs font-medium text-stone-600 tracking-wide">Who can see this</Label>
+                        <Label className="text-xs font-medium text-stone-600">Who can see this</Label>
                         <div className="flex flex-col gap-2">
                           {(
                             [
@@ -231,7 +231,7 @@ export default function AddPostModal({
                     onPress={handlePost}
                     isPending={loading}
                     isDisabled={loading || files.length === 0}
-                    className="bg-stone-800 hover:bg-stone-700 disabled:bg-stone-300 text-white text-xs tracking-[0.15em] uppercase rounded-xl px-6"
+                    className="bg-stone-800 hover:bg-stone-700 disabled:bg-stone-300 text-white text-xs rounded-xl px-6"
                   >
                     {loading ? "Working…" : "Post"}
                   </Button>

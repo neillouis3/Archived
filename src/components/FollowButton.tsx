@@ -79,7 +79,7 @@ export default function FollowButton({ targetUserId, className = "", onChange }:
       onClick={toggle}
       className={
         (className ||
-          "text-[10px] tracking-[0.2em] uppercase px-4 py-2 rounded-lg border border-stone-300 text-stone-700 hover:bg-stone-100 transition-colors disabled:opacity-50") +
+          "text-xs px-4 py-2 rounded-lg border border-stone-300 text-stone-700 hover:bg-stone-100 transition-colors disabled:opacity-50") +
         (following ? " group relative" : "")
       }
     >

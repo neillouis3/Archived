@@ -109,7 +109,7 @@ function MobileArchiveNav({
         </button>
         <Link
           href="/home"
-          className="text-sm font-medium tracking-[0.2em] uppercase text-stone-500"
+          className="text-sm font-medium text-stone-500"
           style={{ fontFamily: "'DM Serif Display', serif" }}
         >
           Archive
@@ -149,7 +149,7 @@ function MobileArchiveNav({
             >
               <div className="flex items-center justify-between border-b border-stone-200/60 px-3 py-3">
                 <span
-                  className="pl-1 text-[10px] tracking-[0.25em] uppercase text-stone-400"
+                  className="pl-1 text-xs text-stone-400"
                   style={{ fontFamily: "'DM Serif Display', serif" }}
                 >
                   Archive
@@ -193,9 +193,9 @@ function MobileArchiveNav({
                         size={18}
                         className={`shrink-0 ${isActive ? "text-stone-700" : "text-stone-400"}`}
                       />
-                      <span className={`text-sm tracking-wide ${isActive ? "font-medium" : ""}`}>{item.label}</span>
+                      <span className={`text-sm ${isActive ? "font-medium" : ""}`}>{item.label}</span>
                       {notifBadge ? (
-                        <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-stone-800 px-1 text-[9px] text-white">
+                        <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-stone-800 px-1 text-xs text-white">
                           {notifBadge}
                         </span>
                       ) : null}
@@ -217,7 +217,7 @@ function MobileArchiveNav({
                       <img src={resolvedImage} alt="" className="h-9 w-9 rounded-full object-cover ring-1 ring-stone-200/60" />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-xs font-medium text-stone-800">{displayName}</p>
-                        <p className="truncate text-[10px] text-stone-400">@{username}</p>
+                        <p className="truncate text-xs text-stone-400">@{username}</p>
                       </div>
                     </div>
                     <div className="flex flex-col gap-0.5">
@@ -347,7 +347,7 @@ export default function ArchiveLeftSidebar() {
           <div className="mb-4 flex items-center justify-between px-1">
             {!isCollapsed && (
               <span
-                className="pl-2 text-[10px] tracking-[0.25em] uppercase text-stone-400"
+                className="pl-2 text-xs text-stone-400"
                 style={{ fontFamily: "'DM Serif Display', serif" }}
               >
                 Archive
@@ -405,7 +405,7 @@ export default function ArchiveLeftSidebar() {
                         animate={{ opacity: 1, width: "auto" }}
                         exit={{ opacity: 0, width: 0 }}
                         transition={{ duration: 0.15 }}
-                        className={`min-w-0 flex-1 overflow-hidden whitespace-nowrap text-xs tracking-wide
+                        className={`min-w-0 flex-1 overflow-hidden whitespace-nowrap text-xs
                         ${isActive ? "font-medium text-stone-800" : ""}`}
                       >
                         {item.label}
@@ -423,7 +423,7 @@ export default function ArchiveLeftSidebar() {
                         animate={{ opacity: 1, width: "auto" }}
                         exit={{ opacity: 0, width: 0 }}
                         transition={{ duration: 0.15 }}
-                        className="ml-auto flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-stone-800 text-[9px] text-white"
+                        className="ml-auto flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-stone-800 text-xs text-white"
                       >
                         {notifBadge}
                       </motion.span>
@@ -481,7 +481,7 @@ export default function ArchiveLeftSidebar() {
                     className="flex min-w-0 flex-1 flex-col overflow-hidden"
                   >
                     <span className="truncate whitespace-nowrap text-xs font-medium text-stone-700">{displayName}</span>
-                    <span className="truncate whitespace-nowrap text-[10px] text-stone-400">@{username}</span>
+                    <span className="truncate whitespace-nowrap text-xs text-stone-400">@{username}</span>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -508,7 +508,7 @@ export default function ArchiveLeftSidebar() {
               >
                 <div className="border-b border-stone-100 px-3 pb-2">
                   <p className="truncate text-xs font-medium text-stone-800">{displayName}</p>
-                  <p className="truncate text-[10px] text-stone-400">@{username}</p>
+                  <p className="truncate text-xs text-stone-400">@{username}</p>
                 </div>
                 <div className="flex flex-col gap-0.5 px-1 pt-2">
                   {[

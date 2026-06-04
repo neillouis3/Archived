@@ -149,7 +149,7 @@ export default function NotificationsPage() {
               {/* Page header */}
               <div className="mb-6 sm:mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                 <div>
-                  <p className="text-[10px] tracking-[0.3em] uppercase text-stone-300 mb-2">Activity</p>
+                  <p className="text-xs text-stone-300 mb-2">Activity</p>
                   <h1
                     className="text-2xl sm:text-3xl font-light text-stone-800 mb-1"
                     style={{ fontFamily: "'DM Serif Display', serif" }}
@@ -164,7 +164,7 @@ export default function NotificationsPage() {
                     <Chip
                       variant="soft"
                       size="sm"
-                      className="bg-stone-800 text-white text-[10px] tracking-wide"
+                      className="bg-stone-800 text-white text-xs"
                     >
                       {unreadCount} unread
                     </Chip>
@@ -188,14 +188,14 @@ export default function NotificationsPage() {
                   <Tabs.List aria-label="Filter notifications" className="gap-4 bg-transparent p-0">
                     <Tabs.Tab
                       id="all"
-                      className="pb-2 text-xs tracking-wide text-stone-400 data-[selected]:text-stone-800 data-[selected]:font-medium bg-transparent px-0 rounded-none"
+                      className="pb-2 text-xs text-stone-400 data-[selected]:text-stone-800 data-[selected]:font-medium bg-transparent px-0 rounded-none"
                     >
                       All
                       <Tabs.Indicator className="bottom-0 h-0.5 bg-stone-800 rounded-none" />
                     </Tabs.Tab>
                     <Tabs.Tab
                       id="unread"
-                      className="pb-2 text-xs tracking-wide text-stone-400 data-[selected]:text-stone-800 data-[selected]:font-medium bg-transparent px-0 rounded-none"
+                      className="pb-2 text-xs text-stone-400 data-[selected]:text-stone-800 data-[selected]:font-medium bg-transparent px-0 rounded-none"
                     >
                       Unread
                       <Tabs.Indicator className="bottom-0 h-0.5 bg-stone-800 rounded-none" />
@@ -238,7 +238,7 @@ export default function NotificationsPage() {
 /* ─── Card list ───────────────────────────────────────────────────────────── */
 
 const notifFollowBtnClass =
-  "text-[10px] tracking-[0.12em] uppercase px-3 py-1.5 rounded-lg border border-stone-300 text-stone-700 hover:bg-stone-100 transition-colors disabled:opacity-50 min-w-[5.5rem]";
+  "text-xs px-3 py-1.5 rounded-lg border border-stone-300 text-stone-700 hover:bg-stone-100 transition-colors disabled:opacity-50 min-w-[5.5rem]";
 
 function NotifList({
   rows,
@@ -266,7 +266,7 @@ function NotifList({
   if (rows.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-72 text-center rounded-2xl border border-stone-200/80 bg-white">
-        <p className="text-[10px] tracking-[0.3em] uppercase text-stone-300 mb-1">{emptyLabel}</p>
+        <p className="text-xs text-stone-300 mb-1">{emptyLabel}</p>
         <p className="text-xs text-stone-400">You&apos;re all caught up</p>
       </div>
     );
@@ -312,7 +312,7 @@ function NotifList({
                   onClick={() => {
                     if (!n.read) onMarkRead(n._id);
                   }}
-                  className="inline-block text-[10px] text-stone-400 mt-1.5 tracking-wide hover:text-stone-600 underline underline-offset-2"
+                  className="inline-block text-xs text-stone-400 mt-1.5 hover:text-stone-600 underline underline-offset-2"
                 >
                   View post
                 </Link>
@@ -333,7 +333,7 @@ function NotifList({
                   <Button
                     size="sm"
                     onPress={() => onFriendRespond(n, true)}
-                    className="bg-stone-800 hover:bg-stone-700 text-white text-[10px] tracking-[0.12em] uppercase rounded-lg px-3 h-7 min-w-[5.5rem]"
+                    className="bg-stone-800 hover:bg-stone-700 text-white text-xs rounded-lg px-3 h-7 min-w-[5.5rem]"
                   >
                     Accept
                   </Button>
@@ -341,7 +341,7 @@ function NotifList({
                     size="sm"
                     variant="outline"
                     onPress={() => onFriendRespond(n, false)}
-                    className="border-stone-200 text-stone-600 hover:border-stone-300 text-[10px] tracking-[0.12em] uppercase rounded-lg px-3 h-7 min-w-[5.5rem]"
+                    className="border-stone-200 text-stone-600 hover:border-stone-300 text-xs rounded-lg px-3 h-7 min-w-[5.5rem]"
                   >
                     Delete
                   </Button>

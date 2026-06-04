@@ -131,7 +131,7 @@ export default function EditPostModal({
 
                 <Modal.Body className="p-6 overflow-y-auto max-h-[65vh] flex flex-col gap-4">
                   <div className="flex flex-col gap-1.5">
-                    <Label className="text-xs font-medium text-stone-600 tracking-wide">
+                    <Label className="text-xs font-medium text-stone-600">
                       Description <span className="font-normal text-stone-400">(optional)</span>
                     </Label>
                     <textarea
@@ -144,7 +144,7 @@ export default function EditPostModal({
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <Label className="text-xs font-medium text-stone-600 tracking-wide">Location</Label>
+                    <Label className="text-xs font-medium text-stone-600">Location</Label>
                     <input
                       type="text"
                       value={location}
@@ -157,7 +157,7 @@ export default function EditPostModal({
                   <Separator />
 
                   <div className="flex flex-col gap-2">
-                    <Label className="text-xs font-medium text-stone-600 tracking-wide">Who can see this</Label>
+                    <Label className="text-xs font-medium text-stone-600">Who can see this</Label>
                     <div className="flex flex-col gap-2">
                       {(
                         [
@@ -215,7 +215,7 @@ export default function EditPostModal({
                       onPress={() => void handleSave(close)}
                       isPending={saving}
                       isDisabled={saving || deleting}
-                      className="bg-stone-800 hover:bg-stone-700 disabled:bg-stone-300 text-white text-xs tracking-[0.15em] uppercase rounded-xl px-6"
+                      className="bg-stone-800 hover:bg-stone-700 disabled:bg-stone-300 text-white text-xs rounded-xl px-6"
                     >
                       {saving ? "Saving…" : "Save"}
                     </Button>

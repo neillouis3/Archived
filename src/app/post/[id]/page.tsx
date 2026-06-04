@@ -93,13 +93,13 @@ export default function PostPermalinkPage() {
                 <button
                   type="button"
                   onClick={() => router.back()}
-                  className="text-[10px] tracking-[0.2em] uppercase text-stone-400 hover:text-stone-600 transition-colors"
+                  className="text-xs text-stone-400 hover:text-stone-600 transition-colors"
                 >
                   ← Back
                 </button>
                 <Link
                   href="/home"
-                  className="text-[10px] tracking-[0.2em] uppercase text-stone-300 hover:text-stone-500 transition-colors"
+                  className="text-xs text-stone-300 hover:text-stone-500 transition-colors"
                 >
                   Home
                 </Link>
@@ -112,7 +112,7 @@ export default function PostPermalinkPage() {
                 </div>
               ) : error === "notfound" ? (
                 <div className="text-center py-20">
-                  <p className="text-[10px] tracking-[0.3em] uppercase text-stone-300 mb-2">
+                  <p className="text-xs text-stone-300 mb-2">
                     Not available
                   </p>
                   <p className="text-xs text-stone-400 max-w-xs mx-auto">
@@ -120,7 +120,7 @@ export default function PostPermalinkPage() {
                   </p>
                   <Link
                     href="/home"
-                    className="inline-block mt-6 text-[10px] tracking-[0.2em] uppercase text-stone-600 underline underline-offset-4"
+                    className="inline-block mt-6 text-xs text-stone-600 underline underline-offset-4"
                   >
                     Go to feed
                   </Link>

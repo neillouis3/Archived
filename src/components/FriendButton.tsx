@@ -82,7 +82,7 @@ export default function FriendButton({ targetUserId, className = "" }: Props) {
 
   const base =
     className ||
-    "text-[10px] tracking-[0.2em] uppercase px-4 py-2 rounded-lg border transition-colors disabled:opacity-50";
+    "text-xs px-4 py-2 rounded-lg border transition-colors disabled:opacity-50";
 
   if (status.isFriend) {
     return (
@@ -129,7 +129,7 @@ export default function FriendButton({ targetUserId, className = "" }: Props) {
           type="button"
           disabled={loading}
           onClick={() => void respond(true)}
-          className="text-[10px] tracking-[0.12em] uppercase px-3 py-1.5 rounded-lg bg-stone-800 text-white hover:bg-stone-700 transition-colors disabled:opacity-50"
+          className="text-xs px-3 py-1.5 rounded-lg bg-stone-800 text-white hover:bg-stone-700 transition-colors disabled:opacity-50"
         >
           {loading ? "…" : "Accept"}
         </button>
@@ -137,7 +137,7 @@ export default function FriendButton({ targetUserId, className = "" }: Props) {
           type="button"
           disabled={loading}
           onClick={() => void respond(false)}
-          className="text-[10px] tracking-[0.12em] uppercase px-3 py-1.5 rounded-lg border border-stone-300 text-stone-600 hover:bg-stone-100 transition-colors disabled:opacity-50"
+          className="text-xs px-3 py-1.5 rounded-lg border border-stone-300 text-stone-600 hover:bg-stone-100 transition-colors disabled:opacity-50"
         >
           Delete
         </button>

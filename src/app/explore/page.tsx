@@ -142,7 +142,7 @@ function ExplorePageInner() {
               <header className="mb-6 sm:mb-8 rounded-2xl border border-stone-200/80 bg-white px-4 py-6 sm:px-8 sm:py-9 shadow-[0_8px_30px_rgba(28,25,23,0.04)]">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
                   <div>
-                    <p className="text-[10px] tracking-[0.3em] uppercase text-stone-300 mb-2">Browse</p>
+                    <p className="text-xs text-stone-300 mb-2">Browse</p>
                     <h1
                       className="text-2xl sm:text-4xl font-light text-stone-800 tracking-tight"
                       style={{ fontFamily: "'DM Serif Display', serif" }}
@@ -151,7 +151,7 @@ function ExplorePageInner() {
                     </h1>
                   </div>
                   {!postsLoading && q && allImages.length > 0 ? (
-                    <p className="text-[10px] tracking-[0.2em] uppercase text-stone-400 mt-2 sm:mt-0 sm:pt-8">
+                    <p className="text-xs text-stone-400 mt-2 sm:mt-0 sm:pt-8">
                       {resultLabel}
                     </p>
                   ) : null}
@@ -177,7 +177,7 @@ function ExplorePageInner() {
 
               {showPeopleBlock && (
                 <section className="mb-10" aria-label="People results">
-                  <h2 className="text-[10px] tracking-[0.25em] uppercase text-stone-400 mb-3">People</h2>
+                  <h2 className="text-xs text-stone-400 mb-3">People</h2>
                   {peopleLoading ? (
                     <p className="text-xs text-stone-400">Searching people…</p>
                   ) : peopleResults.length === 0 ? (
@@ -203,7 +203,7 @@ function ExplorePageInner() {
                                 {u.username ? `@${u.username}` : "Member"}
                               </p>
                             </div>
-                            <span className="text-[10px] tracking-[0.15em] uppercase text-stone-400">Profile</span>
+                            <span className="text-xs text-stone-400">Profile</span>
                           </Link>
                         </li>
                       ))}
@@ -213,7 +213,7 @@ function ExplorePageInner() {
               )}
 
               <section aria-label="Post results">
-                <h2 className="text-[10px] tracking-[0.25em] uppercase text-stone-400 mb-3 sr-only">
+                <h2 className="text-xs text-stone-400 mb-3 sr-only">
                   Posts
                 </h2>
                 {postsLoading ? (
@@ -232,7 +232,7 @@ function ExplorePageInner() {
                   </>
                 ) : allImages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-96 text-center">
-                    <p className="text-[10px] tracking-[0.3em] uppercase text-stone-300 mb-1">
+                    <p className="text-xs text-stone-300 mb-1">
                       {q ? "No posts match" : "No public posts yet"}
                     </p>
                     <p className="text-xs text-stone-400">

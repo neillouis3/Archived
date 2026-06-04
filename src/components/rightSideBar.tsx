@@ -32,7 +32,7 @@ function SectionTitle({
 }) {
   return (
     <div className="flex items-center justify-between gap-2 mb-3">
-      <h2 className="text-[10px] tracking-[0.25em] uppercase text-stone-500 font-medium">
+      <h2 className="text-xs text-stone-500 font-medium">
         {children}
       </h2>
       {action}
@@ -202,7 +202,7 @@ export default function ArchiveRightSidebar() {
   return (
     <aside className="fixed right-0 top-0 h-screen w-64 xl:w-72 flex flex-col bg-white overflow-y-auto border-l border-stone-200/80">
       <div className="px-5 pt-8 pb-5 border-b border-stone-200/70">
-        <h2 className="text-[10px] tracking-[0.25em] uppercase text-stone-500 font-medium mb-3">
+        <h2 className="text-xs text-stone-500 font-medium mb-3">
           Search
         </h2>
         <ExploreSearchBar
@@ -218,7 +218,7 @@ export default function ArchiveRightSidebar() {
           <div className="mt-4 space-y-4">
             {isLoaded && isSignedIn && debouncedQ.length >= 2 ? (
               <div>
-                <p className="text-[9px] tracking-[0.2em] uppercase text-stone-400 mb-2">
+                <p className="text-xs text-stone-400 mb-2">
                   People
                 </p>
                 {sidebarSearchLoading ? (
@@ -231,7 +231,7 @@ export default function ArchiveRightSidebar() {
                     ))}
                   </div>
                 ) : sidebarPeople.length === 0 ? (
-                  <p className="text-[10px] text-stone-400 leading-snug">
+                  <p className="text-xs text-stone-400 leading-snug">
                     No people matched.
                   </p>
                 ) : (
@@ -248,10 +248,10 @@ export default function ArchiveRightSidebar() {
                             className="w-7 h-7 rounded-full object-cover ring-1 ring-stone-200/50 shrink-0"
                           />
                           <div className="min-w-0 flex-1">
-                            <p className="text-[11px] font-medium text-stone-800 truncate">
+                            <p className="text-xs font-medium text-stone-800 truncate">
                               {u.fullName}
                             </p>
-                            <p className="text-[9px] text-stone-400 truncate">
+                            <p className="text-xs text-stone-400 truncate">
                               {u.username ? `@${u.username}` : "Member"}
                             </p>
                           </div>
@@ -264,7 +264,7 @@ export default function ArchiveRightSidebar() {
             ) : null}
 
             <div>
-              <p className="text-[9px] tracking-[0.2em] uppercase text-stone-400 mb-2">
+              <p className="text-xs text-stone-400 mb-2">
                 Posts
               </p>
               {sidebarSearchLoading ? (
@@ -274,7 +274,7 @@ export default function ArchiveRightSidebar() {
                   ))}
                 </div>
               ) : sidebarPosts.length === 0 ? (
-                <p className="text-[10px] text-stone-400 leading-snug">No posts matched.</p>
+                <p className="text-xs text-stone-400 leading-snug">No posts matched.</p>
               ) : (
                 <div className="grid grid-cols-3 gap-0.5">
                   {sidebarPosts.map((t, i) => (
@@ -297,13 +297,13 @@ export default function ArchiveRightSidebar() {
 
             <Link
               href={exploreHref}
-              className="inline-block text-[10px] tracking-[0.15em] uppercase text-stone-500 hover:text-stone-700 transition-colors"
+              className="inline-block text-xs text-stone-500 hover:text-stone-700 transition-colors"
             >
               Open full explore →
             </Link>
           </div>
         ) : (
-          <p className="mt-3 text-[10px] text-stone-400 leading-relaxed">
+          <p className="mt-3 text-xs text-stone-400 leading-relaxed">
             Same search as Explore: posts, tags, usernames{isSignedIn ? ", and people" : ""}.
             {!isSignedIn ? " Sign in to match people by name." : ""}
           </p>
@@ -315,7 +315,7 @@ export default function ArchiveRightSidebar() {
           action={
             <Link
               href="/explore"
-              className="text-[10px] tracking-wide text-stone-400 hover:text-stone-600 transition-colors shrink-0"
+              className="text-xs text-stone-400 hover:text-stone-600 transition-colors shrink-0"
             >
               See all
             </Link>
@@ -331,8 +331,8 @@ export default function ArchiveRightSidebar() {
             : tiles.length === 0
               ? (
                   <div className="col-span-3 py-6 text-center border border-dashed border-stone-200 rounded-lg bg-white/40">
-                    <p className="text-[10px] text-stone-400">No public posts yet</p>
-                    <Link href="/explore" className="text-[10px] text-stone-500 underline mt-1 inline-block">
+                    <p className="text-xs text-stone-400">No public posts yet</p>
+                    <Link href="/explore" className="text-xs text-stone-500 underline mt-1 inline-block">
                       Open explore
                     </Link>
                   </div>
@@ -367,7 +367,7 @@ export default function ArchiveRightSidebar() {
             ))}
           </div>
         ) : suggestions.length === 0 ? (
-          <p className="text-[10px] text-stone-400 leading-relaxed">
+          <p className="text-xs text-stone-400 leading-relaxed">
             {user
               ? "You follow everyone we found here, or there aren’t enough authors yet."
               : "Sign in to follow people from your community."}
@@ -390,7 +390,7 @@ export default function ArchiveRightSidebar() {
                   >
                     {s.fullName}
                   </Link>
-                  <span className="text-[10px] text-stone-400 truncate">
+                  <span className="text-xs text-stone-400 truncate">
                     {s.username || "Member"}
                   </span>
                 </div>
@@ -398,7 +398,7 @@ export default function ArchiveRightSidebar() {
                   <FollowButton
                     targetUserId={s.authorClerkId}
                     onChange={() => void load({ force: true })}
-                    className="text-[9px] tracking-[0.12em] uppercase px-2 py-1 rounded-md border border-stone-200 text-stone-600 hover:bg-stone-100 transition-colors disabled:opacity-50 shrink-0"
+                    className="text-xs px-2 py-1 rounded-md border border-stone-200 text-stone-600 hover:bg-stone-100 transition-colors disabled:opacity-50 shrink-0"
                   />
                 ) : (
                   <Button
@@ -427,14 +427,14 @@ export default function ArchiveRightSidebar() {
             ))}
           </div>
         ) : tags.length === 0 ? (
-          <p className="text-[10px] text-stone-400">Add tags to posts to see trends here.</p>
+          <p className="text-xs text-stone-400">Add tags to posts to see trends here.</p>
         ) : (
           <div className="flex flex-wrap gap-1.5">
             {tags.map(({ tag, count }) => (
               <Link
                 key={tag}
                 href={`/explore?q=${encodeURIComponent(tag)}`}
-                className="inline-flex items-center rounded-full border border-stone-200 bg-transparent px-2.5 py-1 text-[10px] text-stone-500 hover:border-stone-400 hover:text-stone-700 transition-colors tracking-wide"
+                className="inline-flex items-center rounded-full border border-stone-200 bg-transparent px-2.5 py-1 text-xs text-stone-500 hover:border-stone-400 hover:text-stone-700 transition-colors"
               >
                 #{tag}
                 <span className="text-stone-300 ml-1 tabular-nums">{count}</span>
@@ -445,10 +445,10 @@ export default function ArchiveRightSidebar() {
       </div>
 
       <div className="px-5 py-5 mt-auto border-t border-stone-200/70 bg-white/95">
-        <p className="text-[9px] text-stone-300 tracking-wide leading-relaxed">
+        <p className="text-xs text-stone-300 leading-relaxed">
           About · Privacy · Terms · Accessibility
         </p>
-        <p className="text-[9px] text-stone-200 mt-1 tracking-wide">Archive © 2026</p>
+        <p className="text-xs text-stone-200 mt-1">Archive © 2026</p>
       </div>
     </aside>
   );

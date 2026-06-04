@@ -207,7 +207,7 @@ export default function ProfilePage() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/15 to-transparent pointer-events-none" />
             <NextLink
               href="/accounts/settings#profile-banner"
-              className="absolute bottom-3 right-3 flex items-center gap-1.5 text-[10px] tracking-[0.15em] uppercase text-stone-600 bg-white/80 backdrop-blur-sm border border-stone-200/60 rounded-lg px-2.5 py-1.5 hover:bg-white transition-colors"
+              className="absolute bottom-3 right-3 flex items-center gap-1.5 text-xs text-stone-600 bg-white/80 backdrop-blur-sm border border-stone-200/60 rounded-lg px-2.5 py-1.5 hover:bg-white transition-colors"
             >
               <PencilIcon />
               Edit cover
@@ -231,7 +231,7 @@ export default function ProfilePage() {
                 <NextLink href="/accounts/settings">
                   <button
                     type="button"
-                    className="flex items-center gap-1.5 text-[10px] tracking-[0.15em] uppercase text-stone-600 border border-stone-300 rounded-lg px-3 py-1.5 hover:bg-stone-100 transition-colors"
+                    className="flex items-center gap-1.5 text-xs text-stone-600 border border-stone-300 rounded-lg px-3 py-1.5 hover:bg-stone-100 transition-colors"
                   >
                     <PencilIcon />
                     Edit profile
@@ -242,7 +242,7 @@ export default function ProfilePage() {
 
             {/* Name + handle */}
             <h1
-              className="text-xl font-light text-stone-800 tracking-wide"
+              className="text-xl font-light text-stone-800"
               style={{ fontFamily: "'DM Serif Display', serif" }}
             >
               {user.fullName}
@@ -293,7 +293,7 @@ export default function ProfilePage() {
 
             {SOCIAL_FIELD_CONFIG.some(({ key }) => social[key].trim() && resolveSocialUrl(key, social[key])) && (
               <div className="flex flex-wrap items-center gap-2 mb-4">
-                <span className="text-[10px] tracking-[0.2em] uppercase text-stone-300 w-full sm:w-auto sm:mr-1">Social</span>
+                <span className="text-xs text-stone-300 w-full sm:w-auto sm:mr-1">Social</span>
                 {SOCIAL_FIELD_CONFIG.map(({ key, short }) => {
                   const raw = social[key].trim();
                   if (!raw) return null;
@@ -305,7 +305,7 @@ export default function ProfilePage() {
                       href={href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[10px] tracking-wide uppercase px-2.5 py-1 rounded-md border border-stone-200/90 text-stone-500 hover:bg-stone-100/90 hover:text-stone-700 transition-colors"
+                      className="text-xs px-2.5 py-1 rounded-md border border-stone-200/90 text-stone-500 hover:bg-stone-100/90 hover:text-stone-700 transition-colors"
                     >
                       {short}
                     </a>
@@ -350,7 +350,7 @@ export default function ProfilePage() {
                   key={id}
                   type="button"
                   onClick={() => setCollectionTab(id)}
-                  className={`text-[10px] tracking-[0.2em] uppercase px-3 py-1.5 rounded-lg border transition-colors ${
+                  className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
                     collectionTab === id
                       ? "border-stone-600 text-stone-800 bg-white"
                       : "border-stone-200 text-stone-400 hover:border-stone-300 hover:text-stone-600"
@@ -363,7 +363,7 @@ export default function ProfilePage() {
 
             {/* View toggle */}
             <div className="flex items-center justify-between mb-6">
-              <span className="text-[10px] tracking-[0.25em] uppercase text-stone-400">Posts</span>
+              <span className="text-xs text-stone-400">Posts</span>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setViewMode("grid")}
@@ -396,7 +396,7 @@ export default function ProfilePage() {
               // Feed view
               <div className="flex flex-col gap-12 max-w-[520px]">
                 {posts.length === 0 ? (
-                  <p className="text-xs text-stone-300 tracking-wide text-center py-16">
+                  <p className="text-xs text-stone-300 text-center py-16">
                     No posts yet.
                   </p>
                 ) : (

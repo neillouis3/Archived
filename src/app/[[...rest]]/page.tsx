@@ -78,12 +78,12 @@ export default function LandingPage() {
         {/* Wordmark */}
         <div className="mb-10 text-center">
           <h1
-            className="text-3xl font-light tracking-[0.35em] uppercase text-stone-800 mb-1"
+            className="text-3xl font-light text-stone-800 mb-1"
             style={{ fontFamily: "'DM Serif Display', serif" }}
           >
             Archive
           </h1>
-          <p className="text-[10px] tracking-[0.25em] uppercase text-stone-400">
+          <p className="text-xs text-stone-400">
             A place for your moments
           </p>
         </div>
@@ -103,7 +103,7 @@ export default function LandingPage() {
           fallbackRedirectUrl="/home"
         />
 
-        <p className="mt-8 text-[9px] tracking-[0.15em] uppercase text-stone-300">
+        <p className="mt-8 text-xs text-stone-300">
           Archive © 2025
         </p>
       </div>

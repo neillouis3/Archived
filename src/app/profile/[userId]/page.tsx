@@ -177,7 +177,7 @@ export default function PublicProfilePage() {
             <ArchiveLeftSidebar />
             <SidebarInsetSpacer />
             <div className="flex-1 min-w-0 border-x-0 px-4 py-10 text-center sm:border-x sm:border-stone-200/80 sm:px-8 sm:py-16">
-              <p className="text-[10px] tracking-[0.3em] uppercase text-stone-300 mb-2">Profile</p>
+              <p className="text-xs text-stone-300 mb-2">Profile</p>
               <p className="text-sm text-stone-500 mb-6">This user could not be found.</p>
               <NextLink
                 href="/explore"
@@ -244,7 +244,7 @@ export default function PublicProfilePage() {
               </div>
 
               <h1
-                className="text-xl font-light text-stone-800 tracking-wide"
+                className="text-xl font-light text-stone-800"
                 style={{ fontFamily: "'DM Serif Display', serif" }}
               >
                 {profile.fullName}
@@ -279,7 +279,7 @@ export default function PublicProfilePage() {
 
             <div className="px-4 py-6 sm:px-8">
               <div className="flex items-center justify-between mb-6">
-                <span className="text-[10px] tracking-[0.25em] uppercase text-stone-400">Posts</span>
+                <span className="text-xs text-stone-400">Posts</span>
                 <div className="flex items-center gap-1">
                   <button
                     type="button"
@@ -307,7 +307,7 @@ export default function PublicProfilePage() {
               ) : (
                 <div className="flex flex-col gap-12 max-w-[520px]">
                   {posts.length === 0 ? (
-                    <p className="text-xs text-stone-300 tracking-wide text-center py-16">
+                    <p className="text-xs text-stone-300 text-center py-16">
                       No posts to show.
                     </p>
                   ) : (

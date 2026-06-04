@@ -194,7 +194,7 @@ export default function SettingsPage() {
 
           {/* Settings nav */}
           <div className="w-full flex-shrink-0 border-b border-stone-200/80 px-3 py-4 sm:px-5 sm:py-8 lg:w-56 lg:border-b-0 lg:border-r">
-            <p className="text-[10px] tracking-[0.25em] uppercase text-stone-400 mb-3 px-2 sm:mb-4">Settings</p>
+            <p className="text-xs text-stone-400 mb-3 px-2 sm:mb-4">Settings</p>
             <nav className="-mx-1 flex flex-row gap-0.5 overflow-x-auto pb-1 lg:mx-0 lg:flex-col lg:overflow-visible lg:pb-0">
               {tabs.map(({ key, label, icon: Icon }) => (
                 <button
@@ -207,7 +207,7 @@ export default function SettingsPage() {
                     }`}
                 >
                   <Icon />
-                  <span className="tracking-wide">{label}</span>
+                  <span>{label}</span>
                 </button>
               ))}
             </nav>
@@ -239,7 +239,7 @@ export default function SettingsPage() {
                   <div>
                     <p className="text-sm font-medium text-stone-700">{user.fullName}</p>
                     <p className="text-xs text-stone-400 mb-2">@{user.username}</p>
-                    <button className="text-[10px] tracking-[0.15em] uppercase text-stone-500 border border-stone-300 rounded-lg px-2.5 py-1 hover:bg-stone-100 transition-colors">
+                    <button className="text-xs text-stone-500 border border-stone-300 rounded-lg px-2.5 py-1 hover:bg-stone-100 transition-colors">
                       Change photo
                     </button>
                   </div>
@@ -247,7 +247,7 @@ export default function SettingsPage() {
 
                 {/* Profile banner / cover */}
                 <div id="profile-banner" className="flex flex-col gap-2">
-                  <label className="text-[10px] tracking-[0.2em] uppercase text-stone-400">
+                  <label className="text-xs text-stone-400">
                     Profile banner
                   </label>
                   <div className="relative h-36 w-full rounded-xl overflow-hidden border border-stone-200/60 bg-stone-200">
@@ -279,7 +279,7 @@ export default function SettingsPage() {
                       type="button"
                       disabled={coverUploading}
                       onClick={() => coverInputRef.current?.click()}
-                      className="text-[10px] tracking-[0.15em] uppercase text-stone-600 border border-stone-300 rounded-lg px-3 py-1.5 hover:bg-stone-100 transition-colors disabled:opacity-50"
+                      className="text-xs text-stone-600 border border-stone-300 rounded-lg px-3 py-1.5 hover:bg-stone-100 transition-colors disabled:opacity-50"
                     >
                       {coverUploading ? "Working…" : coverUrl ? "Replace banner" : "Upload banner"}
                     </button>
@@ -288,20 +288,20 @@ export default function SettingsPage() {
                         type="button"
                         disabled={coverUploading}
                         onClick={() => void handleRemoveCover()}
-                        className="text-[10px] tracking-[0.15em] uppercase text-stone-400 border border-stone-200 rounded-lg px-3 py-1.5 hover:bg-stone-50 transition-colors disabled:opacity-50"
+                        className="text-xs text-stone-400 border border-stone-200 rounded-lg px-3 py-1.5 hover:bg-stone-50 transition-colors disabled:opacity-50"
                       >
                         Remove
                       </button>
                     ) : null}
                   </div>
-                  <p className="text-[10px] text-stone-400">
+                  <p className="text-xs text-stone-400">
                     Wide images work best. Shown on your profile and public profile.
                   </p>
                 </div>
 
                 {/* Bio */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] tracking-[0.2em] uppercase text-stone-400">Bio</label>
+                  <label className="text-xs text-stone-400">Bio</label>
                   <textarea
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
@@ -310,12 +310,12 @@ export default function SettingsPage() {
                     maxLength={200}
                     className="w-full bg-white border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-700 placeholder-stone-300 outline-none resize-none focus:border-stone-400 transition-colors"
                   />
-                  <p className="text-[10px] text-stone-300 text-right">{bio.length}/200</p>
+                  <p className="text-xs text-stone-300 text-right">{bio.length}/200</p>
                 </div>
 
                 {/* Website */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] tracking-[0.2em] uppercase text-stone-400">Website</label>
+                  <label className="text-xs text-stone-400">Website</label>
                   <input
                     type="url"
                     value={website}
@@ -327,7 +327,7 @@ export default function SettingsPage() {
 
                 {/* Location */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] tracking-[0.2em] uppercase text-stone-400">Location</label>
+                  <label className="text-xs text-stone-400">Location</label>
                   <input
                     type="text"
                     value={location}
@@ -339,7 +339,7 @@ export default function SettingsPage() {
 
                 {/* School or work */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] tracking-[0.2em] uppercase text-stone-400">School or workplace</label>
+                  <label className="text-xs text-stone-400">School or workplace</label>
                   <input
                     type="text"
                     value={schoolOrWork}
@@ -352,12 +352,12 @@ export default function SettingsPage() {
                 <Separator className="bg-stone-200/80" />
 
                 <div>
-                  <p className="text-[10px] tracking-[0.2em] uppercase text-stone-400 mb-1">Social links</p>
+                  <p className="text-xs text-stone-400 mb-1">Social links</p>
                   <p className="text-xs text-stone-400 mb-4">Optional. Use a profile URL or @handle where shown.</p>
                   <div className="flex flex-col gap-4">
                     {SOCIAL_FIELD_CONFIG.map(({ key, label, placeholder }) => (
                       <div key={key} className="flex flex-col gap-1.5">
-                        <label className="text-[10px] tracking-[0.15em] uppercase text-stone-500">{label}</label>
+                        <label className="text-xs text-stone-500">{label}</label>
                         <input
                           type="text"
                           value={social[key]}
@@ -373,7 +373,7 @@ export default function SettingsPage() {
 
                 {/* Birthday */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] tracking-[0.2em] uppercase text-stone-400">Birthday</label>
+                  <label className="text-xs text-stone-400">Birthday</label>
                   <DatePicker
                     value={birthday || undefined}
                     onChange={setBirthday}
@@ -385,7 +385,7 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={handleSubmit}
-                    className="flex items-center gap-2 bg-stone-800 hover:bg-stone-700 text-white text-xs tracking-[0.15em] uppercase rounded-xl px-5 py-2.5 transition-colors"
+                    className="flex items-center gap-2 bg-stone-800 hover:bg-stone-700 text-white text-xs rounded-xl px-5 py-2.5 transition-colors"
                   >
                     {saved && <CheckIcon />}
                     {saved ? "Saved" : "Save changes"}
@@ -466,7 +466,7 @@ export default function SettingsPage() {
                 </div>
 
                 <button
-                  className="self-start flex items-center gap-2 bg-stone-800 hover:bg-stone-700 text-white text-xs tracking-[0.15em] uppercase rounded-xl px-5 py-2.5 transition-colors mt-2"
+                  className="self-start flex items-center gap-2 bg-stone-800 hover:bg-stone-700 text-white text-xs rounded-xl px-5 py-2.5 transition-colors mt-2"
                 >
                   Save preferences
                 </button>

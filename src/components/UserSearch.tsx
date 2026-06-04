@@ -75,7 +75,7 @@ export default function UserSearch({
 
   if (!isSignedIn) {
     return (
-      <div className={`text-[10px] text-stone-400 px-1 ${className}`}>
+      <div className={`text-xs text-stone-400 px-1 ${className}`}>
         Sign in to search people.
       </div>
     );
@@ -119,7 +119,7 @@ export default function UserSearch({
           }`}
         />
         {loading && (
-          <span className="text-[10px] text-stone-400 tabular-nums">…</span>
+          <span className="text-xs text-stone-400 tabular-nums">…</span>
         )}
       </div>
 
@@ -152,7 +152,7 @@ export default function UserSearch({
                       <p className="text-xs font-medium text-stone-800 truncate">
                         {u.fullName}
                       </p>
-                      <p className="text-[10px] text-stone-400 truncate">
+                      <p className="text-xs text-stone-400 truncate">
                         {u.username ? `@${u.username}` : u.id.slice(0, 12) + "…"}
                       </p>
                     </div>
