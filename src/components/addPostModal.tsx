@@ -34,11 +34,13 @@ export default function AddPostModal({
   username,
   fullName,
   triggerStyle = "button",
+  fullWidth = false,
 }: {
   imageUrl?: string;
   username?: string;
   fullName?: string;
   triggerStyle?: "button" | "input";
+  fullWidth?: boolean;
 } = {}) {
   const state = useOverlayState({ defaultOpen: false });
   const { user } = useUser();
@@ -109,14 +111,16 @@ export default function AddPostModal({
   return (
     <Modal state={state}>
       {triggerStyle === "input" ? (
-        <button
-          type="button"
-          className="w-full text-left bg-white border border-stone-200 rounded-full px-4 py-2.5 text-sm text-stone-400 hover:bg-stone-100 hover:border-stone-300 transition-colors"
+        <Button
+          variant="tertiary"
+          size="sm"
+          fullWidth={fullWidth}
+          className="justify-start font-normal text-stone-400"
         >
           Share a milestone...
-        </button>
+        </Button>
       ) : (
-        <Button className="bg-stone-800 hover:bg-stone-700 text-white text-xs rounded-xl px-4 py-2.5 h-auto gap-2">
+        <Button variant="primary" size="sm" fullWidth={fullWidth} className="gap-2">
           <PlusIcon />
           Post
         </Button>
@@ -220,18 +224,15 @@ export default function AddPostModal({
                 </Modal.Body>
 
                 <Modal.Footer className="px-6 py-4 border-t border-stone-200 flex items-center justify-end gap-3">
-                  <Button
-                    variant="ghost"
-                    onPress={close}
-                    className="text-stone-400 hover:text-stone-600 text-xs"
-                  >
+                  <Button variant="ghost" size="sm" onPress={close}>
                     Cancel
                   </Button>
                   <Button
+                    variant="primary"
+                    size="sm"
                     onPress={handlePost}
                     isPending={loading}
                     isDisabled={loading || files.length === 0}
-                    className="bg-stone-800 hover:bg-stone-700 disabled:bg-stone-300 text-white text-xs rounded-xl px-6"
                   >
                     {loading ? "Working…" : "Post"}
                   </Button>

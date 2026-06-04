@@ -580,11 +580,12 @@ function ArchivePost({
                   className="flex-1 min-w-0 bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-700 placeholder:text-stone-300 outline-none focus:border-stone-400 resize-none"
                 />
                 <Button
+                  variant="primary"
                   size="sm"
-                  className="bg-stone-800 text-white text-xs shrink-0"
                   isDisabled={commentSubmitting || !commentText.trim()}
                   isPending={commentSubmitting}
                   onPress={submitComment}
+                  className="shrink-0"
                 >
                   Post
                 </Button>

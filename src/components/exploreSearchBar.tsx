@@ -59,7 +59,7 @@ export function ExploreSearchBar({
         <div
           className={
             isSidebar
-              ? `flex min-w-0 items-center gap-2 rounded-xl border border-stone-200/90 bg-white px-3 py-2.5
+              ? `flex min-w-0 items-center gap-2 rounded-xl border border-stone-200/90 bg-white px-2.5 py-2
                  transition-shadow focus-within:border-stone-300 focus-within:shadow-[0_0_0_3px_rgba(120,113,108,0.12)]`
               : `flex flex-1 min-w-0 items-center gap-3 rounded-xl border border-stone-200/90 bg-white px-4 py-3
                  transition-shadow focus-within:border-stone-300 focus-within:shadow-[0_0_0_3px_rgba(120,113,108,0.12)]`
@@ -68,7 +68,7 @@ export function ExploreSearchBar({
           <SearchIcon
             className={
               isSidebar
-                ? "w-4 h-4 text-stone-400 flex-shrink-0"
+                ? "w-3.5 h-3.5 text-stone-400 flex-shrink-0"
                 : "w-5 h-5 text-stone-400 flex-shrink-0"
             }
           />
@@ -81,7 +81,7 @@ export function ExploreSearchBar({
             autoComplete="off"
             className={
               isSidebar
-                ? "min-w-0 flex-1 bg-transparent text-sm text-stone-800 placeholder:text-stone-400 outline-none"
+                ? "min-w-0 flex-1 bg-transparent text-xs text-stone-800 placeholder:text-stone-400 outline-none"
                 : "min-w-0 flex-1 bg-transparent text-[15px] text-stone-800 placeholder:text-stone-400 outline-none"
             }
           />

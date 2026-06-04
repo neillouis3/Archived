@@ -205,7 +205,12 @@ function MobileArchiveNav({
 
                 {user ? (
                   <div className="mt-2 border-t border-stone-200/60 pt-3">
-                    <AddPostModal username={username} fullName={displayName} imageUrl={user.imageUrl ?? undefined} />
+                    <AddPostModal
+                      username={username}
+                      fullName={displayName}
+                      imageUrl={user.imageUrl ?? undefined}
+                      fullWidth
+                    />
                   </div>
                 ) : null}
               </nav>
@@ -445,7 +450,12 @@ export default function ArchiveLeftSidebar() {
                   transition={{ duration: 0.15 }}
                   className="px-1 pt-2"
                 >
-                  <AddPostModal username={username} fullName={displayName} imageUrl={user?.imageUrl ?? undefined} />
+                  <AddPostModal
+                    username={username}
+                    fullName={displayName}
+                    imageUrl={user?.imageUrl ?? undefined}
+                    fullWidth
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
