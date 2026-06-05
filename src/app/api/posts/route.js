@@ -226,10 +226,13 @@ export async function POST(req) {
     const location =
       typeof rawLocation === "string" && rawLocation.trim() ? rawLocation.trim() : undefined;
 
+    const normalizedUsername =
+      typeof username === "string" ? username.replace(/^@+/, "").trim() : username;
+
     const createPayload = {
       authorClerkId,
       fullName,
-      username,
+      username: normalizedUsername,
       avatarUrl,
       body: bodyText,
       location,

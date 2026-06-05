@@ -27,7 +27,9 @@ export function PostGridCard({ href, src, alt, caption }: PostGridCardProps) {
       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
       {caption ? (
         <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-          <p className="text-xs text-white font-medium truncate">{caption}</p>
+          <p className="text-xs text-white font-medium truncate">
+            {caption.replace(/^@+/, "")}
+          </p>
         </div>
       ) : null}
     </Link>

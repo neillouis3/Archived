@@ -196,7 +196,7 @@ function ArchivePost({
   const isOwner = Boolean(isLoaded && user?.id && authorClerkId && user.id === authorClerkId);
 
   const resolvedImage = imageUrl ?? "https://i.pravatar.cc/150?u=placeholder";
-  const resolvedUsername = username || "username";
+  const resolvedUsername = (username || "username").replace(/^@+/, "");
   const profileHref = authorClerkId
     ? `/profile/${encodeURIComponent(authorClerkId)}`
     : null;

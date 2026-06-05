@@ -46,7 +46,7 @@ export default function AddPostModal({
   const { user } = useUser();
 
   const resolvedImageUrl = imageUrl ?? "https://i.pravatar.cc/150?u=placeholder";
-  const resolvedUsername = username ? `@${username}` : "@username";
+  const resolvedUsername = username?.replace(/^@+/, "") || "username";
   const resolvedFullName = fullName ?? "Your Name";
 
   const [files, setFiles] = useState<File[]>([]);
