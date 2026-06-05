@@ -390,44 +390,54 @@ function ArchivePost({
         )}
       </div>
 
-      <div className="flex items-center gap-1 mt-2 w-full">
-        <Tooltip>
-          <Tooltip.Trigger>
-            <Button
-              isIconOnly
-              variant="ghost"
-              size="sm"
-              isDisabled={!isLoaded || !signedIn || actionLoading}
-              onPress={toggleLike}
-              className={`w-7 h-7 min-w-0 rounded-md transition-colors ${liked ? "text-rose-400" : "text-stone-400 hover:text-stone-600"}`}
-            >
-              <HeartIcon filled={liked} />
-            </Button>
-          </Tooltip.Trigger>
-          <Tooltip.Content placement="top">
-            <p className="text-xs">
-              {!signedIn ? "Sign in to like" : liked ? "Unlike" : "Like"}
-            </p>
-          </Tooltip.Content>
-        </Tooltip>
+      <div className="flex items-center gap-3 mt-2 w-full">
+        <div className="flex items-center gap-1">
+          <Tooltip>
+            <Tooltip.Trigger>
+              <Button
+                isIconOnly
+                variant="ghost"
+                size="sm"
+                isDisabled={!isLoaded || !signedIn || actionLoading}
+                onPress={toggleLike}
+                className={`w-7 h-7 min-w-0 rounded-md transition-colors ${liked ? "text-rose-400" : "text-stone-400 hover:text-stone-600"}`}
+              >
+                <HeartIcon filled={liked} />
+              </Button>
+            </Tooltip.Trigger>
+            <Tooltip.Content placement="top">
+              <p className="text-xs">
+                {!signedIn ? "Sign in to like" : liked ? "Unlike" : "Like"}
+              </p>
+            </Tooltip.Content>
+          </Tooltip>
+          {!engagementLoading && likeCount > 0 && (
+            <span className="text-xs text-stone-500 tabular-nums">{likeCount}</span>
+          )}
+        </div>
 
-        <Tooltip>
-          <Tooltip.Trigger>
-            <Button
-              isIconOnly
-              variant="ghost"
-              size="sm"
-              isDisabled={!isLoaded || !signedIn}
-              onPress={toggleComments}
-              className={`text-stone-400 hover:text-stone-600 w-7 h-7 min-w-0 rounded-md ${commentsOpen ? "text-stone-700" : ""}`}
-            >
-              <ChatIcon />
-            </Button>
-          </Tooltip.Trigger>
-          <Tooltip.Content placement="top">
-            <p className="text-xs">{!signedIn ? "Sign in to comment" : "Comments"}</p>
-          </Tooltip.Content>
-        </Tooltip>
+        <div className="flex items-center gap-1">
+          <Tooltip>
+            <Tooltip.Trigger>
+              <Button
+                isIconOnly
+                variant="ghost"
+                size="sm"
+                isDisabled={!isLoaded || !signedIn}
+                onPress={toggleComments}
+                className={`text-stone-400 hover:text-stone-600 w-7 h-7 min-w-0 rounded-md ${commentsOpen ? "text-stone-700" : ""}`}
+              >
+                <ChatIcon />
+              </Button>
+            </Tooltip.Trigger>
+            <Tooltip.Content placement="top">
+              <p className="text-xs">{!signedIn ? "Sign in to comment" : "Comments"}</p>
+            </Tooltip.Content>
+          </Tooltip>
+          {!engagementLoading && commentCount > 0 && (
+            <span className="text-xs text-stone-500 tabular-nums">{commentCount}</span>
+          )}
+        </div>
 
         <span className="min-w-2 flex-1" aria-hidden />
 
@@ -449,22 +459,6 @@ function ArchivePost({
           </Tooltip.Content>
         </Tooltip>
       </div>
-
-      {!engagementLoading && (likeCount > 0 || commentCount > 0) && (
-        <p className="text-xs text-stone-500 mt-1">
-          {likeCount > 0 && (
-            <span>
-              {likeCount} {likeCount === 1 ? "like" : "likes"}
-            </span>
-          )}
-          {likeCount > 0 && commentCount > 0 && <span className="text-stone-300 mx-1">·</span>}
-          {commentCount > 0 && (
-            <span>
-              {commentCount} {commentCount === 1 ? "comment" : "comments"}
-            </span>
-          )}
-        </p>
-      )}
 
       <div className="mt-1.5">
         <p className="text-xs text-stone-700 leading-relaxed">
