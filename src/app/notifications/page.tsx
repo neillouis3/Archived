@@ -98,8 +98,30 @@ function labelFor(n: NotifRowData): string {
   }
 }
 
-function actorAvatarSrc(n: NotifRowData) {
-  return n.actorImageUrl || `https://i.pravatar.cc/150?u=${encodeURIComponent(n.actorClerkId)}`;
+function ActorAvatar({ n }: { n: NotifRowData }) {
+  const avatarClass =
+    "w-11 h-11 rounded-full object-cover ring-1 ring-stone-200/60 hover:opacity-90 transition-opacity";
+
+  if (n.actorImageUrl) {
+    return (
+      <img
+        src={n.actorImageUrl}
+        alt=""
+        referrerPolicy="no-referrer"
+        className={avatarClass}
+      />
+    );
+  }
+
+  const initial = (n.actorFullName || "?").trim().charAt(0).toUpperCase() || "?";
+  return (
+    <div
+      className={`${avatarClass} flex items-center justify-center bg-stone-200 text-sm font-medium text-stone-600`}
+      aria-hidden
+    >
+      {initial}
+    </div>
+  );
 }
 
 export default function NotificationsPage() {
@@ -206,17 +228,17 @@ export default function NotificationsPage() {
                   <Tabs
                     selectedKey={filter}
                     onSelectionChange={(key) => setFilter(String(key) as FilterKey)}
-                    className="w-full"
+                    className="w-full text-center"
                   >
-                    <Tabs.ListContainer className="mb-6 bg-transparent shadow-none">
+                    <Tabs.ListContainer className="mb-6">
                       <Tabs.List
                         aria-label="Filter notifications"
-                        className="w-fit bg-transparent gap-1 *:h-8 *:w-fit *:px-3 *:text-xs *:font-normal *:text-stone-400 *:data-[selected=true]:text-stone-800"
+                        className="w-fit *:h-6 *:w-fit *:px-3 *:text-sm *:font-normal *:data-[selected=true]:text-accent-foreground"
                       >
                         {FILTERS.map(({ key, label }) => (
                           <Tabs.Tab key={key} id={key}>
                             {label}
-                            <Tabs.Indicator className="bg-stone-800 bottom-0 h-0.5 rounded-none" />
+                            <Tabs.Indicator className="bg-accent" />
                           </Tabs.Tab>
                         ))}
                       </Tabs.List>
@@ -292,12 +314,7 @@ function NotificationRow({
           }}
           className="flex-shrink-0"
         >
-          <img
-            src={actorAvatarSrc(n)}
-            alt=""
-            referrerPolicy="no-referrer"
-            className="w-11 h-11 rounded-full object-cover ring-1 ring-stone-200/60 hover:opacity-90 transition-opacity"
-          />
+          <ActorAvatar n={n} />
         </Link>
 
         <div className="flex-1 min-w-0">

@@ -1,28 +1,13 @@
-import { auth, clerkClient } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import connection from "../../../lib/mongo";
 import Notifications from "@lib/models/notifications";
 import Posts from "@lib/models/posts";
+import { getActorImageUrls } from "@lib/clerkActor";
 
 async function enrichNotifications(rows) {
-  const missingActors = [
-    ...new Set(rows.filter((n) => !n.actorImageUrl).map((n) => n.actorClerkId)),
-  ];
-
-  const actorImages = new Map();
-  if (missingActors.length > 0) {
-    const client = await clerkClient();
-    await Promise.all(
-      missingActors.map(async (id) => {
-        try {
-          const u = await client.users.getUser(id);
-          actorImages.set(id, u.imageUrl || null);
-        } catch {
-          actorImages.set(id, null);
-        }
-      })
-    );
-  }
+  const actorIds = [...new Set(rows.map((n) => n.actorClerkId).filter(Boolean))];
+  const actorImages = await getActorImageUrls(actorIds);
 
   const postIds = [
     ...new Set(
@@ -42,7 +27,7 @@ async function enrichNotifications(rows) {
 
   return rows.map((n) => ({
     ...n,
-    actorImageUrl: n.actorImageUrl || actorImages.get(n.actorClerkId) || undefined,
+    actorImageUrl: actorImages.get(n.actorClerkId) || n.actorImageUrl || undefined,
     postImageUrl: n.postId ? postImages.get(String(n.postId)) ?? undefined : undefined,
   }));
 }
