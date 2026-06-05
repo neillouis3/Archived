@@ -197,6 +197,9 @@ function ArchivePost({
 
   const resolvedImage = imageUrl ?? "https://i.pravatar.cc/150?u=placeholder";
   const resolvedUsername = username || "username";
+  const handle = resolvedUsername.startsWith("@")
+    ? resolvedUsername
+    : `@${resolvedUsername}`;
   const profileHref = authorClerkId
     ? `/profile/${encodeURIComponent(authorClerkId)}`
     : null;
@@ -292,7 +295,7 @@ function ArchivePost({
           <Link
             href={profileHref}
             className="group/author -m-1 flex min-w-0 flex-1 items-center gap-2.5 rounded-lg p-1 transition-colors hover:bg-stone-100/80"
-            aria-label={`View ${resolvedUsername}'s profile`}
+            aria-label={`View ${handle}'s profile`}
           >
             <img
               src={resolvedImage}
@@ -300,7 +303,7 @@ function ArchivePost({
               className="h-7 w-7 flex-shrink-0 rounded-full object-cover ring-1 ring-transparent transition-[box-shadow] group-hover/author:ring-stone-300"
             />
             <span className="truncate text-xs font-medium text-stone-700 underline-offset-2 decoration-stone-300 group-hover/author:text-stone-900 group-hover/author:underline">
-              {resolvedUsername}
+              {handle}
             </span>
           </Link>
         ) : (
@@ -310,7 +313,7 @@ function ArchivePost({
               alt={resolvedUsername}
               className="h-7 w-7 flex-shrink-0 rounded-full object-cover"
             />
-            <span className="truncate text-xs font-medium text-stone-700">{resolvedUsername}</span>
+            <span className="truncate text-xs font-medium text-stone-700">{handle}</span>
           </div>
         )}
 
@@ -460,34 +463,31 @@ function ArchivePost({
         </Tooltip>
       </div>
 
-      <div className="mt-1.5">
-        <p className="text-xs text-stone-700 leading-relaxed">
+      {displayBody.trim() ? (
+        <p className="mt-1.5 text-xs leading-relaxed text-stone-500 line-clamp-3 break-words">
           {profileHref ? (
             <Link
               href={profileHref}
               className="font-medium text-stone-700 hover:text-stone-900 hover:underline underline-offset-2 decoration-stone-300"
-              aria-label={`View ${resolvedUsername}'s profile`}
+              aria-label={`View ${handle}'s profile`}
             >
-              {resolvedUsername}
+              {handle}
             </Link>
           ) : (
-            <span className="font-medium">{resolvedUsername}</span>
+            <span className="font-medium text-stone-700">{handle}</span>
           )}
-          {displayBody.trim() ? (
-            <>
-              {" "}
-              <span className="font-normal text-stone-500 line-clamp-3">{displayBody.trim()}</span>
-            </>
-          ) : null}
+          {` ${displayBody.trim()}`}
         </p>
-        {displayLocation.trim() && (
-          <p className="text-xs text-stone-400 mt-1 flex items-center gap-1">
-            <PinIcon />
-            <span className="truncate">{displayLocation.trim()}</span>
-          </p>
-        )}
+      ) : null}
 
-        {commentsOpen && (
+      {displayLocation.trim() && (
+        <p className="text-xs text-stone-400 mt-1 flex items-center gap-1">
+          <PinIcon />
+          <span className="truncate">{displayLocation.trim()}</span>
+        </p>
+      )}
+
+      {commentsOpen && (
           <div className="mt-3 pt-3 border-t border-stone-200/80 space-y-3">
             <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
               {comments.length === 0 ? (
@@ -544,16 +544,15 @@ function ArchivePost({
           </div>
         )}
 
-        {!commentsOpen && commentCount > 0 && (
-          <button
-            type="button"
-            onClick={toggleComments}
-            className="text-xs text-stone-300 mt-1 hover:text-stone-500 transition-colors"
-          >
-            View {commentCount === 1 ? "1 comment" : `all ${commentCount} comments`}
-          </button>
-        )}
-      </div>
+      {!commentsOpen && commentCount > 0 && (
+        <button
+          type="button"
+          onClick={toggleComments}
+          className="text-xs text-stone-300 mt-1 hover:text-stone-500 transition-colors"
+        >
+          View {commentCount === 1 ? "1 comment" : `all ${commentCount} comments`}
+        </button>
+      )}
     </article>
   );
 }
