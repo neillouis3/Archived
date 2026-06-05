@@ -197,9 +197,6 @@ function ArchivePost({
 
   const resolvedImage = imageUrl ?? "https://i.pravatar.cc/150?u=placeholder";
   const resolvedUsername = username || "username";
-  const handle = resolvedUsername.startsWith("@")
-    ? resolvedUsername
-    : `@${resolvedUsername}`;
   const profileHref = authorClerkId
     ? `/profile/${encodeURIComponent(authorClerkId)}`
     : null;
@@ -295,7 +292,7 @@ function ArchivePost({
           <Link
             href={profileHref}
             className="group/author -m-1 flex min-w-0 flex-1 items-center gap-2.5 rounded-lg p-1 transition-colors hover:bg-stone-100/80"
-            aria-label={`View ${handle}'s profile`}
+            aria-label={`View ${resolvedUsername}'s profile`}
           >
             <img
               src={resolvedImage}
@@ -303,7 +300,7 @@ function ArchivePost({
               className="h-7 w-7 flex-shrink-0 rounded-full object-cover ring-1 ring-transparent transition-[box-shadow] group-hover/author:ring-stone-300"
             />
             <span className="truncate text-xs font-medium text-stone-700 underline-offset-2 decoration-stone-300 group-hover/author:text-stone-900 group-hover/author:underline">
-              {handle}
+              {resolvedUsername}
             </span>
           </Link>
         ) : (
@@ -313,7 +310,7 @@ function ArchivePost({
               alt={resolvedUsername}
               className="h-7 w-7 flex-shrink-0 rounded-full object-cover"
             />
-            <span className="truncate text-xs font-medium text-stone-700">{handle}</span>
+            <span className="truncate text-xs font-medium text-stone-700">{resolvedUsername}</span>
           </div>
         )}
 
@@ -469,12 +466,12 @@ function ArchivePost({
             <Link
               href={profileHref}
               className="font-medium text-stone-700 hover:text-stone-900 hover:underline underline-offset-2 decoration-stone-300"
-              aria-label={`View ${handle}'s profile`}
+              aria-label={`View ${resolvedUsername}'s profile`}
             >
-              {handle}
+              {resolvedUsername}
             </Link>
           ) : (
-            <span className="font-medium text-stone-700">{handle}</span>
+            <span className="font-medium text-stone-700">{resolvedUsername}</span>
           )}
           {` ${displayBody.trim()}`}
         </p>
