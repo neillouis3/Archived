@@ -12,8 +12,8 @@ const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 export const dynamic = "force-dynamic";
 
 const inter = Inter({
-  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -36,10 +36,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const shell = (
-    <html lang="en" suppressHydrationWarning className={inter.variable}>
-      <body
-        className={`${inter.className} font-sans antialiased`}
-      >
+    <html lang="en" suppressHydrationWarning className={inter.className}>
+      <body className="antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>

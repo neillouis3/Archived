@@ -248,7 +248,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Name + handle */}
-            <p className="text-xl font-medium font-sans text-stone-800">
+            <p className="text-xl font-medium text-stone-800">
               {user.fullName}
             </p>
             <p className="text-xs text-stone-400 mt-0.5 mb-3">@{user.username}</p>

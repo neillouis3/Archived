@@ -238,7 +238,7 @@ export default function SettingsPage() {
                     className="w-16 h-16 rounded-full object-cover flex-shrink-0"
                   />
                   <div>
-                    <p className="text-sm font-medium font-sans text-stone-700">{user.fullName}</p>
+                    <p className="text-sm font-medium text-stone-700">{user.fullName}</p>
                     <p className="text-xs text-stone-400 mb-2">@{user.username}</p>
                     <button className="text-xs text-stone-500 border border-stone-300 rounded-lg px-2.5 py-1 hover:bg-stone-100 transition-colors">
                       Change photo
