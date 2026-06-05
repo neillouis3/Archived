@@ -134,10 +134,19 @@ export default function NotificationsPage() {
     if (!user) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/notifications?limit=80", { credentials: "include" });
-      if (!res.ok) return;
-      const data = await res.json();
-      setNotifications(Array.isArray(data.notifications) ? data.notifications : []);
+      const [notifRes] = await Promise.all([
+        fetch("/api/notifications?limit=80", { credentials: "include" }),
+        fetch("/api/notifications/read", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ all: true }),
+        }),
+      ]);
+      if (!notifRes.ok) return;
+      const data = await notifRes.json();
+      const rows = Array.isArray(data.notifications) ? data.notifications : [];
+      setNotifications(rows.map((n: NotifRowData) => ({ ...n, read: true })));
     } catch {
       setNotifications([]);
     } finally {
@@ -149,34 +158,6 @@ export default function NotificationsPage() {
     if (isLoaded && user) load();
   }, [isLoaded, user, load]);
 
-  async function markAllRead() {
-    try {
-      await fetch("/api/notifications/read", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ all: true }),
-      });
-      setNotifications((list) => list.map((n) => ({ ...n, read: true })));
-    } catch {
-      /* ignore */
-    }
-  }
-
-  async function markOneRead(id: string) {
-    try {
-      await fetch("/api/notifications/read", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ ids: [id] }),
-      });
-      setNotifications((list) => list.map((n) => (n._id === id ? { ...n, read: true } : n)));
-    } catch {
-      /* ignore */
-    }
-  }
-
   async function respondToFriendRequest(n: NotifRowData, accept: boolean) {
     try {
       await fetch("/api/friends/respond", {
@@ -185,7 +166,6 @@ export default function NotificationsPage() {
         credentials: "include",
         body: JSON.stringify({ requesterClerkId: n.actorClerkId, accept }),
       });
-      markOneRead(n._id);
     } catch {
       /* ignore */
     }
@@ -195,7 +175,6 @@ export default function NotificationsPage() {
 
   const filtered = notifications.filter((n) => passesFilter(n, filter));
   const groups = groupByDate(filtered);
-  const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
     <SidebarProvider>
@@ -206,19 +185,6 @@ export default function NotificationsPage() {
 
           <div className="flex-1 min-w-0 flex flex-col items-center border-x-0 sm:border-x sm:border-stone-200/80">
             <div className="w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
-              <div className="mb-6 sm:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
-                {user && unreadCount > 0 ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onPress={markAllRead}
-                    className="text-xs text-stone-400 hover:text-stone-600 h-auto py-1 px-2"
-                  >
-                    Mark all read
-                  </Button>
-                ) : null}
-              </div>
-
               {!user ? (
                 <div className="flex flex-col items-center justify-center h-96 text-center">
                   <p className="text-xs text-stone-400">Sign in to view notifications.</p>
@@ -228,12 +194,12 @@ export default function NotificationsPage() {
                   <Tabs
                     selectedKey={filter}
                     onSelectionChange={(key) => setFilter(String(key) as FilterKey)}
-                    className="w-full text-center"
+                    className="w-full"
                   >
-                    <Tabs.ListContainer className="mb-6">
+                    <Tabs.ListContainer className="mb-6 flex justify-start bg-transparent shadow-none">
                       <Tabs.List
                         aria-label="Filter notifications"
-                        className="w-fit *:h-6 *:w-fit *:px-3 *:text-sm *:font-normal *:data-[selected=true]:text-accent-foreground"
+                        className="w-fit bg-transparent *:h-6 *:w-fit *:px-3 *:text-sm *:font-normal *:data-[selected=true]:text-accent-foreground"
                       >
                         {FILTERS.map(({ key, label }) => (
                           <Tabs.Tab key={key} id={key}>
@@ -266,7 +232,6 @@ export default function NotificationsPage() {
                               <NotificationRow
                                 key={n._id}
                                 n={n}
-                                onMarkRead={markOneRead}
                                 onFriendRespond={respondToFriendRequest}
                               />
                             ))}
@@ -291,11 +256,9 @@ export default function NotificationsPage() {
 
 function NotificationRow({
   n,
-  onMarkRead,
   onFriendRespond,
 }: {
   n: NotifRowData;
-  onMarkRead: (id: string) => void;
   onFriendRespond: (n: NotifRowData, accept: boolean) => void;
 }) {
   const hasPostThumb = n.postId && (n.type === "like" || n.type === "comment");
@@ -303,15 +266,8 @@ function NotificationRow({
   return (
     <li>
       <div className="flex items-center gap-3 py-3 transition-colors hover:bg-stone-50/80">
-        <div className="w-1.5 flex-shrink-0 flex justify-center">
-          {!n.read ? <span className="w-1.5 h-1.5 rounded-full bg-stone-700" aria-hidden /> : null}
-        </div>
-
         <Link
           href={`/profile/${encodeURIComponent(n.actorClerkId)}`}
-          onClick={() => {
-            if (!n.read) onMarkRead(n._id);
-          }}
           className="flex-shrink-0"
         >
           <ActorAvatar n={n} />
@@ -321,9 +277,6 @@ function NotificationRow({
           <p className="text-sm text-stone-700 leading-snug">
             <Link
               href={`/profile/${encodeURIComponent(n.actorClerkId)}`}
-              onClick={() => {
-                if (!n.read) onMarkRead(n._id);
-              }}
               className="font-medium text-stone-800 hover:underline underline-offset-2"
             >
               {n.actorFullName}
@@ -331,33 +284,16 @@ function NotificationRow({
             <span className="text-stone-500">{labelFor(n)}</span>{" "}
             <span className="text-stone-400 text-xs">{formatTime(n.createdAt)}</span>
           </p>
-
-          {hasPostThumb ? (
-            <Link
-              href={`/post/${encodeURIComponent(n.postId!)}`}
-              onClick={() => {
-                if (!n.read) onMarkRead(n._id);
-              }}
-              className="inline-block text-xs text-stone-400 mt-1 hover:text-stone-600 underline underline-offset-2"
-            >
-              View post
-            </Link>
-          ) : null}
         </div>
 
         <div className="flex-shrink-0 flex items-center gap-2">
           {hasPostThumb && n.postImageUrl ? (
-            <Link
-              href={`/post/${encodeURIComponent(n.postId!)}`}
-              onClick={() => {
-                if (!n.read) onMarkRead(n._id);
-              }}
-            >
+            <Link href={`/post/${encodeURIComponent(n.postId!)}`}>
               <img
                 src={n.postImageUrl}
                 alt=""
                 referrerPolicy="no-referrer"
-                className="w-12 h-12 rounded-lg object-cover"
+                className="w-12 h-12 rounded-lg object-cover hover:opacity-90 transition-opacity"
               />
             </Link>
           ) : null}
@@ -366,11 +302,10 @@ function NotificationRow({
             <FollowButton
               targetUserId={n.actorClerkId}
               className="text-xs px-4 py-1.5 rounded-lg border border-stone-200 text-stone-700 hover:bg-stone-100 transition-colors min-w-[5rem]"
-              onChange={() => onMarkRead(n._id)}
             />
           ) : null}
 
-          {n.type === "friend_request" && !n.read ? (
+          {n.type === "friend_request" ? (
             <div className="flex flex-col gap-1">
               <Button
                 size="sm"
