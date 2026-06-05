@@ -6,6 +6,7 @@ import Link from "next/link";
 import { memo, useEffect, useRef, useState } from "react";
 import { Button, Tooltip, useOverlayState } from "@heroui/react";
 import type { EditPostVisibility } from "@/components/editPostModal";
+import { PostMediaCarousel } from "@/components/postMediaCarousel";
 
 const EditPostModal = dynamic(() => import("@/components/editPostModal"), {
   ssr: false,
@@ -126,7 +127,6 @@ function ArchivePost({
   const [displayVisibility, setDisplayVisibility] = useState(() =>
     parseVisibility(visibilityProp)
   );
-  const [activeImg, setActiveImg] = useState(0);
   const [likeCount, setLikeCount] = useState(() => initialEngagement?.likeCount ?? 0);
   const [commentCount, setCommentCount] = useState(
     () => initialEngagement?.commentCount ?? 0
@@ -348,46 +348,15 @@ function ArchivePost({
         </div>
       </div>
 
-      <div className="relative w-full bg-white border border-stone-200/80 overflow-hidden">
-        <div className="relative aspect-square w-full">
-          {media.length > 0 ? (
-            <>
-              <img
-                src={media[Math.min(activeImg, media.length - 1)]}
-                alt={
-                  displayBody.trim()
-                    ? displayBody.trim().slice(0, 80)
-                    : `Post by ${resolvedUsername}`
-                }
-                className="w-full h-full object-cover"
-                style={{ filter: "brightness(0.97) contrast(1.02) saturate(0.92)" }}
-              />
-              <div
-                className="absolute inset-0 pointer-events-none opacity-[0.03]"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-                }}
-              />
-            </>
-          ) : (
-            <div className="flex h-full w-full min-h-[12rem] items-center justify-center bg-white border border-stone-200/80 px-4 text-center text-xs text-stone-400">
-              No photo for this post
-            </div>
-          )}
-        </div>
-
-        {media.length > 1 && (
-          <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
-            {media.map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => setActiveImg(i)}
-                className={`w-1 h-1 rounded-full transition-all ${i === activeImg ? "bg-white" : "bg-white/40"}`}
-              />
-            ))}
-          </div>
-        )}
+      <div className="relative w-full overflow-hidden border border-stone-200/80 bg-white">
+        <PostMediaCarousel
+          media={media}
+          alt={
+            displayBody.trim()
+              ? displayBody.trim().slice(0, 80)
+              : `Post by ${resolvedUsername}`
+          }
+        />
       </div>
 
       <div className="flex items-center gap-3 mt-2 w-full">
