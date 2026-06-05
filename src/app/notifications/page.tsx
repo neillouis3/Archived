@@ -7,10 +7,10 @@ import ArchiveLeftSidebar from "@/components/leftSideBar";
 import ArchiveRightSidebar from "@/components/rightSideBar";
 import { SidebarProvider } from "@/components/sidebarContext";
 import { SidebarInsetSpacer } from "@/components/sidebarInsetSpacer";
-import { Button, Skeleton } from "@heroui/react";
+import { Button, Skeleton, Tabs } from "@heroui/react";
 import FollowButton from "@/components/FollowButton";
 
-type NotifRow = {
+type NotifRowData = {
   _id: string;
   type: string;
   actorClerkId: string;
@@ -27,14 +27,14 @@ type NotifRow = {
 type FilterKey = "all" | "follow" | "comment" | "like" | "friend";
 
 const FILTERS: { key: FilterKey; label: string }[] = [
-  { key: "all",     label: "All" },
-  { key: "follow",  label: "Follows" },
-  { key: "like",    label: "Likes" },
+  { key: "all", label: "All" },
+  { key: "follow", label: "Follows" },
+  { key: "like", label: "Likes" },
   { key: "comment", label: "Comments" },
-  { key: "friend",  label: "Friend requests" },
+  { key: "friend", label: "Friend requests" },
 ];
 
-function passesFilter(n: NotifRow, filter: FilterKey): boolean {
+function passesFilter(n: NotifRowData, filter: FilterKey): boolean {
   if (filter === "all") return true;
   if (filter === "follow") return n.type === "follow";
   if (filter === "like") return n.type === "like";
@@ -43,24 +43,24 @@ function passesFilter(n: NotifRow, filter: FilterKey): boolean {
   return true;
 }
 
-function groupByDate(rows: NotifRow[]): { label: string; items: NotifRow[] }[] {
+function groupByDate(rows: NotifRowData[]): { label: string; items: NotifRowData[] }[] {
   const now = Date.now();
-  const DAY  = 86_400_000;
+  const DAY = 86_400_000;
   const WEEK = 7 * DAY;
 
-  const buckets: Record<string, NotifRow[]> = {
-    Today:      [],
+  const buckets: Record<string, NotifRowData[]> = {
+    Today: [],
     "This week": [],
     "This month": [],
-    Older:      [],
+    Older: [],
   };
 
   for (const n of rows) {
     const diff = now - new Date(n.createdAt).getTime();
-    if (diff < DAY)        buckets["Today"].push(n);
-    else if (diff < WEEK)  buckets["This week"].push(n);
+    if (diff < DAY) buckets["Today"].push(n);
+    else if (diff < WEEK) buckets["This week"].push(n);
     else if (diff < 30 * DAY) buckets["This month"].push(n);
-    else                   buckets["Older"].push(n);
+    else buckets["Older"].push(n);
   }
 
   return Object.entries(buckets)
@@ -71,39 +71,48 @@ function groupByDate(rows: NotifRow[]): { label: string; items: NotifRow[] }[] {
 function formatTime(iso?: string) {
   if (!iso) return "";
   const diff = (Date.now() - new Date(iso).getTime()) / 60000;
-  if (diff < 1)     return "Just now";
-  if (diff < 60)    return `${Math.floor(diff)}m`;
-  if (diff < 1440)  return `${Math.floor(diff / 60)}h`;
+  if (diff < 1) return "Just now";
+  if (diff < 60) return `${Math.floor(diff)}m`;
+  if (diff < 1440) return `${Math.floor(diff / 60)}h`;
   if (diff < 10080) return `${Math.floor(diff / 1440)}d`;
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-function labelFor(n: NotifRow): string {
+function labelFor(n: NotifRowData): string {
   switch (n.type) {
-    case "like":            return "liked your post.";
+    case "like":
+      return "liked your post.";
     case "comment": {
       if (!n.snippet) return "commented on your post.";
       const s = n.snippet.length > 80 ? `${n.snippet.slice(0, 77)}…` : n.snippet;
       return `commented: "${s}"`;
     }
-    case "follow":          return "started following you.";
-    case "friend_request":  return "sent you a friend request.";
-    case "friend_accepted": return "accepted your friend request.";
-    default:                return "interacted with you.";
+    case "follow":
+      return "started following you.";
+    case "friend_request":
+      return "sent you a friend request.";
+    case "friend_accepted":
+      return "accepted your friend request.";
+    default:
+      return "interacted with you.";
   }
+}
+
+function actorAvatarSrc(n: NotifRowData) {
+  return n.actorImageUrl || `https://i.pravatar.cc/150?u=${encodeURIComponent(n.actorClerkId)}`;
 }
 
 export default function NotificationsPage() {
   const { user, isLoaded } = useUser();
-  const [notifications, setNotifications] = useState<NotifRow[]>([]);
-  const [loading, setLoading]             = useState(true);
-  const [filter, setFilter]               = useState<FilterKey>("all");
+  const [notifications, setNotifications] = useState<NotifRowData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<FilterKey>("all");
 
   const load = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
-      const res  = await fetch("/api/notifications?limit=80", { credentials: "include" });
+      const res = await fetch("/api/notifications?limit=80", { credentials: "include" });
       if (!res.ok) return;
       const data = await res.json();
       setNotifications(Array.isArray(data.notifications) ? data.notifications : []);
@@ -114,7 +123,9 @@ export default function NotificationsPage() {
     }
   }, [user]);
 
-  useEffect(() => { if (isLoaded && user) load(); }, [isLoaded, user, load]);
+  useEffect(() => {
+    if (isLoaded && user) load();
+  }, [isLoaded, user, load]);
 
   async function markAllRead() {
     try {
@@ -125,7 +136,9 @@ export default function NotificationsPage() {
         body: JSON.stringify({ all: true }),
       });
       setNotifications((list) => list.map((n) => ({ ...n, read: true })));
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   async function markOneRead(id: string) {
@@ -137,10 +150,12 @@ export default function NotificationsPage() {
         body: JSON.stringify({ ids: [id] }),
       });
       setNotifications((list) => list.map((n) => (n._id === id ? { ...n, read: true } : n)));
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
-  async function respondToFriendRequest(n: NotifRow, accept: boolean) {
+  async function respondToFriendRequest(n: NotifRowData, accept: boolean) {
     try {
       await fetch("/api/friends/respond", {
         method: "PATCH",
@@ -149,13 +164,15 @@ export default function NotificationsPage() {
         body: JSON.stringify({ requesterClerkId: n.actorClerkId, accept }),
       });
       markOneRead(n._id);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   if (!isLoaded) return null;
 
   const filtered = notifications.filter((n) => passesFilter(n, filter));
-  const groups   = groupByDate(filtered);
+  const groups = groupByDate(filtered);
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
@@ -166,12 +183,9 @@ export default function NotificationsPage() {
           <SidebarInsetSpacer />
 
           <div className="flex-1 min-w-0 flex flex-col items-center border-x-0 sm:border-x sm:border-stone-200/80">
-            <div className="w-full max-w-2xl px-4 py-6 sm:px-6 sm:py-10">
-
-              {/* Header */}
-              <div className="flex items-center justify-between mb-5">
-                <h1 className="text-xl font-medium text-stone-800 tracking-tight">Notifications</h1>
-                {user && unreadCount > 0 && (
+            <div className="w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+              <div className="mb-6 sm:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
+                {user && unreadCount > 0 ? (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -180,7 +194,7 @@ export default function NotificationsPage() {
                   >
                     Mark all read
                   </Button>
-                )}
+                ) : null}
               </div>
 
               {!user ? (
@@ -189,25 +203,26 @@ export default function NotificationsPage() {
                 </div>
               ) : (
                 <>
-                  {/* Filter pills */}
-                  <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 mb-6">
-                    {FILTERS.map(({ key, label }) => (
-                      <button
-                        key={key}
-                        onClick={() => setFilter(key)}
-                        className={[
-                          "flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-medium border transition-colors",
-                          filter === key
-                            ? "bg-stone-800 text-white border-stone-800"
-                            : "bg-white text-stone-600 border-stone-200 hover:border-stone-300 hover:bg-stone-50",
-                        ].join(" ")}
+                  <Tabs
+                    selectedKey={filter}
+                    onSelectionChange={(key) => setFilter(String(key) as FilterKey)}
+                    className="w-full"
+                  >
+                    <Tabs.ListContainer className="mb-6 bg-transparent shadow-none">
+                      <Tabs.List
+                        aria-label="Filter notifications"
+                        className="w-fit bg-transparent gap-1 *:h-8 *:w-fit *:px-3 *:text-xs *:font-normal *:text-stone-400 *:data-[selected=true]:text-stone-800"
                       >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
+                        {FILTERS.map(({ key, label }) => (
+                          <Tabs.Tab key={key} id={key}>
+                            {label}
+                            <Tabs.Indicator className="bg-stone-800 bottom-0 h-0.5 rounded-none" />
+                          </Tabs.Tab>
+                        ))}
+                      </Tabs.List>
+                    </Tabs.ListContainer>
+                  </Tabs>
 
-                  {/* Feed */}
                   {loading ? (
                     <div className="flex flex-col gap-3">
                       {[1, 2, 3, 4, 5].map((i) => (
@@ -226,7 +241,7 @@ export default function NotificationsPage() {
                           <p className="text-sm font-medium text-stone-800 mb-1">{label}</p>
                           <ul className="flex flex-col divide-y divide-stone-100">
                             {items.map((n) => (
-                              <NotifRow
+                              <NotificationRow
                                 key={n._id}
                                 n={n}
                                 onMarkRead={markOneRead}
@@ -252,53 +267,46 @@ export default function NotificationsPage() {
   );
 }
 
-/* ─── Single row ─────────────────────────────────────────────────────────── */
-
-function NotifRow({
+function NotificationRow({
   n,
   onMarkRead,
   onFriendRespond,
 }: {
-  n: NotifRow;
+  n: NotifRowData;
   onMarkRead: (id: string) => void;
-  onFriendRespond: (n: NotifRow, accept: boolean) => void;
+  onFriendRespond: (n: NotifRowData, accept: boolean) => void;
 }) {
   const hasPostThumb = n.postId && (n.type === "like" || n.type === "comment");
 
   return (
     <li>
-      <div
-        className={[
-          "flex items-center gap-3 py-3 transition-colors hover:bg-stone-50/80",
-          !n.read ? "pl-0" : "",
-        ].join(" ")}
-      >
-        {/* Unread indicator */}
+      <div className="flex items-center gap-3 py-3 transition-colors hover:bg-stone-50/80">
         <div className="w-1.5 flex-shrink-0 flex justify-center">
-          {!n.read && (
-            <span className="w-1.5 h-1.5 rounded-full bg-stone-700" aria-hidden />
-          )}
+          {!n.read ? <span className="w-1.5 h-1.5 rounded-full bg-stone-700" aria-hidden /> : null}
         </div>
 
-        {/* Avatar */}
         <Link
           href={`/profile/${encodeURIComponent(n.actorClerkId)}`}
-          onClick={() => { if (!n.read) onMarkRead(n._id); }}
+          onClick={() => {
+            if (!n.read) onMarkRead(n._id);
+          }}
           className="flex-shrink-0"
         >
           <img
-            src={n.actorImageUrl || "https://i.pravatar.cc/150?u=placeholder"}
+            src={actorAvatarSrc(n)}
             alt=""
+            referrerPolicy="no-referrer"
             className="w-11 h-11 rounded-full object-cover ring-1 ring-stone-200/60 hover:opacity-90 transition-opacity"
           />
         </Link>
 
-        {/* Text */}
         <div className="flex-1 min-w-0">
           <p className="text-sm text-stone-700 leading-snug">
             <Link
               href={`/profile/${encodeURIComponent(n.actorClerkId)}`}
-              onClick={() => { if (!n.read) onMarkRead(n._id); }}
+              onClick={() => {
+                if (!n.read) onMarkRead(n._id);
+              }}
               className="font-medium text-stone-800 hover:underline underline-offset-2"
             >
               {n.actorFullName}
@@ -307,44 +315,45 @@ function NotifRow({
             <span className="text-stone-400 text-xs">{formatTime(n.createdAt)}</span>
           </p>
 
-          {hasPostThumb && (
+          {hasPostThumb ? (
             <Link
               href={`/post/${encodeURIComponent(n.postId!)}`}
-              onClick={() => { if (!n.read) onMarkRead(n._id); }}
+              onClick={() => {
+                if (!n.read) onMarkRead(n._id);
+              }}
               className="inline-block text-xs text-stone-400 mt-1 hover:text-stone-600 underline underline-offset-2"
             >
               View post
             </Link>
-          )}
+          ) : null}
         </div>
 
-        {/* Right slot */}
         <div className="flex-shrink-0 flex items-center gap-2">
-          {/* Post thumbnail */}
-          {hasPostThumb && n.postImageUrl && (
+          {hasPostThumb && n.postImageUrl ? (
             <Link
               href={`/post/${encodeURIComponent(n.postId!)}`}
-              onClick={() => { if (!n.read) onMarkRead(n._id); }}
+              onClick={() => {
+                if (!n.read) onMarkRead(n._id);
+              }}
             >
               <img
                 src={n.postImageUrl}
                 alt=""
+                referrerPolicy="no-referrer"
                 className="w-12 h-12 rounded-lg object-cover"
               />
             </Link>
-          )}
+          ) : null}
 
-          {/* Follow button */}
-          {n.type === "follow" && (
+          {n.type === "follow" ? (
             <FollowButton
               targetUserId={n.actorClerkId}
               className="text-xs px-4 py-1.5 rounded-lg border border-stone-200 text-stone-700 hover:bg-stone-100 transition-colors min-w-[5rem]"
               onChange={() => onMarkRead(n._id)}
             />
-          )}
+          ) : null}
 
-          {/* Friend request buttons */}
-          {n.type === "friend_request" && !n.read && (
+          {n.type === "friend_request" && !n.read ? (
             <div className="flex flex-col gap-1">
               <Button
                 size="sm"
@@ -362,7 +371,7 @@ function NotifRow({
                 Delete
               </Button>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </li>
