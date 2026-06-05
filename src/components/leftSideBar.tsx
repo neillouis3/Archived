@@ -10,7 +10,7 @@ import Image from "next/image";
 import { useUser, SignOutButton, useClerk } from "@clerk/nextjs";
 import AddPostModal from "./addPostModal";
 import { ThemeSwitcher } from "./themeSwitch";
-import { Button, Dropdown, Header, Label, Separator } from "@heroui/react";
+import { Button, Dropdown, Header, Separator } from "@heroui/react";
 import {
   ArrowLeft01Icon,
   ArrowRight01Icon,
@@ -328,6 +328,11 @@ function ProfileMenuDropdown({
     ${isCollapsed ? "justify-center px-1 py-1.5" : "justify-start px-2 py-2 h-auto min-h-0"}
   `;
 
+  const menuItemClass =
+    "min-h-6 gap-1.5 rounded-lg py-0.5 px-2 text-stone-500";
+  const menuIconClass = "shrink-0 text-stone-500";
+  const menuLabelClass = "text-xs font-normal leading-none text-stone-500";
+
   return (
     <Dropdown isOpen={open} onOpenChange={setOpen}>
       <Dropdown.Trigger className={triggerClass}>
@@ -358,34 +363,42 @@ function ProfileMenuDropdown({
           />
         ) : null}
       </Dropdown.Trigger>
-      <Dropdown.Popover placement="right bottom" className="min-w-[220px]">
-        <Dropdown.Menu onAction={handleAction} className="text-sm [&_[data-slot=label]]:font-normal">
+      <Dropdown.Popover placement="right bottom" className="min-w-[188px]">
+        <Dropdown.Menu
+          onAction={handleAction}
+          className="p-1 [&_[data-slot=menu-item]]:min-h-6 [&_[data-slot=menu-item]]:gap-1.5 [&_[data-slot=menu-item]]:py-0.5 [&_[data-slot=menu-item]]:rounded-lg"
+        >
           <Dropdown.Section>
             <Header className="px-2 pb-1">
               <p className="truncate text-xs font-medium text-stone-800">{displayName}</p>
               <p className="truncate text-xs text-stone-400">@{username}</p>
             </Header>
           </Dropdown.Section>
-          <Dropdown.Item id="profile" textValue="Your profile" className="gap-2.5">
-            <HugeiconsIcon icon={UserIcon} size={17} className="shrink-0 text-stone-400" />
-            <Label>Your profile</Label>
+          <Dropdown.Item id="profile" textValue="Your profile" className={menuItemClass}>
+            <HugeiconsIcon icon={UserIcon} size={14} className={menuIconClass} />
+            <span className={menuLabelClass}>Your profile</span>
           </Dropdown.Item>
-          <Dropdown.Item id="settings" textValue="Settings" className="gap-2.5">
-            <HugeiconsIcon icon={Settings02Icon} size={17} className="shrink-0 text-stone-400" />
-            <Label>Settings</Label>
+          <Dropdown.Item id="settings" textValue="Settings" className={menuItemClass}>
+            <HugeiconsIcon icon={Settings02Icon} size={14} className={menuIconClass} />
+            <span className={menuLabelClass}>Settings</span>
           </Dropdown.Item>
-          <Dropdown.Item id="notifications" textValue="Notifications" className="gap-2.5">
-            <HugeiconsIcon icon={Notification01Icon} size={17} className="shrink-0 text-stone-400" />
-            <Label>Notifications</Label>
+          <Dropdown.Item id="notifications" textValue="Notifications" className={menuItemClass}>
+            <HugeiconsIcon icon={Notification01Icon} size={14} className={menuIconClass} />
+            <span className={menuLabelClass}>Notifications</span>
           </Dropdown.Item>
-          <Dropdown.Item id="theme" textValue={isDark ? "Light mode" : "Dark mode"} className="gap-2.5">
-            <HugeiconsIcon icon={isDark ? Sun02Icon : Moon02Icon} size={17} className="shrink-0 text-stone-400" />
-            <Label>{isDark ? "Light mode" : "Dark mode"}</Label>
+          <Dropdown.Item id="theme" textValue={isDark ? "Light mode" : "Dark mode"} className={menuItemClass}>
+            <HugeiconsIcon icon={isDark ? Sun02Icon : Moon02Icon} size={14} className={menuIconClass} />
+            <span className={menuLabelClass}>{isDark ? "Light mode" : "Dark mode"}</span>
           </Dropdown.Item>
           <Separator />
-          <Dropdown.Item id="logout" textValue="Log out" variant="danger" className="gap-2.5">
-            <HugeiconsIcon icon={Logout01Icon} size={17} className="shrink-0" />
-            <Label>Log out</Label>
+          <Dropdown.Item
+            id="logout"
+            textValue="Log out"
+            variant="danger"
+            className={`${menuItemClass} text-danger`}
+          >
+            <HugeiconsIcon icon={Logout01Icon} size={14} className="shrink-0 text-danger" />
+            <span className="text-xs font-normal leading-none text-danger">Log out</span>
           </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown.Popover>
