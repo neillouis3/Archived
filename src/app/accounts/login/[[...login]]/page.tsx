@@ -14,7 +14,7 @@ export default function LoginPage() {
                      hover:text-stone-600 transition-colors"
          
         >
-          Archive
+          Archived
         </Link>
         <p className="mt-3 text-center text-xs text-stone-400 max-w-sm leading-relaxed">
           Sign in to continue
