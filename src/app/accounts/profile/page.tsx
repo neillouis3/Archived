@@ -402,7 +402,7 @@ export default function ProfilePage() {
               />
             ) : (
               // Feed view
-              <div className="flex flex-col gap-12 max-w-[520px]">
+              <div className="mx-auto flex w-full max-w-[520px] flex-col gap-12">
                 {posts.length === 0 ? (
                   <p className="text-xs text-stone-300 text-center py-16">
                     No posts yet.

@@ -78,7 +78,9 @@ export default function SettingsPage() {
   });
   const [saved, setSaved] = useState(false);
   const [coverUploading, setCoverUploading] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!isLoaded || !user) return;
@@ -153,6 +155,21 @@ export default function SettingsPage() {
       // silent
     } finally {
       setCoverUploading(false);
+    }
+  };
+
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !user) return;
+    setAvatarUploading(true);
+    try {
+      await user.setProfileImage({ file });
+      await user.reload();
+    } catch {
+      // silent
+    } finally {
+      setAvatarUploading(false);
     }
   };
 
@@ -241,8 +258,20 @@ export default function SettingsPage() {
                   <div>
                     <p className="text-sm font-medium text-stone-700">{user.fullName}</p>
                     <p className="text-xs text-stone-400 mb-2">@{user.username}</p>
-                    <button className="text-xs text-stone-500 border border-stone-300 rounded-lg px-2.5 py-1 hover:bg-stone-100 transition-colors">
-                      Change photo
+                    <input
+                      ref={avatarInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => void handleAvatarFileChange(e)}
+                    />
+                    <button
+                      type="button"
+                      disabled={avatarUploading}
+                      onClick={() => avatarInputRef.current?.click()}
+                      className="text-xs text-stone-500 border border-stone-300 rounded-lg px-2.5 py-1 hover:bg-stone-100 transition-colors disabled:opacity-50"
+                    >
+                      {avatarUploading ? "Uploading…" : "Change photo"}
                     </button>
                   </div>
                 </div>
