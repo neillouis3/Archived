@@ -18,7 +18,7 @@ export function ThemeSwitcher({ menuRow }: { menuRow?: boolean }) {
   const label = isDark ? "Light mode" : "Dark mode";
 
   const rowClass =
-    "w-full justify-start text-stone-600 text-xs font-normal h-8 px-2.5 rounded-lg hover:bg-stone-100/90 gap-2.5";
+    "w-full justify-start text-stone-600 dark:text-stone-300 text-xs font-normal h-8 px-2.5 rounded-lg hover:bg-stone-100/90 dark:hover:bg-white/10 gap-2.5";
 
   if (!mounted) {
     return menuRow ? (

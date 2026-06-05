@@ -59,9 +59,9 @@ export function ExploreSearchBar({
         <div
           className={
             isSidebar
-              ? `flex min-w-0 items-center gap-2 rounded-xl border border-stone-200/90 bg-white px-2.5 py-2
+              ? `flex min-w-0 items-center gap-2 rounded-xl border border-stone-200/90 bg-background px-2.5 py-2
                  transition-shadow focus-within:border-stone-300 focus-within:shadow-[0_0_0_3px_rgba(120,113,108,0.12)]`
-              : `flex flex-1 min-w-0 items-center gap-3 rounded-xl border border-stone-200/90 bg-white px-4 py-3
+              : `flex flex-1 min-w-0 items-center gap-3 rounded-xl border border-stone-200/90 bg-background px-4 py-3
                  transition-shadow focus-within:border-stone-300 focus-within:shadow-[0_0_0_3px_rgba(120,113,108,0.12)]`
           }
         >
@@ -92,27 +92,20 @@ export function ExploreSearchBar({
               ? showReset && onReset
                 ? "flex shrink-0"
                 : "hidden"
-              : "flex gap-2 shrink-0"
+              : showReset && onReset
+                ? "flex gap-2 shrink-0"
+                : "hidden"
           }
         >
-          {!isSidebar ? (
-            <button
-              type="submit"
-              className="flex-1 sm:flex-initial rounded-xl bg-stone-800 px-6 py-3 text-xs font-medium
-                   text-white transition-colors hover:bg-stone-700 active:bg-stone-900"
-            >
-              Search
-            </button>
-          ) : null}
           {showReset && onReset ? (
             <button
               type="button"
               onClick={onReset}
               className={
                 isSidebar
-                  ? `w-full rounded-xl border border-stone-200/90 bg-white px-4 py-2 text-xs
+                  ? `w-full rounded-xl border border-stone-200/90 bg-background px-4 py-2 text-xs
                      text-stone-500 transition-colors hover:border-stone-300 hover:text-stone-700`
-                  : `flex-1 sm:flex-initial rounded-xl border border-stone-200/90 bg-white px-5 py-3 text-xs
+                  : `flex-1 sm:flex-initial rounded-xl border border-stone-200/90 bg-background px-5 py-3 text-xs
                      text-stone-500 transition-colors hover:border-stone-300 hover:text-stone-700`
               }
             >

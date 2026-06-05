@@ -152,7 +152,7 @@ export default function Home() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-background text-foreground">
         <div className="w-full flex flex-row max-w-[1600px] mx-auto">
 
           {/* Left Sidebar */}

@@ -4,7 +4,7 @@ import LoginForm from "@/components/loginForm";
 export default function LoginPage() {
   return (
     <div
-      className="min-h-[100dvh] w-full bg-white text-stone-800 flex flex-col"
+      className="min-h-[100dvh] w-full bg-background text-foreground flex flex-col"
      
     >
       <header className="shrink-0 flex flex-col items-center px-6 pt-10 pb-6 sm:pt-14">

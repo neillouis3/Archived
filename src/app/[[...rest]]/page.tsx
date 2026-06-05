@@ -3,17 +3,19 @@
 import { SignIn } from "@clerk/nextjs";
 import Image from "next/image";
 import SignedOutGate from "@/components/signedOutGate";
-import { clerkAuthAppearance } from "@/lib/clerkAuthAppearance";
+import { useClerkAuthAppearance } from "@/hooks/useClerkAuthAppearance";
 
 export default function LandingPage() {
+  const clerkAppearance = useClerkAuthAppearance();
+
   return (
     <SignedOutGate
       fallback={
-        <div className="flex h-[100vh] w-full items-center justify-center bg-white" />
+        <div className="flex h-[100vh] w-full items-center justify-center bg-background" />
       }
     >
       <div
-        className="flex h-[100vh] w-full flex-col items-center justify-center overflow-y-auto bg-white px-4 py-12"
+        className="flex h-[100vh] w-full flex-col items-center justify-center overflow-y-auto bg-background px-4 py-12"
        
       >
         <Image
@@ -28,9 +30,9 @@ export default function LandingPage() {
         <div className="w-full max-w-[420px]">
           <SignIn
             appearance={{
-              ...clerkAuthAppearance,
+              ...clerkAppearance,
               elements: {
-                ...clerkAuthAppearance.elements,
+                ...clerkAppearance.elements,
                 headerTitle: "hidden",
                 headerSubtitle: "hidden",
               },

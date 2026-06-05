@@ -70,7 +70,7 @@ export default function PostPermalinkPage() {
   if (!postId || error === "missing") {
     return (
       <SidebarProvider>
-        <div className="min-h-screen bg-white flex items-center justify-center px-6">
+        <div className="min-h-screen bg-background text-foreground flex items-center justify-center px-6">
           <p className="text-xs text-stone-400">Invalid post link.</p>
         </div>
       </SidebarProvider>
@@ -79,7 +79,7 @@ export default function PostPermalinkPage() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-background text-foreground">
         <div className="w-full flex flex-row max-w-[1600px] mx-auto">
           <ArchiveLeftSidebar />
           <SidebarInsetSpacer />

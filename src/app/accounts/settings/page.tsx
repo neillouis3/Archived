@@ -17,7 +17,7 @@ import {
   SOCIAL_FIELD_CONFIG,
   type SocialMediaFields,
 } from "@/lib/socialLinks";
-import { clerkAuthAppearance } from "@/lib/clerkAuthAppearance";
+import { useClerkAuthAppearance } from "@/hooks/useClerkAuthAppearance";
 
 // ── icons ──────────────────────────────────────────────────────────────────
 const UserIcon = () => (
@@ -65,6 +65,7 @@ const notifSettings = [
 // ── component ──────────────────────────────────────────────────────────────
 export default function SettingsPage() {
   const { user, isLoaded } = useUser();
+  const clerkAppearance = useClerkAuthAppearance();
   const [activeTab, setActiveTab] = useState<Tab>("profile");
   const [bio, setBio] = useState("");
   const [website, setWebsite] = useState("");
@@ -183,7 +184,7 @@ export default function SettingsPage() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-background text-foreground">
         <div className="w-full flex flex-row max-w-[1600px] mx-auto">
 
         {/* Left sidebar */}
@@ -412,13 +413,13 @@ export default function SettingsPage() {
                 </div>
                 <UserProfile
                   appearance={{
-                    ...clerkAuthAppearance,
+                    ...clerkAppearance,
                     variables: {
-                      ...clerkAuthAppearance.variables,
+                      ...clerkAppearance.variables,
                       fontSize: "13px",
                     },
                     elements: {
-                      ...clerkAuthAppearance.elements,
+                      ...clerkAppearance.elements,
                       card: "shadow-none border-0 bg-transparent p-0",
                       rootBox: "w-full",
                       navbar: "hidden",

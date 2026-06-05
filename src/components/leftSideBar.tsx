@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import React, { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTheme } from "next-themes";
 import { useSidebar } from "./sidebarContext";
 import Link from "next/link";
 import Image from "next/image";
-import { useUser, SignOutButton } from "@clerk/nextjs";
+import { useUser, SignOutButton, useClerk } from "@clerk/nextjs";
 import AddPostModal from "./addPostModal";
 import { ThemeSwitcher } from "./themeSwitch";
-import { Button, Separator } from "@heroui/react";
+import { Button, Dropdown, Header, Label, Separator } from "@heroui/react";
 import {
   ArrowLeft01Icon,
   ArrowRight01Icon,
@@ -21,11 +21,11 @@ import {
   Notification01Icon,
   UserIcon,
   Settings02Icon,
+  Moon02Icon,
+  Sun02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { archiveNavItems } from "@/lib/archiveNav";
-
-const PROFILE_MENU_ID = "sidebar-profile-menu";
 
 function SidebarLogo({
   size = 32,
@@ -121,7 +121,7 @@ function MobileArchiveNav({
 
   return (
     <>
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-[55] flex min-h-[calc(3.5rem+env(safe-area-inset-top,0px))] items-center gap-3 border-b border-stone-200/80 bg-white/95 px-3 pt-[env(safe-area-inset-top,0px)] backdrop-blur-md supports-[backdrop-filter]:bg-white/90">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-[55] flex min-h-[calc(3.5rem+env(safe-area-inset-top,0px))] items-center gap-3 border-b border-stone-200/80 bg-background/95 px-3 pt-[env(safe-area-inset-top,0px)] backdrop-blur-md supports-[backdrop-filter]:bg-background/90">
         <button
           type="button"
           onClick={() => setMobileNavOpen(true)}
@@ -164,7 +164,7 @@ function MobileArchiveNav({
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", stiffness: 380, damping: 36 }}
-              className="absolute left-0 top-0 flex h-full w-[min(20rem,88vw)] flex-col border-r border-stone-200/80 bg-white shadow-2xl pt-[env(safe-area-inset-top)]"
+              className="absolute left-0 top-0 flex h-full w-[min(20rem,88vw)] flex-col border-r border-stone-200/80 bg-background shadow-2xl pt-[env(safe-area-inset-top)]"
             >
               <div className="flex items-center justify-between border-b border-stone-200/60 px-3 py-3">
                 <SidebarLogo size={28} className="pl-1" onNavigate={closeMobileNav} />
@@ -198,7 +198,7 @@ function MobileArchiveNav({
                       onClick={closeMobileNav}
                       className={`flex items-center gap-3 rounded-lg px-3 py-3 transition-colors ${
                         isActive
-                          ? "bg-white ring-1 ring-inset ring-stone-200 text-stone-800"
+                          ? "bg-background ring-1 ring-inset ring-stone-200 text-stone-800"
                           : "text-stone-600 hover:bg-stone-50/80 hover:text-stone-800"
                       }`}
                     >
@@ -261,7 +261,7 @@ function MobileArchiveNav({
                       ))}
                       <ThemeSwitcher menuRow />
                     </div>
-                    <Separator className="my-2" />
+                    <div className="my-2 border-t border-stone-200/60" />
                     <SignOutButton redirectUrl="/">
                       <Button
                         variant="ghost"
@@ -285,54 +285,124 @@ function MobileArchiveNav({
   );
 }
 
+function ProfileMenuDropdown({
+  displayName,
+  username,
+  resolvedImage,
+  isCollapsed,
+}: {
+  displayName: string;
+  username: string;
+  resolvedImage: string;
+  isCollapsed: boolean;
+}) {
+  const router = useRouter();
+  const { signOut } = useClerk();
+  const { resolvedTheme, setTheme } = useTheme();
+  const [open, setOpen] = useState(false);
+  const isDark = resolvedTheme === "dark";
+
+  function handleAction(key: React.Key) {
+    switch (key) {
+      case "profile":
+        router.push("/accounts/profile");
+        break;
+      case "settings":
+        router.push("/accounts/settings");
+        break;
+      case "notifications":
+        router.push("/notifications");
+        break;
+      case "theme":
+        setTheme(isDark ? "light" : "dark");
+        break;
+      case "logout":
+        void signOut({ redirectUrl: "/" });
+        break;
+    }
+  }
+
+  const triggerClass = `
+    flex w-full items-center gap-3 rounded-lg text-left transition-colors cursor-pointer
+    hover:bg-stone-100/80 data-[pressed]:bg-background data-[pressed]:ring-1 data-[pressed]:ring-inset data-[pressed]:ring-stone-200
+    ${isCollapsed ? "justify-center px-1 py-1.5" : "justify-start px-2 py-2 h-auto min-h-0"}
+  `;
+
+  return (
+    <Dropdown isOpen={open} onOpenChange={setOpen}>
+      <Dropdown.Trigger className={triggerClass}>
+        <span className="h-7 w-7 flex-shrink-0 overflow-hidden rounded-full ring-1 ring-stone-200/60">
+          <img src={resolvedImage} alt="" className="h-full w-full object-cover" />
+        </span>
+        <AnimatePresence mode="wait">
+          {!isCollapsed ? (
+            <motion.div
+              key="profile-info"
+              initial={{ opacity: 0, width: 0 }}
+              animate={{ opacity: 1, width: "auto" }}
+              exit={{ opacity: 0, width: 0 }}
+              transition={{ duration: 0.15 }}
+              className="flex min-w-0 flex-1 flex-col overflow-hidden text-left"
+            >
+              <span className="truncate whitespace-nowrap text-xs font-medium text-stone-700">{displayName}</span>
+              <span className="truncate whitespace-nowrap text-xs text-stone-400">@{username}</span>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+        {!isCollapsed ? (
+          <HugeiconsIcon
+            icon={ArrowDown01Icon}
+            size={16}
+            className={`flex-shrink-0 text-stone-400 transition-transform ${open ? "rotate-180" : ""}`}
+            aria-hidden
+          />
+        ) : null}
+      </Dropdown.Trigger>
+      <Dropdown.Popover placement="right bottom" className="min-w-[220px]">
+        <Dropdown.Menu onAction={handleAction}>
+          <Dropdown.Section>
+            <Header className="px-2 pb-1">
+              <p className="truncate text-xs font-medium text-stone-800">{displayName}</p>
+              <p className="truncate text-xs text-stone-400">@{username}</p>
+            </Header>
+          </Dropdown.Section>
+          <Dropdown.Item id="profile" textValue="Your profile" className="gap-2.5">
+            <HugeiconsIcon icon={UserIcon} size={17} className="shrink-0 text-stone-400" />
+            <Label>Your profile</Label>
+          </Dropdown.Item>
+          <Dropdown.Item id="settings" textValue="Settings" className="gap-2.5">
+            <HugeiconsIcon icon={Settings02Icon} size={17} className="shrink-0 text-stone-400" />
+            <Label>Settings</Label>
+          </Dropdown.Item>
+          <Dropdown.Item id="notifications" textValue="Notifications" className="gap-2.5">
+            <HugeiconsIcon icon={Notification01Icon} size={17} className="shrink-0 text-stone-400" />
+            <Label>Notifications</Label>
+          </Dropdown.Item>
+          <Dropdown.Item id="theme" textValue={isDark ? "Light mode" : "Dark mode"} className="gap-2.5">
+            <HugeiconsIcon icon={isDark ? Sun02Icon : Moon02Icon} size={17} className="shrink-0 text-stone-400" />
+            <Label>{isDark ? "Light mode" : "Dark mode"}</Label>
+          </Dropdown.Item>
+          <Separator />
+          <Dropdown.Item id="logout" textValue="Log out" variant="danger" className="gap-2.5">
+            <HugeiconsIcon icon={Logout01Icon} size={17} className="shrink-0" />
+            <Label>Log out</Label>
+          </Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown.Popover>
+    </Dropdown>
+  );
+}
+
 export default function ArchiveLeftSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const { user } = useUser();
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
-  const [menuMounted, setMenuMounted] = useState(false);
-  const profileTriggerRef = useRef<HTMLButtonElement>(null);
   const unreadNotif = useUnreadNotifCount(user, pathname);
 
   const username = user?.username ?? "user";
   const displayName = user?.fullName ?? user?.firstName ?? "Account";
   const resolvedImage = user?.imageUrl ?? "https://i.pravatar.cc/150?u=placeholder";
-
-  useEffect(() => setMenuMounted(true), []);
-
-  useLayoutEffect(() => {
-    if (!profileMenuOpen || !profileTriggerRef.current) return;
-    const r = profileTriggerRef.current.getBoundingClientRect();
-    const menuH = 320;
-    const menuW = 220;
-    const top = Math.max(8, Math.min(r.top, window.innerHeight - menuH - 8));
-    const gap = 10;
-    let left = r.right + gap;
-    if (left + menuW > window.innerWidth - 8) left = Math.max(8, r.left - menuW - gap);
-    setMenuPos({ top, left });
-  }, [profileMenuOpen, isCollapsed]);
-
-  useEffect(() => {
-    if (!profileMenuOpen) return;
-    const close = (e: MouseEvent) => {
-      const t = e.target as Node;
-      if (profileTriggerRef.current?.contains(t)) return;
-      if (document.getElementById(PROFILE_MENU_ID)?.contains(t)) return;
-      setProfileMenuOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setProfileMenuOpen(false);
-    };
-    document.addEventListener("mousedown", close);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", close);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [profileMenuOpen]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -360,7 +430,7 @@ export default function ArchiveLeftSidebar() {
         initial={false}
         animate={{ width: isCollapsed ? 72 : 260 }}
         transition={{ type: "spring", stiffness: 420, damping: 38 }}
-        className="fixed left-0 top-0 z-40 hidden h-screen shrink-0 border-r border-stone-200/80 bg-white lg:flex lg:flex-col"
+        className="fixed left-0 top-0 z-40 hidden h-screen shrink-0 border-r border-stone-200/80 bg-background lg:flex lg:flex-col"
       >
         <div className="flex h-full flex-col px-2 pb-4 pt-6">
           <div
@@ -407,7 +477,7 @@ export default function ArchiveLeftSidebar() {
                   className={`
                   group relative flex items-center gap-3 rounded-lg transition-colors
                   ${isCollapsed ? "justify-center px-1 py-2.5" : "px-2.5 py-2.5"}
-                  ${isActive ? "bg-white ring-1 ring-inset ring-stone-200 text-stone-800" : "text-stone-500 hover:bg-stone-50/80 hover:text-stone-700"}
+                  ${isActive ? "bg-background ring-1 ring-inset ring-stone-200 text-stone-800" : "text-stone-500 hover:bg-stone-50/80 hover:text-stone-700"}
                 `}
                 >
                   <HugeiconsIcon
@@ -468,101 +538,29 @@ export default function ArchiveLeftSidebar() {
           </nav>
 
           <div className="mt-auto border-t border-stone-200/60 px-1 pt-5">
-            <button
-              ref={profileTriggerRef}
-              type="button"
-              onClick={() => user && setProfileMenuOpen((o) => !o)}
-              aria-expanded={profileMenuOpen}
-              aria-haspopup="menu"
-              aria-controls={PROFILE_MENU_ID}
-              disabled={!user}
-              className={`
-              flex w-full items-center gap-3 rounded-lg text-left transition-colors
-              ${user ? "cursor-pointer hover:bg-stone-100/80" : "cursor-default opacity-60"}
-              ${isCollapsed ? "justify-center px-1 py-1.5" : "px-2 py-2"}
-              ${profileMenuOpen && user ? "bg-white ring-1 ring-inset ring-stone-200" : ""}
-            `}
-            >
-              <span className="h-7 w-7 flex-shrink-0 overflow-hidden rounded-full ring-1 ring-stone-200/60">
-                <img src={resolvedImage} alt="" className="h-full w-full object-cover" />
-              </span>
-              <AnimatePresence mode="wait">
-                {!isCollapsed && (
-                  <motion.div
-                    key="profile-info"
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: "auto" }}
-                    exit={{ opacity: 0, width: 0 }}
-                    transition={{ duration: 0.15 }}
-                    className="flex min-w-0 flex-1 flex-col overflow-hidden"
-                  >
+            {user ? (
+              <ProfileMenuDropdown
+                displayName={displayName}
+                username={username}
+                resolvedImage={resolvedImage}
+                isCollapsed={isCollapsed}
+              />
+            ) : (
+              <div
+                className={`flex w-full items-center gap-3 rounded-lg opacity-60 ${
+                  isCollapsed ? "justify-center px-1 py-1.5" : "px-2 py-2"
+                }`}
+              >
+                <span className="h-7 w-7 flex-shrink-0 overflow-hidden rounded-full ring-1 ring-stone-200/60">
+                  <img src={resolvedImage} alt="" className="h-full w-full object-cover" />
+                </span>
+                {!isCollapsed ? (
+                  <div className="min-w-0 flex-1 flex-col overflow-hidden">
                     <span className="truncate whitespace-nowrap text-xs font-medium text-stone-700">{displayName}</span>
                     <span className="truncate whitespace-nowrap text-xs text-stone-400">@{username}</span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              {!isCollapsed && user && (
-                <HugeiconsIcon
-                  icon={ArrowDown01Icon}
-                  size={16}
-                  className={`flex-shrink-0 text-stone-400 transition-transform ${profileMenuOpen ? "rotate-180" : ""}`}
-                  aria-hidden
-                />
-              )}
-            </button>
-
-            {menuMounted && profileMenuOpen && user && createPortal(
-              <motion.div
-                id={PROFILE_MENU_ID}
-                role="menu"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.12 }}
-                style={{ top: menuPos.top, left: menuPos.left }}
-                className="fixed z-[100] w-[220px] rounded-xl border border-stone-200/80 bg-white py-2 shadow-xl"
-              >
-                <div className="border-b border-stone-100 px-3 pb-2">
-                  <p className="truncate text-xs font-medium text-stone-800">{displayName}</p>
-                  <p className="truncate text-xs text-stone-400">@{username}</p>
-                </div>
-                <div className="flex flex-col gap-0.5 px-1 pt-2">
-                  {[
-                    { icon: UserIcon, label: "Your profile", href: "/accounts/profile" },
-                    { icon: Settings02Icon, label: "Settings", href: "/accounts/settings" },
-                    { icon: Notification01Icon, label: "Notifications", href: "/notifications" },
-                  ].map(({ icon, label, href }) => (
-                    <Button
-                      key={href}
-                      variant="ghost"
-                      size="sm"
-                      onPress={() => {
-                        setProfileMenuOpen(false);
-                        router.push(href);
-                      }}
-                      className="h-8 w-full justify-start gap-2.5 rounded-lg px-2.5 text-xs font-normal text-stone-600 hover:bg-stone-100/90"
-                    >
-                      <HugeiconsIcon icon={icon} size={17} className="flex-shrink-0 text-stone-400" />
-                      {label}
-                    </Button>
-                  ))}
-                  <ThemeSwitcher menuRow />
-                </div>
-                <Separator className="mx-2 my-1.5" />
-                <div className="px-1 pb-0.5">
-                  <SignOutButton redirectUrl="/">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-full justify-start rounded-lg px-2.5 text-xs font-normal text-red-700/90 hover:bg-red-50/90"
-                    >
-                      <HugeiconsIcon icon={Logout01Icon} size={17} className="flex-shrink-0" />
-                      Log out
-                    </Button>
-                  </SignOutButton>
-                </div>
-              </motion.div>,
-              document.body
+                  </div>
+                ) : null}
+              </div>
             )}
           </div>
         </div>

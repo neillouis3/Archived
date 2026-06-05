@@ -1,14 +1,16 @@
 "use client";
 
 import { SignIn } from "@clerk/nextjs";
-import { clerkAuthAppearance } from "@/lib/clerkAuthAppearance";
+import { useClerkAuthAppearance } from "@/hooks/useClerkAuthAppearance";
 import SignedOutGate from "@/components/signedOutGate";
 
 export default function LoginForm() {
+  const clerkAppearance = useClerkAuthAppearance();
+
   return (
     <SignedOutGate>
       <SignIn
-        appearance={clerkAuthAppearance}
+        appearance={clerkAppearance}
         routing="path"
         path="/accounts/login"
         signUpUrl="/accounts/register"

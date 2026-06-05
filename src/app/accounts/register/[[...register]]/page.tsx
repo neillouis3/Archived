@@ -1,11 +1,15 @@
+"use client";
+
 import Link from "next/link";
 import { SignUp } from "@clerk/nextjs";
-import { clerkAuthAppearance } from "@/lib/clerkAuthAppearance";
+import { useClerkAuthAppearance } from "@/hooks/useClerkAuthAppearance";
 
 export default function RegisterPage() {
+  const clerkAppearance = useClerkAuthAppearance();
+
   return (
     <div
-      className="min-h-[100dvh] w-full bg-white text-stone-800 flex flex-col"
+      className="min-h-[100dvh] w-full bg-background text-foreground flex flex-col"
      
     >
       <header className="shrink-0 flex flex-col items-center px-6 pt-10 pb-6 sm:pt-14">
@@ -25,7 +29,7 @@ export default function RegisterPage() {
       <main className="flex-1 flex flex-col items-center justify-start sm:justify-center px-4 pb-12 sm:pb-16 pt-2">
         <div className="w-full max-w-[420px]">
           <SignUp
-            appearance={clerkAuthAppearance}
+            appearance={clerkAppearance}
             routing="path"
             path="/accounts/register"
             signInUrl="/accounts/login"
