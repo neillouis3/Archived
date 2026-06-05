@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { SignIn } from "@clerk/nextjs";
 import SignedOutGate from "@/components/signedOutGate";
 import { useClerkAuthAppearance } from "@/hooks/useClerkAuthAppearance";
@@ -17,6 +18,14 @@ export default function LandingPage() {
         className="flex h-[100vh] w-full flex-col items-center justify-center overflow-y-auto bg-background px-4 py-12"
        
       >
+        <Image
+          src="/archive-logo.png"
+          alt="Archived"
+          width={120}
+          height={120}
+          priority
+          className="mb-4"
+        />
         <h1 className="mb-10 font-normal text-xl text-stone-800 sm:text-2xl">
           Archived
         </h1>
