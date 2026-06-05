@@ -9,6 +9,7 @@ import {
   resolveSocialUrl,
   SOCIAL_FIELD_CONFIG,
 } from "@/lib/socialLinks";
+import { Tag, TagGroup } from "@heroui/react";
 import ArchiveLeftSidebar from "@/components/leftSideBar";
 import ArchiveRightSidebar from "@/components/rightSideBar";
 import { SidebarInsetSpacer } from "@/components/sidebarInsetSpacer";
@@ -78,6 +79,13 @@ const PencilIcon = () => (
 
 // ── component ──────────────────────────────────────────────────────────────
 type CollectionTab = "all" | "public" | "friends" | "private";
+
+const COLLECTION_TABS: { id: CollectionTab; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "public", label: "Public" },
+  { id: "friends", label: "Friends" },
+  { id: "private", label: "Private" },
+];
 
 export default function ProfilePage() {
   const { isSignedIn, user, isLoaded } = useUser();
@@ -341,29 +349,25 @@ export default function ProfilePage() {
 
           {/* Posts section */}
           <div className="px-4 py-6 sm:px-6 sm:py-10">
-            <div className="flex flex-wrap items-center gap-2 mb-4">
-              {(
-                [
-                  { id: "all" as const, label: "All" },
-                  { id: "public" as const, label: "Public" },
-                  { id: "friends" as const, label: "Friends" },
-                  { id: "private" as const, label: "Private" },
-                ] as const
-              ).map(({ id, label }) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setCollectionTab(id)}
-                  className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
-                    collectionTab === id
-                      ? "border-stone-600 text-stone-800 bg-white"
-                      : "border-stone-200 text-stone-400 hover:border-stone-300 hover:text-stone-600"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            <TagGroup
+              selectionMode="single"
+              selectedKeys={new Set([collectionTab])}
+              onSelectionChange={(keys) => {
+                if (keys === "all") return;
+                const next = Array.from(keys)[0];
+                if (next) setCollectionTab(String(next) as CollectionTab);
+              }}
+              size="sm"
+              className="mb-4"
+            >
+              <TagGroup.List aria-label="Filter posts" className="gap-2">
+                {COLLECTION_TABS.map(({ id, label }) => (
+                  <Tag key={id} id={id} textValue={label} className="font-normal">
+                    {label}
+                  </Tag>
+                ))}
+              </TagGroup.List>
+            </TagGroup>
 
             {/* View toggle */}
             <div className="flex items-center justify-between mb-6">

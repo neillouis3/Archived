@@ -7,7 +7,7 @@ import ArchiveLeftSidebar from "@/components/leftSideBar";
 import ArchiveRightSidebar from "@/components/rightSideBar";
 import { SidebarProvider } from "@/components/sidebarContext";
 import { SidebarInsetSpacer } from "@/components/sidebarInsetSpacer";
-import { Button, Skeleton, Tabs } from "@heroui/react";
+import { Button, Skeleton, Tag, TagGroup } from "@heroui/react";
 import FollowButton from "@/components/FollowButton";
 
 type NotifRowData = {
@@ -191,25 +191,25 @@ export default function NotificationsPage() {
                 </div>
               ) : (
                 <>
-                  <Tabs
-                    selectedKey={filter}
-                    onSelectionChange={(key) => setFilter(String(key) as FilterKey)}
-                    className="w-full"
+                  <TagGroup
+                    selectionMode="single"
+                    selectedKeys={new Set([filter])}
+                    onSelectionChange={(keys) => {
+                      if (keys === "all") return;
+                      const next = Array.from(keys)[0];
+                      if (next) setFilter(String(next) as FilterKey);
+                    }}
+                    size="sm"
+                    className="mb-6"
                   >
-                    <Tabs.ListContainer className="mb-6 flex justify-start bg-transparent shadow-none">
-                      <Tabs.List
-                        aria-label="Filter notifications"
-                        className="w-fit bg-transparent *:h-6 *:w-fit *:px-3 *:text-sm *:font-normal *:data-[selected=true]:text-accent-foreground"
-                      >
-                        {FILTERS.map(({ key, label }) => (
-                          <Tabs.Tab key={key} id={key}>
-                            {label}
-                            <Tabs.Indicator className="bg-accent" />
-                          </Tabs.Tab>
-                        ))}
-                      </Tabs.List>
-                    </Tabs.ListContainer>
-                  </Tabs>
+                    <TagGroup.List aria-label="Filter notifications" className="gap-2">
+                      {FILTERS.map(({ key, label }) => (
+                        <Tag key={key} id={key} textValue={label} className="font-normal">
+                          {label}
+                        </Tag>
+                      ))}
+                    </TagGroup.List>
+                  </TagGroup>
 
                   {loading ? (
                     <div className="flex flex-col gap-3">

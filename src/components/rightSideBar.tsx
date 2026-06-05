@@ -195,6 +195,17 @@ export default function ArchiveRightSidebar() {
   }, []);
 
   const placeholderTiles = loading && tiles.length === 0 ? 9 : 0;
+  const showSidebarPeopleSearch =
+    isLoaded && isSignedIn && debouncedQ.length >= 2;
+  const sidebarSearchComplete = !sidebarSearchLoading;
+  const hasSidebarPeople =
+    showSidebarPeopleSearch && sidebarPeople.length > 0;
+  const hasSidebarPosts = sidebarPosts.length > 0;
+  const sidebarNoResults =
+    !!debouncedQ &&
+    sidebarSearchComplete &&
+    !hasSidebarPeople &&
+    !hasSidebarPosts;
   const exploreHref = debouncedQ
     ? `/explore?q=${encodeURIComponent(debouncedQ)}`
     : "/explore";
@@ -215,13 +226,10 @@ export default function ArchiveRightSidebar() {
           onReset={clearSidebarSearch}
         />
         {debouncedQ ? (
-          <div className="mt-4 space-y-4">
-            {isLoaded && isSignedIn && debouncedQ.length >= 2 ? (
-              <div>
-                <p className="text-xs text-stone-400 mb-2">
-                  People
-                </p>
-                {sidebarSearchLoading ? (
+          <div className="mt-4 space-y-3">
+            {sidebarSearchLoading ? (
+              <>
+                {showSidebarPeopleSearch ? (
                   <div className="space-y-2">
                     {[1, 2].map((i) => (
                       <div key={i} className="flex items-center gap-2 animate-pulse">
@@ -230,11 +238,20 @@ export default function ArchiveRightSidebar() {
                       </div>
                     ))}
                   </div>
-                ) : sidebarPeople.length === 0 ? (
-                  <p className="text-xs text-stone-400 leading-snug">
-                    No people matched.
-                  </p>
-                ) : (
+                ) : null}
+                <div className="grid grid-cols-3 gap-0.5">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <div key={i} className="aspect-square bg-stone-100/90 animate-pulse rounded-sm" />
+                  ))}
+                </div>
+              </>
+            ) : sidebarNoResults ? (
+              <p className="text-xs text-stone-400 leading-snug">
+                No results matched &ldquo;{debouncedQ}&rdquo;.
+              </p>
+            ) : (
+              <>
+                {hasSidebarPeople ? (
                   <ul className="flex flex-col gap-0.5 rounded-lg border border-stone-200/60 bg-background/80 overflow-hidden divide-y divide-stone-100/80">
                     {sidebarPeople.map((u) => (
                       <li key={u.id}>
@@ -259,41 +276,28 @@ export default function ArchiveRightSidebar() {
                       </li>
                     ))}
                   </ul>
-                )}
-              </div>
-            ) : null}
+                ) : null}
 
-            <div>
-              <p className="text-xs text-stone-400 mb-2">
-                Posts
-              </p>
-              {sidebarSearchLoading ? (
-                <div className="grid grid-cols-3 gap-0.5">
-                  {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <div key={i} className="aspect-square bg-stone-100/90 animate-pulse rounded-sm" />
-                  ))}
-                </div>
-              ) : sidebarPosts.length === 0 ? (
-                <p className="text-xs text-stone-400 leading-snug">No posts matched.</p>
-              ) : (
-                <div className="grid grid-cols-3 gap-0.5">
-                  {sidebarPosts.map((t, i) => (
-                    <Link
-                      key={`${t.postId}-${i}`}
-                      href={`/post/${encodeURIComponent(t.postId)}`}
-                      className="aspect-square overflow-hidden bg-background border border-stone-200/60 rounded-sm group focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
-                    >
-                      <img
-                        src={t.url}
-                        alt=""
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        style={{ filter: "brightness(0.96) saturate(0.85)" }}
-                      />
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
+                {hasSidebarPosts ? (
+                  <div className="grid grid-cols-3 gap-0.5">
+                    {sidebarPosts.map((t, i) => (
+                      <Link
+                        key={`${t.postId}-${i}`}
+                        href={`/post/${encodeURIComponent(t.postId)}`}
+                        className="aspect-square overflow-hidden bg-background border border-stone-200/60 rounded-sm group focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
+                      >
+                        <img
+                          src={t.url}
+                          alt=""
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          style={{ filter: "brightness(0.96) saturate(0.85)" }}
+                        />
+                      </Link>
+                    ))}
+                  </div>
+                ) : null}
+              </>
+            )}
 
             <Link
               href={exploreHref}

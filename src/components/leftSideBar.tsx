@@ -359,7 +359,7 @@ function ProfileMenuDropdown({
         ) : null}
       </Dropdown.Trigger>
       <Dropdown.Popover placement="right bottom" className="min-w-[220px]">
-        <Dropdown.Menu onAction={handleAction}>
+        <Dropdown.Menu onAction={handleAction} className="text-sm [&_[data-slot=label]]:font-normal">
           <Dropdown.Section>
             <Header className="px-2 pb-1">
               <p className="truncate text-xs font-medium text-stone-800">{displayName}</p>

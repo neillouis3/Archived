@@ -15,8 +15,6 @@
   --background: #fafaf9;
   --midground: #ffffff;
   --foreground: #1c1917;
-  --border-subtle: rgba(28, 25, 23, 0.12);
-  --hover-subtle: rgba(28, 25, 23, 0.04);
 }
 
 .dark {
@@ -24,8 +22,15 @@
   --background: #0c0a09;
   --midground: #1c1917;
   --foreground: #fafaf9;
-  --border-subtle: rgba(255, 255, 255, 0.1);
-  --hover-subtle: rgba(255, 255, 255, 0.06);
+
+  /* Surfaces, borders, and hovers — utilities read these via --color-stone-* */
+  --color-stone-50: #1c1917;
+  --color-stone-100: #292524;
+  --color-stone-200: #44403c;
+  --color-stone-300: #57534e;
+  --color-stone-400: #78716c;
+  --color-stone-500: #a8a29e;
+  --color-stone-600: #d6d3d1;
 }
 
 body {
@@ -43,28 +48,41 @@ h6 {
   font-weight: inherit;
 }
 
-@layer base {
+@layer utilities {
   .dark .bg-white {
     background-color: var(--midground);
   }
 
-  .dark .text-stone-800 {
+  .dark .bg-white\/80 {
+    background-color: color-mix(in srgb, var(--midground) 80%, transparent);
+  }
+
+  .dark .hover\:bg-white:hover {
+    background-color: var(--midground);
+  }
+
+  .dark .text-stone-800,
+  .dark .hover\:text-stone-800:hover {
     color: #fafaf9;
   }
 
-  .dark .text-stone-700 {
+  .dark .text-stone-700,
+  .dark .hover\:text-stone-700:hover {
     color: #e7e5e4;
   }
 
-  .dark .text-stone-600 {
+  .dark .text-stone-600,
+  .dark .hover\:text-stone-600:hover {
     color: #d6d3d1;
   }
 
-  .dark .text-stone-500 {
+  .dark .text-stone-500,
+  .dark .hover\:text-stone-500:hover {
     color: #a8a29e;
   }
 
-  .dark .text-stone-400 {
+  .dark .text-stone-400,
+  .dark .hover\:text-stone-400:hover {
     color: #78716c;
   }
 
@@ -72,48 +90,54 @@ h6 {
     color: #57534e;
   }
 
-  .dark .border-stone-100,
-  .dark .border-stone-200,
-  .dark .border-stone-200\/60,
-  .dark .border-stone-200\/70,
-  .dark .border-stone-200\/80,
-  .dark .border-stone-200\/90 {
-    border-color: var(--border-subtle);
+  .dark .placeholder-stone-300::placeholder {
+    color: #57534e;
   }
 
-  .dark .divide-stone-100 > :not([hidden]) ~ :not([hidden]) {
-    border-color: var(--border-subtle);
-  }
-
-  .dark .bg-stone-50\/80,
-  .dark .hover\:bg-stone-50\/80:hover {
-    background-color: var(--hover-subtle);
-  }
-
-  .dark .bg-stone-100,
-  .dark .bg-stone-100\/80,
-  .dark .bg-stone-100\/90 {
-    background-color: rgba(255, 255, 255, 0.08);
-  }
-
-  .dark .hover\:bg-stone-100:hover,
-  .dark .hover\:bg-stone-100\/80:hover,
-  .dark .hover\:bg-stone-100\/90:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .dark .ring-stone-200,
-  .dark .ring-stone-200\/60,
-  .dark .ring-inset.ring-stone-200 {
-    --tw-ring-color: var(--border-subtle);
+  .dark .placeholder\:text-stone-300::placeholder {
+    color: #57534e;
   }
 
   .dark .ring-white {
     --tw-ring-color: var(--background);
   }
 
-  .dark .shadow-xl,
-  .dark .shadow-2xl {
-    --tw-shadow-color: rgba(0, 0, 0, 0.45);
+  .dark .focus-visible\:ring-stone-400:focus-visible {
+    --tw-ring-color: #78716c;
+  }
+
+  /* Primary pills/buttons stay light-on-dark */
+  .dark .bg-stone-800 {
+    background-color: #fafaf9;
+    color: #1c1917;
+  }
+
+  .dark .bg-stone-800.text-white,
+  .dark .bg-stone-800 .text-white {
+    color: #1c1917;
+  }
+
+  .dark .hover\:bg-stone-700:hover {
+    background-color: #e7e5e4;
+  }
+
+  .dark .hover\:bg-red-50\/90:hover {
+    background-color: rgba(127, 29, 29, 0.25);
+  }
+
+  .dark .border-stone-600 {
+    border-color: #78716c;
+  }
+
+  .dark .ring-stone-200,
+  .dark .ring-stone-200\/60,
+  .dark .ring-inset.ring-stone-200 {
+    --tw-ring-color: #57534e;
+  }
+
+  .dark .divide-stone-100 > :not([hidden]) ~ :not([hidden]),
+  .dark .divide-stone-100\/80 > :not([hidden]) ~ :not([hidden]),
+  .dark .divide-stone-200\/60 > :not([hidden]) ~ :not([hidden]) {
+    border-color: #44403c;
   }
 }
