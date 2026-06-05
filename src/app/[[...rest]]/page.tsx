@@ -14,7 +14,7 @@ export default function LandingPage() {
     >
       <div
         className="flex h-[100vh] w-full flex-col items-center justify-center overflow-y-auto bg-white px-4 py-12"
-        style={{ fontFamily: "'DM Sans', sans-serif" }}
+       
       >
         <Image
           src="/archive-logo.png"

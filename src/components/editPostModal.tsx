@@ -118,7 +118,7 @@ export default function EditPostModal({
                 <Modal.Header className="px-6 py-4 border-b border-stone-200 flex items-center justify-between gap-3">
                   <Modal.Heading
                     className="text-lg font-light text-stone-800"
-                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                   
                   >
                     Edit post
                   </Modal.Heading>

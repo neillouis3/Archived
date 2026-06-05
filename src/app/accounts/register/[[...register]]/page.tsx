@@ -6,14 +6,14 @@ export default function RegisterPage() {
   return (
     <div
       className="min-h-[100dvh] w-full bg-white text-stone-800 flex flex-col"
-      style={{ fontFamily: "'DM Sans', sans-serif" }}
+     
     >
       <header className="shrink-0 flex flex-col items-center px-6 pt-10 pb-6 sm:pt-14">
         <Link
           href="/"
           className="font-light text-stone-800 text-xl sm:text-2xl
                      hover:text-stone-600 transition-colors"
-          style={{ fontFamily: "'DM Serif Display', serif" }}
+         
         >
           Archive
         </Link>

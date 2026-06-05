@@ -51,9 +51,6 @@ export default function PostPermalinkPage() {
         if (!cancelled) {
           setPost(data);
           setError(null);
-          const docTitle =
-            data.body?.trim().slice(0, 48) || `Post · ${data.username || "Archive"}`;
-          document.title = `${docTitle} | Archive`;
         }
       } catch {
         if (!cancelled) {

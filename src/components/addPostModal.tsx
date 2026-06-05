@@ -134,7 +134,7 @@ export default function AddPostModal({
                 <Modal.Header className="px-6 py-4 border-b border-stone-200 flex items-center justify-between gap-3">
                   <Modal.Heading
                     className="text-xl font-light text-stone-800"
-                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                   
                   >
                     Post milestones
                   </Modal.Heading>

@@ -7,7 +7,7 @@ export const clerkAuthAppearance: Appearance = {
     colorBackground: "#ffffff",
     colorInputBackground: "#ffffff",
     colorInputText: "#3a3530",
-    fontFamily: "'DM Sans', sans-serif",
+    fontFamily: "var(--font-inter), sans-serif",
     borderRadius: "0.75rem",
     fontSize: "14px",
   },

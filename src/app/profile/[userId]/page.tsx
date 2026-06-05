@@ -154,7 +154,7 @@ export default function PublicProfilePage() {
   if (loadingProfile) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen bg-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+        <div className="min-h-screen bg-white">
           <div className="w-full flex flex-row max-w-[1600px] mx-auto">
             <ArchiveLeftSidebar />
             <SidebarInsetSpacer />
@@ -174,7 +174,7 @@ export default function PublicProfilePage() {
   if (notFound || !profile) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen bg-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+        <div className="min-h-screen bg-white">
           <div className="w-full flex flex-row max-w-[1600px] mx-auto">
             <ArchiveLeftSidebar />
             <SidebarInsetSpacer />
@@ -200,7 +200,7 @@ export default function PublicProfilePage() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <div className="min-h-screen bg-white">
         <div className="w-full flex flex-row max-w-[1600px] mx-auto">
 
           <ArchiveLeftSidebar />
@@ -250,7 +250,7 @@ export default function PublicProfilePage() {
 
               <h1
                 className="text-xl font-light text-stone-800"
-                style={{ fontFamily: "'DM Serif Display', serif" }}
+               
               >
                 {profile.fullName}
               </h1>

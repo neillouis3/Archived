@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Home",
   description: "Your Archive feed — following and discover.",
 };
 

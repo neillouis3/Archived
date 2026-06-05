@@ -174,7 +174,7 @@ export default function ProfilePage() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <div className="min-h-screen bg-white">
         <div className="w-full flex flex-row max-w-[1600px] mx-auto">
 
         <ArchiveLeftSidebar />
@@ -250,7 +250,7 @@ export default function ProfilePage() {
             {/* Name + handle */}
             <h1
               className="text-xl font-light text-stone-800"
-              style={{ fontFamily: "'DM Serif Display', serif" }}
+             
             >
               {user.fullName}
             </h1>

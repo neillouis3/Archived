@@ -24,7 +24,7 @@ export default function GalleryPage() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <div className="min-h-screen bg-white">
         <div className="w-full flex flex-row max-w-[1600px] mx-auto">
 
           {/* Left Sidebar */}
@@ -40,7 +40,7 @@ export default function GalleryPage() {
                 <div>
                   <h1 
                     className="text-2xl sm:text-3xl font-light text-stone-800 mb-2"
-                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                   
                   >
                     Gallery
                   </h1>

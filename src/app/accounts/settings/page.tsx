@@ -182,7 +182,7 @@ export default function SettingsPage() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <div className="min-h-screen bg-white">
         <div className="w-full flex flex-row max-w-[1600px] mx-auto">
 
         {/* Left sidebar */}
@@ -222,7 +222,7 @@ export default function SettingsPage() {
                 <div>
                   <h2
                     className="text-lg font-light text-stone-800 mb-1"
-                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                   
                   >
                     Edit profile
                   </h2>
@@ -403,7 +403,7 @@ export default function SettingsPage() {
                 <div className="mb-6">
                   <h2
                     className="text-lg font-light text-stone-800 mb-1"
-                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                   
                   >
                     Account
                   </h2>
@@ -416,7 +416,7 @@ export default function SettingsPage() {
                       colorBackground: "#ffffff",
                       colorInputBackground: "#ffffff",
                       colorInputText: "#3a3530",
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "var(--font-inter), sans-serif",
                       borderRadius: "0.75rem",
                       fontSize: "13px",
                     },
@@ -437,7 +437,7 @@ export default function SettingsPage() {
                 <div>
                   <h2
                     className="text-lg font-light text-stone-800 mb-1"
-                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                   
                   >
                     Notifications
                   </h2>
