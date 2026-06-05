@@ -36,16 +36,7 @@ export default function GalleryPage() {
             <div className="w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
               
               {/* Header */}
-              <div className="mb-6 sm:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h1 
-                    className="text-2xl sm:text-3xl font-normal text-stone-800 mb-2"
-                   
-                  >
-                    Gallery
-                  </h1>
-                  <p className="text-sm text-stone-400">Your collection of moments</p>
-                </div>
+              <div className="mb-6 sm:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
                 <AddPostModal
                   username={user?.username ?? undefined}
                   fullName={user?.fullName ?? undefined}

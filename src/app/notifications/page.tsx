@@ -144,33 +144,21 @@ export default function NotificationsPage() {
 
           <div className="flex-1 min-w-0 flex flex-col items-center border-x-0 sm:border-x sm:border-stone-200/80">
             <div className="w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
-              <div className="mb-6 sm:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h1
-                    className="text-2xl sm:text-3xl font-normal text-stone-800 mb-2"
-                   
+              {user && unreadCount > 0 ? (
+                <div className="mb-6 sm:mb-8 flex flex-wrap items-center justify-end gap-3">
+                  <span className="inline-flex items-center rounded-full bg-stone-800 px-2.5 py-1 text-xs font-medium text-white tabular-nums">
+                    {unreadCount} unread
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onPress={markAllRead}
+                    className="text-xs text-stone-500 hover:text-stone-700 h-auto py-1 px-2"
                   >
-                    Notifications
-                  </h1>
-                  <p className="text-sm text-stone-400">Likes, comments, follows, and friends</p>
+                    Mark all read
+                  </Button>
                 </div>
-
-                {user && unreadCount > 0 ? (
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span className="inline-flex items-center rounded-full bg-stone-800 px-2.5 py-1 text-xs font-medium text-white tabular-nums">
-                      {unreadCount} unread
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onPress={markAllRead}
-                      className="text-xs text-stone-500 hover:text-stone-700 h-auto py-1 px-2"
-                    >
-                      Mark all read
-                    </Button>
-                  </div>
-                ) : null}
-              </div>
+              ) : null}
 
               {!user ? (
                 <div className="flex flex-col items-center justify-center h-96 text-center">

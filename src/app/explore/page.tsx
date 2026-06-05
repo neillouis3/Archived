@@ -136,24 +136,6 @@ function ExplorePageInner() {
 
           <div className="flex-1 min-w-0 flex flex-col items-center border-x-0 sm:border-x sm:border-stone-200/80">
             <div className="w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
-              <div className="mb-6 sm:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h1
-                    className="text-2xl sm:text-3xl font-normal text-stone-800 mb-2"
-                   
-                  >
-                    Explore
-                  </h1>
-                  <p className="text-sm text-stone-400">
-                    {q && !postsLoading
-                      ? allImages.length === 1
-                        ? "1 image"
-                        : `${allImages.length} images`
-                      : "Search posts, tags, and people"}
-                  </p>
-                </div>
-              </div>
-
               <div className="mb-6 sm:mb-8">
                 <ExploreSearchBar
                   variant="full"

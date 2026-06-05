@@ -412,7 +412,7 @@ function ArchivePost({
             </Tooltip.Content>
           </Tooltip>
           {!engagementLoading && likeCount > 0 && (
-            <span className="text-xs text-stone-500 tabular-nums">{likeCount}</span>
+            <span className="text-xs font-medium text-stone-500 tabular-nums">{likeCount}</span>
           )}
         </div>
 
@@ -435,7 +435,7 @@ function ArchivePost({
             </Tooltip.Content>
           </Tooltip>
           {!engagementLoading && commentCount > 0 && (
-            <span className="text-xs text-stone-500 tabular-nums">{commentCount}</span>
+            <span className="text-xs font-medium text-stone-500 tabular-nums">{commentCount}</span>
           )}
         </div>
 
