@@ -1,4 +1,5 @@
 import type { Appearance } from "@clerk/types";
+import { APP_FONT_FAMILY } from "@/lib/appFont";
 
 /** Shared Clerk UI for sign-in / sign-up pages (matches settings Account tab). */
 export const clerkAuthAppearance: Appearance = {
@@ -7,7 +8,7 @@ export const clerkAuthAppearance: Appearance = {
     colorBackground: "#ffffff",
     colorInputBackground: "#ffffff",
     colorInputText: "#3a3530",
-    fontFamily: "var(--font-inter), sans-serif",
+    fontFamily: APP_FONT_FAMILY,
     borderRadius: "0.75rem",
     fontSize: "14px",
   },

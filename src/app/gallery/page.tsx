@@ -39,7 +39,7 @@ export default function GalleryPage() {
               <div className="mb-6 sm:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h1 
-                    className="text-2xl sm:text-3xl font-light text-stone-800 mb-2"
+                    className="text-2xl sm:text-3xl font-normal text-stone-800 mb-2"
                    
                   >
                     Gallery

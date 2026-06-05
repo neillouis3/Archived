@@ -17,6 +17,7 @@ import {
   SOCIAL_FIELD_CONFIG,
   type SocialMediaFields,
 } from "@/lib/socialLinks";
+import { clerkAuthAppearance } from "@/lib/clerkAuthAppearance";
 
 // ── icons ──────────────────────────────────────────────────────────────────
 const UserIcon = () => (
@@ -221,7 +222,7 @@ export default function SettingsPage() {
               <div className="flex flex-col gap-8">
                 <div>
                   <h2
-                    className="text-lg font-light text-stone-800 mb-1"
+                    className="text-lg font-normal text-stone-800 mb-1"
                    
                   >
                     Edit profile
@@ -237,7 +238,7 @@ export default function SettingsPage() {
                     className="w-16 h-16 rounded-full object-cover flex-shrink-0"
                   />
                   <div>
-                    <p className="text-sm font-medium text-stone-700">{user.fullName}</p>
+                    <p className="text-sm font-medium font-sans text-stone-700">{user.fullName}</p>
                     <p className="text-xs text-stone-400 mb-2">@{user.username}</p>
                     <button className="text-xs text-stone-500 border border-stone-300 rounded-lg px-2.5 py-1 hover:bg-stone-100 transition-colors">
                       Change photo
@@ -402,7 +403,7 @@ export default function SettingsPage() {
               <div>
                 <div className="mb-6">
                   <h2
-                    className="text-lg font-light text-stone-800 mb-1"
+                    className="text-lg font-normal text-stone-800 mb-1"
                    
                   >
                     Account
@@ -411,16 +412,13 @@ export default function SettingsPage() {
                 </div>
                 <UserProfile
                   appearance={{
+                    ...clerkAuthAppearance,
                     variables: {
-                      colorPrimary: "#44403c",
-                      colorBackground: "#ffffff",
-                      colorInputBackground: "#ffffff",
-                      colorInputText: "#3a3530",
-                      fontFamily: "var(--font-inter), sans-serif",
-                      borderRadius: "0.75rem",
+                      ...clerkAuthAppearance.variables,
                       fontSize: "13px",
                     },
                     elements: {
+                      ...clerkAuthAppearance.elements,
                       card: "shadow-none border-0 bg-transparent p-0",
                       rootBox: "w-full",
                       navbar: "hidden",
@@ -436,7 +434,7 @@ export default function SettingsPage() {
               <div className="flex flex-col gap-6">
                 <div>
                   <h2
-                    className="text-lg font-light text-stone-800 mb-1"
+                    className="text-lg font-normal text-stone-800 mb-1"
                    
                   >
                     Notifications

@@ -248,12 +248,9 @@ export default function ProfilePage() {
             </div>
 
             {/* Name + handle */}
-            <h1
-              className="text-xl font-light text-stone-800"
-             
-            >
+            <p className="text-xl font-medium font-sans text-stone-800">
               {user.fullName}
-            </h1>
+            </p>
             <p className="text-xs text-stone-400 mt-0.5 mb-3">@{user.username}</p>
 
             {/* Bio */}

@@ -11,7 +11,7 @@ export default function RegisterPage() {
       <header className="shrink-0 flex flex-col items-center px-6 pt-10 pb-6 sm:pt-14">
         <Link
           href="/"
-          className="font-light text-stone-800 text-xl sm:text-2xl
+          className="font-normal text-stone-800 text-xl sm:text-2xl
                      hover:text-stone-600 transition-colors"
          
         >

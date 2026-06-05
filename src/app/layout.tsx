@@ -36,9 +36,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const shell = (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={inter.variable}>
       <body
-        className={`${inter.variable} font-sans antialiased`}
+        className={`${inter.className} font-sans antialiased`}
       >
         <Providers>{children}</Providers>
       </body>

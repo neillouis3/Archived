@@ -248,12 +248,9 @@ export default function PublicProfilePage() {
                 </div>
               </div>
 
-              <h1
-                className="text-xl font-light text-stone-800"
-               
-              >
+              <p className="text-xl font-medium font-sans text-stone-800">
                 {profile.fullName}
-              </h1>
+              </p>
               <p className="text-xs text-stone-400 mt-0.5 mb-3">{handle}</p>
 
               {profile.bio ? (
