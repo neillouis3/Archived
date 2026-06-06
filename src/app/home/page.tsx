@@ -1,9 +1,9 @@
 "use client"
 
 import { useUser } from "@clerk/nextjs";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { Button, Skeleton } from "@heroui/react";
+import { Button, Skeleton, Tabs } from "@heroui/react";
 import ArchiveLeftSidebar from "@/components/leftSideBar";
 import ArchiveRightSidebar from "@/components/rightSideBar";
 import ArchivePost from "@/components/albumPost";
@@ -47,6 +47,8 @@ function DiscoverEmptyState() {
 }
 
 function FollowingEmptyState() {
+  const router = useRouter();
+
   return (
     <div className="flex flex-col items-center justify-center py-20 px-4 text-center max-w-md mx-auto">
       <p className="text-xs text-stone-300 mb-2">
@@ -57,18 +59,20 @@ function FollowingEmptyState() {
         accepted friends.
       </p>
       <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto sm:justify-center">
-        <Link
-          href="/explore"
-          className="rounded-xl bg-stone-800 text-white text-xs px-6 py-3 text-center hover:bg-stone-700 transition-colors"
+        <Button
+          variant="primary"
+          size="sm"
+          onPress={() => router.push("/explore")}
         >
           Explore posts
-        </Link>
-        <Link
-          href="/accounts/profile"
-          className="rounded-xl border border-stone-200 text-stone-600 text-xs px-6 py-3 text-center hover:bg-stone-50 transition-colors"
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onPress={() => router.push("/accounts/profile")}
         >
           Your profile
-        </Link>
+        </Button>
       </div>
     </div>
   );
@@ -81,7 +85,7 @@ export default function Home() {
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
-  const [feedType, setFeedType] = useState<"following" | "discover">("following");
+  const [feedType, setFeedType] = useState<"following" | "discover">("discover");
   const [viewMode, setViewMode] = useState<"feed" | "grid">("feed");
 
   const fetchPostsPage = useCallback(
@@ -167,26 +171,27 @@ export default function Home() {
 
               {/* Feed tabs */}
               <div className="mb-6 sm:mb-8 flex flex-wrap items-center gap-4 sm:gap-6">
-                <button 
-                  onClick={() => setFeedType("following")}
-                  className={`text-xs transition-colors pb-0.5 ${
-                    feedType === "following" 
-                      ? "text-stone-700 font-medium border-b border-stone-700" 
-                      : "text-stone-300 hover:text-stone-500"
-                  }`}
+                <Tabs
+                  selectedKey={feedType}
+                  onSelectionChange={(key) =>
+                    setFeedType(String(key) as "following" | "discover")
+                  }
+                  variant="secondary"
+                  className="min-w-0"
                 >
-                  Following
-                </button>
-                <button 
-                  onClick={() => setFeedType("discover")}
-                  className={`text-xs transition-colors pb-0.5 ${
-                    feedType === "discover" 
-                      ? "text-stone-700 font-medium border-b border-stone-700" 
-                      : "text-stone-300 hover:text-stone-500"
-                  }`}
-                >
-                  Discover
-                </button>
+                  <Tabs.ListContainer>
+                    <Tabs.List aria-label="Feed" className="text-xs">
+                      <Tabs.Tab id="discover" className="text-xs">
+                        Discover
+                      </Tabs.Tab>
+                      <Tabs.Separator />
+                      <Tabs.Tab id="following" className="text-xs">
+                        Following
+                      </Tabs.Tab>
+                      <Tabs.Indicator />
+                    </Tabs.List>
+                  </Tabs.ListContainer>
+                </Tabs>
                 <button 
                   onClick={() => setViewMode(viewMode === "feed" ? "grid" : "feed")}
                   className="text-xs text-stone-300 hover:text-stone-500 transition-colors pb-0.5 ml-auto flex items-center gap-1.5"
