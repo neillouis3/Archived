@@ -183,12 +183,13 @@ export default function Home() {
                     <Tabs.List aria-label="Feed" className="text-xs">
                       <Tabs.Tab id="discover" className="text-xs">
                         Discover
+                        <Tabs.Indicator />
                       </Tabs.Tab>
-                      <Tabs.Separator />
                       <Tabs.Tab id="following" className="text-xs">
+                        <Tabs.Separator />
                         Following
+                        <Tabs.Indicator />
                       </Tabs.Tab>
-                      <Tabs.Indicator />
                     </Tabs.List>
                   </Tabs.ListContainer>
                 </Tabs>
