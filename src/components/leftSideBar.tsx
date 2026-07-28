@@ -349,7 +349,11 @@ function ProfileMenuDropdown({
         ) : null}
       </Dropdown.Trigger>
 
-      <Dropdown.Popover placement="right bottom" className="min-w-[188px]">
+      <Dropdown.Popover
+        placement="top start"
+        offset={8}
+        className="min-w-[188px] z-[100]"
+      >
         <Dropdown.Menu
           onAction={handleAction}
           className="p-1 [&_[data-slot=menu-item]]:min-h-6 [&_[data-slot=menu-item]]:gap-1.5 [&_[data-slot=menu-item]]:rounded-lg [&_[data-slot=menu-item]]:py-0.5"
