@@ -6,12 +6,8 @@ import Posts from "@lib/models/posts";
 import { getActorImageUrls } from "@lib/clerkActor";
 
 async function enrichNotifications(rows) {
-  const missingActorIds = [
-    ...new Set(
-      rows
-        .filter((n) => n.actorClerkId && !n.actorImageUrl)
-        .map((n) => n.actorClerkId)
-    ),
+  const actorIds = [
+    ...new Set(rows.map((n) => n.actorClerkId).filter(Boolean)),
   ];
 
   const postIds = [
@@ -23,9 +19,7 @@ async function enrichNotifications(rows) {
   ];
 
   const [actorImages, posts] = await Promise.all([
-    missingActorIds.length > 0
-      ? getActorImageUrls(missingActorIds)
-      : Promise.resolve(new Map()),
+    getActorImageUrls(actorIds),
     postIds.length > 0
       ? Posts.find({ _id: { $in: postIds } }).select("media").lean()
       : Promise.resolve([]),
@@ -38,8 +32,9 @@ async function enrichNotifications(rows) {
 
   return rows.map((n) => ({
     ...n,
+    // Prefer live Clerk URL — denormalized actorImageUrl goes stale after PFP changes.
     actorImageUrl:
-      n.actorImageUrl || actorImages.get(n.actorClerkId) || undefined,
+      actorImages.get(n.actorClerkId) || n.actorImageUrl || undefined,
     postImageUrl: n.postId
       ? postImages.get(String(n.postId)) ?? undefined
       : undefined,

@@ -95,28 +95,31 @@ function labelFor(n: NotifRowData): string {
 }
 
 function ActorAvatar({ n }: { n: NotifRowData }) {
+  const [broken, setBroken] = useState(false);
   const avatarClass =
     "w-11 h-11 rounded-full object-cover ring-1 ring-stone-200/60 hover:opacity-90 transition-opacity";
 
-  if (n.actorImageUrl) {
+  const initial = (n.actorFullName || "?").trim().charAt(0).toUpperCase() || "?";
+
+  if (!n.actorImageUrl || broken) {
     return (
-      <img
-        src={n.actorImageUrl}
-        alt=""
-        referrerPolicy="no-referrer"
-        className={avatarClass}
-      />
+      <div
+        className={`${avatarClass} flex items-center justify-center bg-stone-200 text-sm font-medium text-stone-600`}
+        aria-hidden
+      >
+        {initial}
+      </div>
     );
   }
 
-  const initial = (n.actorFullName || "?").trim().charAt(0).toUpperCase() || "?";
   return (
-    <div
-      className={`${avatarClass} flex items-center justify-center bg-stone-200 text-sm font-medium text-stone-600`}
-      aria-hidden
-    >
-      {initial}
-    </div>
+    <img
+      src={n.actorImageUrl}
+      alt=""
+      referrerPolicy="no-referrer"
+      className={avatarClass}
+      onError={() => setBroken(true)}
+    />
   );
 }
 
