@@ -164,9 +164,9 @@ export default function SettingsPage() {
     if (!file || !user) return;
     setAvatarUploading(true);
     try {
-      const updated = await user.setProfileImage({ file });
+      await user.setProfileImage({ file });
       await user.reload();
-      const imageUrl = updated?.imageUrl || user.imageUrl;
+      const imageUrl = user.imageUrl;
       if (imageUrl) {
         await fetch("/api/posts/sync-avatar", {
           method: "POST",
