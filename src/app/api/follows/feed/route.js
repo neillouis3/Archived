@@ -22,8 +22,10 @@ export async function GET(req) {
     const page = Math.max(parseInt(searchParams.get("page") || "1", 10), 1);
     const skip = (page - 1) * limit;
 
-    const followingIds = await getFollowingClerkIds(viewerClerkId);
-    const friendSet = await getAcceptedFriendClerkIdsSet(viewerClerkId);
+    const [followingIds, friendSet] = await Promise.all([
+      getFollowingClerkIds(viewerClerkId),
+      getAcceptedFriendClerkIdsSet(viewerClerkId),
+    ]);
     const filter = buildFollowingFeedFilter(viewerClerkId, followingIds, friendSet);
 
     const [results, total] = await Promise.all([

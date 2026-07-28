@@ -108,21 +108,30 @@ export function PostMediaCarousel({ media, alt }: PostMediaCarouselProps) {
         aria-roledescription="carousel"
         aria-label="Post photos"
       >
-        {media.map((url, i) => (
+        {media.map((url, i) => {
+          const nearActive = Math.abs(i - activeIndex) <= 1;
+          return (
           <div key={`${url}-${i}`} className="relative h-full w-full shrink-0 snap-center snap-always">
-            <img
-              src={url}
-              alt={i === 0 ? alt : `${alt} (${i + 1} of ${media.length})`}
-              draggable={false}
-              className="h-full w-full object-cover select-none"
-              style={IMAGE_FILTER}
-            />
+            {nearActive || i === 0 ? (
+              <img
+                src={url}
+                alt={i === 0 ? alt : `${alt} (${i + 1} of ${media.length})`}
+                draggable={false}
+                loading={i === 0 ? "eager" : "lazy"}
+                decoding="async"
+                className="h-full w-full object-cover select-none"
+                style={IMAGE_FILTER}
+              />
+            ) : (
+              <div className="h-full w-full bg-stone-100" aria-hidden />
+            )}
             <div
               className="pointer-events-none absolute inset-0 opacity-[0.03]"
               style={NOISE_OVERLAY}
             />
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {hasMultiple ? (

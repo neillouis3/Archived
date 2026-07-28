@@ -27,27 +27,38 @@ export async function POST(_req, context) {
     }
 
     const postOid = new mongoose.Types.ObjectId(id);
-    const existing = await PostLikes.findOne({ postId: postOid, clerkId: userId });
+    const existing = await PostLikes.findOne({ postId: postOid, clerkId: userId })
+      .select("_id")
+      .lean();
 
     if (existing) {
-      await PostLikes.deleteOne({ _id: existing._id });
-      const likeCount = await PostLikes.countDocuments({ postId: postOid });
+      const [, likeCount] = await Promise.all([
+        PostLikes.deleteOne({ _id: existing._id }),
+        PostLikes.countDocuments({ postId: postOid, _id: { $ne: existing._id } }),
+      ]);
       return NextResponse.json({ liked: false, likeCount }, { status: 200 });
     }
 
     await PostLikes.create({ postId: postOid, clerkId: userId });
     const likeCount = await PostLikes.countDocuments({ postId: postOid });
 
-    const actor = await getActorFields(userId);
-    await createNotification({
-      recipientClerkId: post.authorClerkId,
-      type: "like",
-      actorClerkId: userId,
-      actorFullName: actor.actorFullName,
-      actorUsername: actor.actorUsername,
-      actorImageUrl: actor.actorImageUrl,
-      postId: postOid,
-    });
+    // Don't block the response on Clerk + notification work.
+    void (async () => {
+      try {
+        const actor = await getActorFields(userId);
+        await createNotification({
+          recipientClerkId: post.authorClerkId,
+          type: "like",
+          actorClerkId: userId,
+          actorFullName: actor.actorFullName,
+          actorUsername: actor.actorUsername,
+          actorImageUrl: actor.actorImageUrl,
+          postId: postOid,
+        });
+      } catch (err) {
+        console.error("POST like notification", err);
+      }
+    })();
 
     return NextResponse.json({ liked: true, likeCount }, { status: 200 });
   } catch (err) {

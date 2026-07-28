@@ -6,8 +6,13 @@ import Posts from "@lib/models/posts";
 import { getActorImageUrls } from "@lib/clerkActor";
 
 async function enrichNotifications(rows) {
-  const actorIds = [...new Set(rows.map((n) => n.actorClerkId).filter(Boolean))];
-  const actorImages = await getActorImageUrls(actorIds);
+  const missingActorIds = [
+    ...new Set(
+      rows
+        .filter((n) => n.actorClerkId && !n.actorImageUrl)
+        .map((n) => n.actorClerkId)
+    ),
+  ];
 
   const postIds = [
     ...new Set(
@@ -17,18 +22,27 @@ async function enrichNotifications(rows) {
     ),
   ];
 
+  const [actorImages, posts] = await Promise.all([
+    missingActorIds.length > 0
+      ? getActorImageUrls(missingActorIds)
+      : Promise.resolve(new Map()),
+    postIds.length > 0
+      ? Posts.find({ _id: { $in: postIds } }).select("media").lean()
+      : Promise.resolve([]),
+  ]);
+
   const postImages = new Map();
-  if (postIds.length > 0) {
-    const posts = await Posts.find({ _id: { $in: postIds } }).select("media").lean();
-    for (const p of posts) {
-      postImages.set(String(p._id), p.media?.[0]?.url ?? null);
-    }
+  for (const p of posts) {
+    postImages.set(String(p._id), p.media?.[0]?.url ?? null);
   }
 
   return rows.map((n) => ({
     ...n,
-    actorImageUrl: actorImages.get(n.actorClerkId) || n.actorImageUrl || undefined,
-    postImageUrl: n.postId ? postImages.get(String(n.postId)) ?? undefined : undefined,
+    actorImageUrl:
+      n.actorImageUrl || actorImages.get(n.actorClerkId) || undefined,
+    postImageUrl: n.postId
+      ? postImages.get(String(n.postId)) ?? undefined
+      : undefined,
   }));
 }
 

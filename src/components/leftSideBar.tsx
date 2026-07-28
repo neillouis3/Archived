@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
 import { useSidebar } from "./sidebarContext";
 import Link from "next/link";
@@ -44,12 +43,13 @@ function SidebarLogo({
         width={size}
         height={size}
         className="object-contain"
+        priority={size >= 28}
       />
     </Link>
   );
 }
 
-function useUnreadNotifCount(user: ReturnType<typeof useUser>["user"], pathname: string) {
+function useUnreadNotifCount(user: ReturnType<typeof useUser>["user"]) {
   const [unreadNotif, setUnreadNotif] = useState(0);
   useEffect(() => {
     if (!user) {
@@ -70,10 +70,15 @@ function useUnreadNotifCount(user: ReturnType<typeof useUser>["user"], pathname:
       }
     }
     void loadUnread();
+    const onFocus = () => void loadUnread();
+    window.addEventListener("focus", onFocus);
+    const interval = window.setInterval(() => void loadUnread(), 60_000);
     return () => {
       cancelled = true;
+      window.removeEventListener("focus", onFocus);
+      window.clearInterval(interval);
     };
-  }, [user, pathname]);
+  }, [user]);
   return unreadNotif;
 }
 
@@ -146,141 +151,129 @@ function MobileArchiveNav({
         </Link>
       </header>
 
-      <AnimatePresence>
-        {mobileNavOpen ? (
-          <div className="lg:hidden fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-label="Navigation">
-            <motion.button
-              type="button"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="absolute inset-0 bg-stone-900/40 backdrop-blur-[2px]"
-              aria-label="Close menu"
-              onClick={closeMobileNav}
-            />
-            <motion.aside
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", stiffness: 380, damping: 36 }}
-              className="absolute left-0 top-0 flex h-full w-[min(20rem,88vw)] flex-col border-r border-stone-200/80 bg-background shadow-2xl pt-[env(safe-area-inset-top)]"
-            >
-              <div className="flex items-center justify-between border-b border-stone-200/60 px-3 py-3">
-                <SidebarLogo size={28} className="pl-1" onNavigate={closeMobileNav} />
-                <button
-                  type="button"
-                  onClick={closeMobileNav}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-stone-500 hover:bg-stone-100"
-                  aria-label="Close menu"
-                >
-                  <HugeiconsIcon icon={Cancel01Icon} size={20} />
-                </button>
-              </div>
+      {mobileNavOpen ? (
+        <div className="lg:hidden fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-label="Navigation">
+          <button
+            type="button"
+            className="absolute inset-0 bg-stone-900/40 backdrop-blur-[2px]"
+            aria-label="Close menu"
+            onClick={closeMobileNav}
+          />
+          <aside className="absolute left-0 top-0 flex h-full w-[min(20rem,88vw)] flex-col border-r border-stone-200/80 bg-background shadow-2xl pt-[env(safe-area-inset-top)]">
+            <div className="flex items-center justify-between border-b border-stone-200/60 px-3 py-3">
+              <SidebarLogo size={28} className="pl-1" onNavigate={closeMobileNav} />
+              <button
+                type="button"
+                onClick={closeMobileNav}
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-stone-500 hover:bg-stone-100"
+                aria-label="Close menu"
+              >
+                <HugeiconsIcon icon={Cancel01Icon} size={20} />
+              </button>
+            </div>
 
-              <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 py-3">
-                {archiveNavItems.map((item) => {
-                  const icon = item.icon;
-                  const isActive =
-                    pathname === item.href ||
-                    (item.href !== "/home" && pathname.startsWith(item.href)) ||
-                    (item.href === "/notifications" && pathname.startsWith("/notifications"));
-                  const notifBadge =
-                    item.key === "notifications" && unreadNotif > 0
-                      ? unreadNotif > 99
-                        ? "99+"
-                        : String(unreadNotif)
-                      : null;
-                  return (
-                    <Link
-                      key={item.key}
-                      href={item.href}
-                      onClick={closeMobileNav}
-                      className={`flex items-center gap-3 rounded-lg px-3 py-3 transition-colors ${
-                        isActive
-                          ? "bg-background ring-1 ring-inset ring-stone-200 text-stone-800"
-                          : "text-stone-600 hover:bg-stone-50/80 hover:text-stone-800"
-                      }`}
-                    >
-                      <HugeiconsIcon
-                        icon={icon}
-                        size={18}
-                        className={`shrink-0 ${isActive ? "text-stone-700" : "text-stone-400"}`}
-                      />
-                      <span className={`text-sm ${isActive ? "font-medium" : ""}`}>{item.label}</span>
-                      {notifBadge ? (
-                        <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-stone-800 px-1 text-xs text-white">
-                          {notifBadge}
-                        </span>
-                      ) : null}
-                    </Link>
-                  );
-                })}
-
-                {user ? (
-                  <div className="mt-2 border-t border-stone-200/60 pt-3">
-                    <AddPostModal
-                      username={username}
-                      fullName={displayName}
-                      imageUrl={user.imageUrl ?? undefined}
-                      fullWidth
+            <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 py-3">
+              {archiveNavItems.map((item) => {
+                const icon = item.icon;
+                const isActive =
+                  pathname === item.href ||
+                  (item.href !== "/home" && pathname.startsWith(item.href)) ||
+                  (item.href === "/notifications" && pathname.startsWith("/notifications"));
+                const notifBadge =
+                  item.key === "notifications" && unreadNotif > 0
+                    ? unreadNotif > 99
+                      ? "99+"
+                      : String(unreadNotif)
+                    : null;
+                return (
+                  <Link
+                    key={item.key}
+                    href={item.href}
+                    onClick={closeMobileNav}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-3 transition-colors ${
+                      isActive
+                        ? "bg-background ring-1 ring-inset ring-stone-200 text-stone-800"
+                        : "text-stone-600 hover:bg-stone-50/80 hover:text-stone-800"
+                    }`}
+                  >
+                    <HugeiconsIcon
+                      icon={icon}
+                      size={18}
+                      className={`shrink-0 ${isActive ? "text-stone-700" : "text-stone-400"}`}
                     />
-                  </div>
-                ) : null}
-              </nav>
+                    <span className={`text-sm ${isActive ? "font-medium" : ""}`}>{item.label}</span>
+                    {notifBadge ? (
+                      <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-stone-800 px-1 text-xs text-white">
+                        {notifBadge}
+                      </span>
+                    ) : null}
+                  </Link>
+                );
+              })}
 
-              <div className="border-t border-stone-200/60 px-2 py-4">
-                {user ? (
-                  <>
-                    <div className="mb-3 flex items-center gap-3 rounded-lg px-2 py-2">
-                      <img src={resolvedImage} alt="" className="h-9 w-9 rounded-full object-cover ring-1 ring-stone-200/60" />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-xs font-medium text-stone-800">{displayName}</p>
-                        <p className="truncate text-xs text-stone-400">@{username}</p>
-                      </div>
+              {user ? (
+                <div className="mt-2 border-t border-stone-200/60 pt-3">
+                  <AddPostModal
+                    username={username}
+                    fullName={displayName}
+                    imageUrl={user.imageUrl ?? undefined}
+                    fullWidth
+                  />
+                </div>
+              ) : null}
+            </nav>
+
+            <div className="border-t border-stone-200/60 px-2 py-4">
+              {user ? (
+                <>
+                  <div className="mb-3 flex items-center gap-3 rounded-lg px-2 py-2">
+                    <img src={resolvedImage} alt="" className="h-9 w-9 rounded-full object-cover ring-1 ring-stone-200/60" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-medium text-stone-800">{displayName}</p>
+                      <p className="truncate text-xs text-stone-400">@{username}</p>
                     </div>
-                    <div className="flex flex-col gap-0.5">
-                      {[
-                        { icon: UserIcon, label: "Your profile", href: "/accounts/profile" },
-                        { icon: Settings02Icon, label: "Settings", href: "/accounts/settings" },
-                        { icon: Notification01Icon, label: "Notifications", href: "/notifications" },
-                      ].map(({ icon, label, href }) => (
-                        <Button
-                          key={href}
-                          variant="ghost"
-                          size="sm"
-                          onPress={() => {
-                            closeMobileNav();
-                            router.push(href);
-                          }}
-                          className="h-9 w-full justify-start gap-2.5 rounded-lg px-2.5 text-xs font-normal text-stone-600 hover:bg-stone-100/90"
-                        >
-                          <HugeiconsIcon icon={icon} size={17} className="shrink-0 text-stone-400" />
-                          {label}
-                        </Button>
-                      ))}
-                      <ThemeSwitcher menuRow />
-                    </div>
-                    <div className="my-2 border-t border-stone-200/60" />
-                    <SignOutButton redirectUrl="/">
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    {[
+                      { icon: UserIcon, label: "Your profile", href: "/accounts/profile" },
+                      { icon: Settings02Icon, label: "Settings", href: "/accounts/settings" },
+                      { icon: Notification01Icon, label: "Notifications", href: "/notifications" },
+                    ].map(({ icon, label, href }) => (
                       <Button
+                        key={href}
                         variant="ghost"
                         size="sm"
-                        className="h-9 w-full justify-start gap-2 rounded-lg px-2.5 text-xs font-normal text-red-700/90 hover:bg-red-50/90"
+                        onPress={() => {
+                          closeMobileNav();
+                          router.push(href);
+                        }}
+                        className="h-9 w-full justify-start gap-2.5 rounded-lg px-2.5 text-xs font-normal text-stone-600 hover:bg-stone-100/90"
                       >
-                        <HugeiconsIcon icon={Logout01Icon} size={17} className="shrink-0" />
-                        Log out
+                        <HugeiconsIcon icon={icon} size={17} className="shrink-0 text-stone-400" />
+                        {label}
                       </Button>
-                    </SignOutButton>
-                  </>
-                ) : (
-                  <p className="px-2 text-xs text-stone-400">Sign in to post and sync.</p>
-                )}
-              </div>
-            </motion.aside>
-          </div>
-        ) : null}
-      </AnimatePresence>
+                    ))}
+                    <ThemeSwitcher menuRow />
+                  </div>
+                  <div className="my-2 border-t border-stone-200/60" />
+                  <SignOutButton redirectUrl="/">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-9 w-full justify-start gap-2 rounded-lg px-2.5 text-xs font-normal text-red-700/90 hover:bg-red-50/90"
+                    >
+                      <HugeiconsIcon icon={Logout01Icon} size={17} className="shrink-0" />
+                      Log out
+                    </Button>
+                  </SignOutButton>
+                </>
+              ) : (
+                <p className="px-2 text-xs text-stone-400">Sign in to post and sync.</p>
+              )}
+            </div>
+          </aside>
+        </div>
+      ) : null}
     </>
   );
 }
@@ -299,7 +292,6 @@ function ProfileMenuDropdown({
   const router = useRouter();
   const { signOut } = useClerk();
   const { resolvedTheme, setTheme } = useTheme();
-  const [open, setOpen] = useState(false);
   const isDark = resolvedTheme === "dark";
 
   function handleAction(key: React.Key) {
@@ -322,51 +314,45 @@ function ProfileMenuDropdown({
     }
   }
 
-  const triggerClass = `
-    flex w-full items-center gap-3 rounded-lg text-left transition-colors cursor-pointer
-    hover:bg-stone-100/80 data-[pressed]:bg-background data-[pressed]:ring-1 data-[pressed]:ring-inset data-[pressed]:ring-stone-200
-    ${isCollapsed ? "justify-center px-1 py-1.5" : "justify-start px-2 py-2 h-auto min-h-0"}
-  `;
-
-  const menuItemClass =
-    "min-h-6 gap-1.5 rounded-lg py-0.5 px-2 text-stone-500";
+  const menuItemClass = "min-h-6 gap-1.5 rounded-lg px-2 py-0.5 text-stone-500";
   const menuIconClass = "shrink-0 text-stone-500";
   const menuLabelClass = "text-xs font-normal leading-none text-stone-500";
 
   return (
-    <Dropdown isOpen={open} onOpenChange={setOpen}>
-      <Dropdown.Trigger className={triggerClass}>
+    <Dropdown>
+      <Dropdown.Trigger
+        aria-label="Account menu"
+        className={`flex w-full cursor-pointer items-center gap-3 rounded-lg text-left transition-colors
+          hover:bg-stone-100/80
+          data-[pressed]:scale-100 data-[pressed]:bg-transparent active:scale-100
+          data-[focus-visible]:ring-1 data-[focus-visible]:ring-stone-300
+          ${isCollapsed ? "justify-center px-1 py-1.5" : "h-auto min-h-0 justify-start px-2 py-2"}`}
+      >
         <span className="h-7 w-7 flex-shrink-0 overflow-hidden rounded-full ring-1 ring-stone-200/60">
           <img src={resolvedImage} alt="" className="h-full w-full object-cover" />
         </span>
-        <AnimatePresence mode="wait">
-          {!isCollapsed ? (
-            <motion.div
-              key="profile-info"
-              initial={{ opacity: 0, width: 0 }}
-              animate={{ opacity: 1, width: "auto" }}
-              exit={{ opacity: 0, width: 0 }}
-              transition={{ duration: 0.15 }}
-              className="flex min-w-0 flex-1 flex-col overflow-hidden text-left"
-            >
-              <span className="truncate whitespace-nowrap text-xs font-medium text-stone-700">{displayName}</span>
-              <span className="truncate whitespace-nowrap text-xs text-stone-400">@{username}</span>
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
         {!isCollapsed ? (
-          <HugeiconsIcon
-            icon={ArrowDown01Icon}
-            size={16}
-            className={`flex-shrink-0 text-stone-400 transition-transform ${open ? "rotate-180" : ""}`}
-            aria-hidden
-          />
+          <>
+            <div className="flex min-w-0 flex-1 flex-col overflow-hidden text-left">
+              <span className="truncate whitespace-nowrap text-xs font-medium text-stone-700">
+                {displayName}
+              </span>
+              <span className="truncate whitespace-nowrap text-xs text-stone-400">@{username}</span>
+            </div>
+            <HugeiconsIcon
+              icon={ArrowDown01Icon}
+              size={16}
+              className="flex-shrink-0 text-stone-400"
+              aria-hidden
+            />
+          </>
         ) : null}
       </Dropdown.Trigger>
+
       <Dropdown.Popover placement="right bottom" className="min-w-[188px]">
         <Dropdown.Menu
           onAction={handleAction}
-          className="p-1 [&_[data-slot=menu-item]]:min-h-6 [&_[data-slot=menu-item]]:gap-1.5 [&_[data-slot=menu-item]]:py-0.5 [&_[data-slot=menu-item]]:rounded-lg"
+          className="p-1 [&_[data-slot=menu-item]]:min-h-6 [&_[data-slot=menu-item]]:gap-1.5 [&_[data-slot=menu-item]]:rounded-lg [&_[data-slot=menu-item]]:py-0.5"
         >
           <Dropdown.Section>
             <Header className="px-2 pb-1">
@@ -386,8 +372,16 @@ function ProfileMenuDropdown({
             <HugeiconsIcon icon={Notification01Icon} size={14} className={menuIconClass} />
             <span className={menuLabelClass}>Notifications</span>
           </Dropdown.Item>
-          <Dropdown.Item id="theme" textValue={isDark ? "Light mode" : "Dark mode"} className={menuItemClass}>
-            <HugeiconsIcon icon={isDark ? Sun02Icon : Moon02Icon} size={14} className={menuIconClass} />
+          <Dropdown.Item
+            id="theme"
+            textValue={isDark ? "Light mode" : "Dark mode"}
+            className={menuItemClass}
+          >
+            <HugeiconsIcon
+              icon={isDark ? Sun02Icon : Moon02Icon}
+              size={14}
+              className={menuIconClass}
+            />
             <span className={menuLabelClass}>{isDark ? "Light mode" : "Dark mode"}</span>
           </Dropdown.Item>
           <Separator />
@@ -411,7 +405,7 @@ export default function ArchiveLeftSidebar() {
   const { user } = useUser();
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
-  const unreadNotif = useUnreadNotifCount(user, pathname);
+  const unreadNotif = useUnreadNotifCount(user);
 
   const username = user?.username ?? "user";
   const displayName = user?.fullName ?? user?.firstName ?? "Account";
@@ -439,11 +433,10 @@ export default function ArchiveLeftSidebar() {
         user={user}
       />
 
-      <motion.div
-        initial={false}
-        animate={{ width: isCollapsed ? 72 : 260 }}
-        transition={{ type: "spring", stiffness: 420, damping: 38 }}
-        className="fixed left-0 top-0 z-40 hidden h-screen shrink-0 border-r border-stone-200/80 bg-background lg:flex lg:flex-col"
+      <div
+        className={`fixed left-0 top-0 z-40 hidden h-screen shrink-0 border-r border-stone-200/80 bg-background transition-[width] duration-200 ease-out lg:flex lg:flex-col ${
+          isCollapsed ? "w-[4.5rem]" : "w-[16.25rem]"
+        }`}
       >
         <div className="flex h-full flex-col px-2 pb-4 pt-6">
           <div
@@ -483,8 +476,9 @@ export default function ArchiveLeftSidebar() {
                   : null;
               const hasBadge = notifBadge != null;
 
-              const linkEl = (
+              return (
                 <Link
+                  key={item.key}
                   href={item.href}
                   title={isCollapsed ? item.label : undefined}
                   className={`
@@ -498,56 +492,39 @@ export default function ArchiveLeftSidebar() {
                     size={18}
                     className={`flex-shrink-0 ${isActive ? "text-stone-700" : "text-stone-400"}`}
                   />
-                  <AnimatePresence mode="wait">
-                    {!isCollapsed && (
-                      <motion.span
-                        key="label"
-                        initial={{ opacity: 0, width: 0 }}
-                        animate={{ opacity: 1, width: "auto" }}
-                        exit={{ opacity: 0, width: 0 }}
-                        transition={{ duration: 0.15 }}
-                        className={`min-w-0 flex-1 overflow-hidden whitespace-nowrap text-xs
-                        ${isActive ? "font-medium text-stone-800" : ""}`}
-                      >
-                        {item.label}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                  {hasBadge && isCollapsed && (
+                  {!isCollapsed ? (
+                    <span
+                      className={`min-w-0 flex-1 overflow-hidden whitespace-nowrap text-xs ${
+                        isActive ? "font-medium text-stone-800" : ""
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+                  ) : null}
+                  {hasBadge && isCollapsed ? (
                     <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-stone-800 px-0.5 text-[10px] font-medium leading-none text-white ring-2 ring-white tabular-nums">
                       {Number(notifBadge) > 9 ? "9+" : notifBadge}
                     </span>
-                  )}
-                  {hasBadge && !isCollapsed && (
+                  ) : null}
+                  {hasBadge && !isCollapsed ? (
                     <span className="ml-auto flex h-5 min-w-5 flex-shrink-0 items-center justify-center rounded-full bg-stone-800 px-1.5 text-xs font-medium text-white tabular-nums">
                       {notifBadge}
                     </span>
-                  )}
+                  ) : null}
                 </Link>
               );
-
-              return <React.Fragment key={item.key}>{linkEl}</React.Fragment>;
             })}
 
-            <AnimatePresence>
-              {!isCollapsed && (
-                <motion.div
-                  key="post-btn"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.15 }}
-                  className="px-1 pt-2"
-                >
-                  <AddPostModal
-                    username={username}
-                    fullName={displayName}
-                    imageUrl={user?.imageUrl ?? undefined}
-                    fullWidth
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {!isCollapsed ? (
+              <div className="px-1 pt-2">
+                <AddPostModal
+                  username={username}
+                  fullName={displayName}
+                  imageUrl={user?.imageUrl ?? undefined}
+                  fullWidth
+                />
+              </div>
+            ) : null}
           </nav>
 
           <div className="mt-auto border-t border-stone-200/60 px-1 pt-5">
@@ -577,7 +554,7 @@ export default function ArchiveLeftSidebar() {
             )}
           </div>
         </div>
-      </motion.div>
+      </div>
     </>
   );
 }

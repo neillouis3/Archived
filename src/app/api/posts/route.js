@@ -63,6 +63,10 @@ export async function GET(req) {
     const engagementRaw = searchParams.get("engagement");
     const engagementType =
       engagementRaw === "saved" || engagementRaw === "liked" ? engagementRaw : null;
+    const skipEngagement =
+      searchParams.get("skipEngagement") === "1" ||
+      searchParams.get("skipEngagement") === "true" ||
+      engagementRaw === "0";
 
     if (engagementType) {
       if (!viewerClerkId) {
@@ -85,8 +89,10 @@ export async function GET(req) {
       }
 
       const uniqueIds = [...new Set(rows.map((r) => r.postId).filter(Boolean))];
-      const postsRaw = await Posts.find({ _id: { $in: uniqueIds } }).lean();
-      const friendSet = await getAcceptedFriendClerkIdsSet(viewerClerkId);
+      const [postsRaw, friendSet] = await Promise.all([
+        Posts.find({ _id: { $in: uniqueIds } }).lean(),
+        getAcceptedFriendClerkIdsSet(viewerClerkId),
+      ]);
       const visiblePosts = filterPostsVisibleToViewer(
         postsRaw,
         viewerClerkId,
@@ -108,10 +114,9 @@ export async function GET(req) {
         if (ordered.length >= limit) break;
       }
 
-      await Promise.all([
-        embedEngagementInPosts(ordered, viewerClerkId),
-        enrichPostsAuthorAvatars(ordered),
-      ]);
+      const jobs = [enrichPostsAuthorAvatars(ordered)];
+      if (!skipEngagement) jobs.push(embedEngagementInPosts(ordered, viewerClerkId));
+      await Promise.all(jobs);
       return NextResponse.json(
         { results: ordered, page, limit, total: skipTotal ? -1 : ordered.length },
         { status: 200 }
@@ -170,10 +175,9 @@ export async function GET(req) {
       }
     }
 
-    await Promise.all([
-      embedEngagementInPosts(results, viewerClerkId),
-      enrichPostsAuthorAvatars(results),
-    ]);
+    const jobs = [enrichPostsAuthorAvatars(results)];
+    if (!skipEngagement) jobs.push(embedEngagementInPosts(results, viewerClerkId));
+    await Promise.all(jobs);
 
     return NextResponse.json({ results, page, limit, total }, { status: 200 });
   } catch (err) {

@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import Posts from "@lib/models/posts";
 import connection from "../../../../lib/mongo";
+import { setCachedActorImageUrl } from "@lib/clerkActor";
 
 /** POST — update denormalized avatarUrl on all of the signed-in user's posts. */
 export async function POST(req) {
@@ -18,6 +19,8 @@ export async function POST(req) {
     if (!avatarUrl || !/^https?:\/\//i.test(avatarUrl)) {
       return NextResponse.json({ error: "Invalid avatarUrl" }, { status: 400 });
     }
+
+    setCachedActorImageUrl(userId, avatarUrl);
 
     const result = await Posts.updateMany(
       { authorClerkId: userId },

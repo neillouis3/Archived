@@ -8,9 +8,6 @@ import { ClerkProvider } from "@clerk/nextjs";
 /** Clerk client hooks need a real key at runtime; static prerender also evaluates the root layout. */
 const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
-// Avoid static prerender of routes that use Clerk in the tree (reduces build-time edge cases).
-export const dynamic = "force-dynamic";
-
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",

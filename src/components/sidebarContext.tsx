@@ -5,6 +5,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useMemo,
   ReactNode,
 } from "react";
 
@@ -45,31 +46,32 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
     if (saved) setOpen(saved === "true");
   }, []);
 
-  const toggleSidebar = () => {
+  const toggleSidebar = useCallback(() => {
     setOpen((prev) => {
       const newState = !prev;
       document.cookie = `sidebar_state=${newState}; path=/; max-age=${60 * 60 * 24 * 7}`;
       return newState;
     });
-  };
+  }, []);
 
-  const state = open ? "expanded" : "collapsed";
+  const state: "expanded" | "collapsed" = open ? "expanded" : "collapsed";
+
+  const value = useMemo(
+    () => ({
+      state,
+      open,
+      setOpen,
+      isMobile,
+      toggleSidebar,
+      mobileNavOpen,
+      setMobileNavOpen,
+      closeMobileNav,
+    }),
+    [state, open, isMobile, toggleSidebar, mobileNavOpen, closeMobileNav]
+  );
 
   return (
-    <SidebarContext.Provider
-      value={{
-        state,
-        open,
-        setOpen,
-        isMobile,
-        toggleSidebar,
-        mobileNavOpen,
-        setMobileNavOpen,
-        closeMobileNav,
-      }}
-    >
-      {children}
-    </SidebarContext.Provider>
+    <SidebarContext.Provider value={value}>{children}</SidebarContext.Provider>
   );
 }
 

@@ -3,10 +3,6 @@
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import ArchiveLeftSidebar from "@/components/leftSideBar";
-import ArchiveRightSidebar from "@/components/rightSideBar";
-import { SidebarProvider } from "@/components/sidebarContext";
-import { SidebarInsetSpacer } from "@/components/sidebarInsetSpacer";
 import { Button, Skeleton, Tag, TagGroup } from "@heroui/react";
 import FollowButton from "@/components/FollowButton";
 
@@ -177,80 +173,67 @@ export default function NotificationsPage() {
   const groups = groupByDate(filtered);
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen bg-background text-foreground">
-        <div className="w-full flex flex-row max-w-[1600px] mx-auto">
-          <ArchiveLeftSidebar />
-          <SidebarInsetSpacer />
-
-          <div className="flex-1 min-w-0 flex flex-col items-center border-x-0 sm:border-x sm:border-stone-200/80">
-            <div className="w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
-              {!user ? (
-                <div className="flex flex-col items-center justify-center h-96 text-center">
-                  <p className="text-xs text-stone-400">Sign in to view notifications.</p>
-                </div>
-              ) : (
-                <>
-                  <TagGroup
-                    selectionMode="single"
-                    selectedKeys={new Set([filter])}
-                    onSelectionChange={(keys) => {
-                      if (keys === "all") return;
-                      const next = Array.from(keys)[0];
-                      if (next) setFilter(String(next) as FilterKey);
-                    }}
-                    size="sm"
-                    className="mb-6"
-                  >
-                    <TagGroup.List aria-label="Filter notifications" className="gap-2">
-                      {FILTERS.map(({ key, label }) => (
-                        <Tag key={key} id={key} textValue={label} className="font-normal">
-                          {label}
-                        </Tag>
-                      ))}
-                    </TagGroup.List>
-                  </TagGroup>
-
-                  {loading ? (
-                    <div className="flex flex-col gap-3">
-                      {[1, 2, 3, 4, 5].map((i) => (
-                        <Skeleton key={i} className="h-16 w-full rounded-xl" />
-                      ))}
-                    </div>
-                  ) : groups.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-72 text-center">
-                      <p className="text-xs text-stone-300 mb-1">No notifications</p>
-                      <p className="text-xs text-stone-400">You&apos;re all caught up</p>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col gap-6">
-                      {groups.map(({ label, items }) => (
-                        <section key={label}>
-                          <p className="text-sm font-medium text-stone-800 mb-1">{label}</p>
-                          <ul className="flex flex-col divide-y divide-stone-100">
-                            {items.map((n) => (
-                              <NotificationRow
-                                key={n._id}
-                                n={n}
-                                onFriendRespond={respondToFriendRequest}
-                              />
-                            ))}
-                          </ul>
-                        </section>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
+    <div className="flex-1 min-w-0 flex flex-col items-center border-x-0 sm:border-x sm:border-stone-200/80">
+      <div className="w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+        {!user ? (
+          <div className="flex flex-col items-center justify-center h-96 text-center">
+            <p className="text-xs text-stone-400">Sign in to view notifications.</p>
           </div>
+        ) : (
+          <>
+            <TagGroup
+              selectionMode="single"
+              selectedKeys={new Set([filter])}
+              onSelectionChange={(keys) => {
+                if (keys === "all") return;
+                const next = Array.from(keys)[0];
+                if (next) setFilter(String(next) as FilterKey);
+              }}
+              size="sm"
+              className="mb-6"
+            >
+              <TagGroup.List aria-label="Filter notifications" className="gap-2">
+                {FILTERS.map(({ key, label }) => (
+                  <Tag key={key} id={key} textValue={label} className="font-normal">
+                    {label}
+                  </Tag>
+                ))}
+              </TagGroup.List>
+            </TagGroup>
 
-          <div className="hidden xl:block xl:w-64 2xl:w-72 flex-shrink-0">
-            <ArchiveRightSidebar />
-          </div>
-        </div>
+            {loading ? (
+              <div className="flex flex-col gap-3">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Skeleton key={i} className="h-16 w-full rounded-xl" />
+                ))}
+              </div>
+            ) : groups.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-72 text-center">
+                <p className="text-xs text-stone-300 mb-1">No notifications</p>
+                <p className="text-xs text-stone-400">You&apos;re all caught up</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-6">
+                {groups.map(({ label, items }) => (
+                  <section key={label}>
+                    <p className="text-sm font-medium text-stone-800 mb-1">{label}</p>
+                    <ul className="flex flex-col divide-y divide-stone-100">
+                      {items.map((n) => (
+                        <NotificationRow
+                          key={n._id}
+                          n={n}
+                          onFriendRespond={respondToFriendRequest}
+                        />
+                      ))}
+                    </ul>
+                  </section>
+                ))}
+              </div>
+            )}
+          </>
+        )}
       </div>
-    </SidebarProvider>
+    </div>
   );
 }
 

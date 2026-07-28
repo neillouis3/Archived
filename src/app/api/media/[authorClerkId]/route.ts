@@ -15,7 +15,12 @@ export async function GET(
 
     const { authorClerkId } = await params;
     const { userId: viewerClerkId } = await auth();
-    const collection = new URL(req.url).searchParams.get("collection");
+    const { searchParams } = new URL(req.url);
+    const collection = searchParams.get("collection");
+    const limit = Math.min(
+      Math.max(parseInt(searchParams.get("limit") || "60", 10) || 60, 1),
+      120
+    );
 
     const friend =
       viewerClerkId && viewerClerkId !== authorClerkId
@@ -36,7 +41,11 @@ export async function GET(
       filter = { ...filter, visibility: collection };
     }
 
-    const posts = await Posts.find(filter).select("media").lean();
+    const posts = await Posts.find(filter)
+      .select("media")
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean();
 
     const mediaUrls = posts.flatMap((post) =>
       ((post as { media?: { url: string }[] }).media || []).map((m) => m.url)

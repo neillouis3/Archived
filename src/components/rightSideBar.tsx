@@ -128,7 +128,7 @@ export default function ArchiveRightSidebar() {
     setSidebarSearchLoading(true);
 
     (async () => {
-      const qs = new URLSearchParams({ skipTotal: "1", search: debouncedQ });
+      const qs = new URLSearchParams({ skipTotal: "1", search: debouncedQ, skipEngagement: "1" });
       const postsP = fetch(`/api/posts?${qs.toString()}`, {
         credentials: "include",
       }).then((r) => (r.ok ? r.json() : { results: [] }));
@@ -396,6 +396,7 @@ export default function ArchiveRightSidebar() {
                 {user && user.id !== s.authorClerkId ? (
                   <FollowButton
                     targetUserId={s.authorClerkId}
+                    initialFollowing={false}
                     onChange={() => void load({ force: true })}
                     className="text-xs px-2 py-1 rounded-md border border-stone-200 text-stone-600 hover:bg-stone-100 transition-colors disabled:opacity-50 shrink-0"
                   />

@@ -8,11 +8,20 @@ type Props = {
   className?: string;
   /** Called after a successful follow or unfollow */
   onChange?: () => void;
+  /** Seed follow state without an extra status request (e.g. sidebar suggestions). */
+  initialFollowing?: boolean;
 };
 
-export default function FollowButton({ targetUserId, className = "", onChange }: Props) {
+export default function FollowButton({
+  targetUserId,
+  className = "",
+  onChange,
+  initialFollowing,
+}: Props) {
   const { user, isLoaded } = useUser();
-  const [following, setFollowing] = useState<boolean | null>(null);
+  const [following, setFollowing] = useState<boolean | null>(() =>
+    typeof initialFollowing === "boolean" ? initialFollowing : null
+  );
   const [followsYou, setFollowsYou] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -35,11 +44,15 @@ export default function FollowButton({ targetUserId, className = "", onChange }:
 
   useEffect(() => {
     if (!isLoaded || !user || user.id === targetUserId) {
-      setFollowing(null);
+      if (typeof initialFollowing !== "boolean") setFollowing(null);
+      return;
+    }
+    if (typeof initialFollowing === "boolean") {
+      setFollowing(initialFollowing);
       return;
     }
     load();
-  }, [isLoaded, user, targetUserId, load]);
+  }, [isLoaded, user, targetUserId, load, initialFollowing]);
 
   if (!isLoaded || !user || user.id === targetUserId) return null;
 

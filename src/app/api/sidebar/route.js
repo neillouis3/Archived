@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 import connection from "../../../lib/mongo";
 import Posts from "@lib/models/posts";
 import Follows from "@lib/models/follows";
-import { getActorImageUrls } from "@lib/clerkActor";
 
 export async function GET() {
   try {
@@ -11,6 +10,8 @@ export async function GET() {
     const { userId: viewerClerkId } = await auth();
 
     const publicMatch = { visibility: "public" };
+    const postProjection =
+      "media.url authorClerkId fullName username avatarUrl createdAt";
 
     const followsPromise = viewerClerkId
       ? Follows.find({ followerClerkId: viewerClerkId })
@@ -20,7 +21,11 @@ export async function GET() {
 
     const [followingRows, recent, tagAgg] = await Promise.all([
       followsPromise,
-      Posts.find(publicMatch).sort({ createdAt: -1 }).limit(45).lean(),
+      Posts.find(publicMatch)
+        .select(postProjection)
+        .sort({ createdAt: -1 })
+        .limit(24)
+        .lean(),
       Posts.aggregate([
         { $match: { ...publicMatch, tags: { $exists: true, $ne: [] } } },
         { $unwind: "$tags" },
@@ -65,16 +70,9 @@ export async function GET() {
         fullName: post.fullName || "Member",
         username: post.username || "",
         avatarUrl: post.avatarUrl || "",
+        isFollowing: false,
       });
       if (suggestions.length >= 5) break;
-    }
-
-    const suggestionImages = await getActorImageUrls(
-      suggestions.map((s) => s.authorClerkId)
-    );
-    for (const s of suggestions) {
-      const live = suggestionImages.get(s.authorClerkId);
-      if (live) s.avatarUrl = live;
     }
 
     return NextResponse.json({ tiles, tags, suggestions }, { status: 200 });

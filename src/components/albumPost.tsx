@@ -138,7 +138,8 @@ function ArchivePost({
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [commentSubmitting, setCommentSubmitting] = useState(false);
-  const [actionLoading, setActionLoading] = useState(false);
+  const [likePending, setLikePending] = useState(false);
+  const [savePending, setSavePending] = useState(false);
   const commentsLoadedRef = useRef(false);
 
   useEffect(() => {
@@ -206,35 +207,54 @@ function ArchivePost({
   const signedIn = Boolean(user);
 
   async function toggleLike() {
-    if (!signedIn || !postId || actionLoading) return;
-    setActionLoading(true);
+    if (!signedIn || !postId || likePending) return;
+    const prevLiked = liked;
+    const prevCount = likeCount;
+    const nextLiked = !prevLiked;
+    setLiked(nextLiked);
+    setLikeCount((c) => Math.max(0, c + (nextLiked ? 1 : -1)));
+    setLikePending(true);
     try {
       const res = await fetch(`/api/posts/${encodeURIComponent(postId)}/like`, {
         method: "POST",
         credentials: "include",
       });
-      if (!res.ok) return;
+      if (!res.ok) {
+        setLiked(prevLiked);
+        setLikeCount(prevCount);
+        return;
+      }
       const data = await res.json();
       setLiked(Boolean(data.liked));
       if (typeof data.likeCount === "number") setLikeCount(data.likeCount);
+    } catch {
+      setLiked(prevLiked);
+      setLikeCount(prevCount);
     } finally {
-      setActionLoading(false);
+      setLikePending(false);
     }
   }
 
   async function toggleSave() {
-    if (!signedIn || !postId || actionLoading) return;
-    setActionLoading(true);
+    if (!signedIn || !postId || savePending) return;
+    const prevSaved = saved;
+    setSaved(!prevSaved);
+    setSavePending(true);
     try {
       const res = await fetch(`/api/posts/${encodeURIComponent(postId)}/save`, {
         method: "POST",
         credentials: "include",
       });
-      if (!res.ok) return;
+      if (!res.ok) {
+        setSaved(prevSaved);
+        return;
+      }
       const data = await res.json();
       setSaved(Boolean(data.saved));
+    } catch {
+      setSaved(prevSaved);
     } finally {
-      setActionLoading(false);
+      setSavePending(false);
     }
   }
 
@@ -297,6 +317,8 @@ function ArchivePost({
             <img
               src={resolvedImage}
               alt=""
+              loading="lazy"
+              decoding="async"
               className="h-7 w-7 flex-shrink-0 rounded-full object-cover ring-1 ring-transparent transition-[box-shadow] group-hover/author:ring-stone-300"
             />
             <span className="truncate text-xs font-medium text-stone-700 underline-offset-2 decoration-stone-300 group-hover/author:text-stone-900 group-hover/author:underline">
@@ -308,6 +330,8 @@ function ArchivePost({
             <img
               src={resolvedImage}
               alt={resolvedUsername}
+              loading="lazy"
+              decoding="async"
               className="h-7 w-7 flex-shrink-0 rounded-full object-cover"
             />
             <span className="truncate text-xs font-medium text-stone-700">{resolvedUsername}</span>
@@ -367,7 +391,7 @@ function ArchivePost({
                 isIconOnly
                 variant="ghost"
                 size="sm"
-                isDisabled={!isLoaded || !signedIn || actionLoading}
+                isDisabled={!isLoaded || !signedIn}
                 onPress={toggleLike}
                 className={`w-7 h-7 min-w-0 rounded-md transition-colors ${liked ? "text-rose-400" : "text-stone-400 hover:text-stone-600"}`}
               >
@@ -416,7 +440,7 @@ function ArchivePost({
               isIconOnly
               variant="ghost"
               size="sm"
-              isDisabled={!isLoaded || !signedIn || actionLoading}
+              isDisabled={!isLoaded || !signedIn}
               onPress={toggleSave}
               className={`w-7 h-7 min-w-0 rounded-md transition-colors ${saved ? "text-stone-700" : "text-stone-400 hover:text-stone-600"}`}
             >
