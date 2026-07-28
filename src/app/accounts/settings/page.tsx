@@ -164,8 +164,17 @@ export default function SettingsPage() {
     if (!file || !user) return;
     setAvatarUploading(true);
     try {
-      await user.setProfileImage({ file });
+      const updated = await user.setProfileImage({ file });
       await user.reload();
+      const imageUrl = updated?.imageUrl || user.imageUrl;
+      if (imageUrl) {
+        await fetch("/api/posts/sync-avatar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ avatarUrl: imageUrl }),
+        });
+      }
     } catch {
       // silent
     } finally {

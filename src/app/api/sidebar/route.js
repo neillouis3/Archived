@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import connection from "../../../lib/mongo";
 import Posts from "@lib/models/posts";
 import Follows from "@lib/models/follows";
+import { getActorImageUrls } from "@lib/clerkActor";
 
 export async function GET() {
   try {
@@ -66,6 +67,14 @@ export async function GET() {
         avatarUrl: post.avatarUrl || "",
       });
       if (suggestions.length >= 5) break;
+    }
+
+    const suggestionImages = await getActorImageUrls(
+      suggestions.map((s) => s.authorClerkId)
+    );
+    for (const s of suggestions) {
+      const live = suggestionImages.get(s.authorClerkId);
+      if (live) s.avatarUrl = live;
     }
 
     return NextResponse.json({ tiles, tags, suggestions }, { status: 200 });

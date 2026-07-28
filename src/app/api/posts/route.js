@@ -5,6 +5,7 @@ import PostLikes from "@lib/models/postLikes";
 import PostSaves from "@lib/models/postSaves";
 import connection from "../../../lib/mongo";
 import { embedEngagementInPosts } from "@lib/postEngagementBatch";
+import { enrichPostsAuthorAvatars } from "@lib/clerkActor";
 import {
   buildPostsListFilter,
   filterPostsVisibleToViewer,
@@ -107,7 +108,10 @@ export async function GET(req) {
         if (ordered.length >= limit) break;
       }
 
-      await embedEngagementInPosts(ordered, viewerClerkId);
+      await Promise.all([
+        embedEngagementInPosts(ordered, viewerClerkId),
+        enrichPostsAuthorAvatars(ordered),
+      ]);
       return NextResponse.json(
         { results: ordered, page, limit, total: skipTotal ? -1 : ordered.length },
         { status: 200 }
@@ -166,7 +170,10 @@ export async function GET(req) {
       }
     }
 
-    await embedEngagementInPosts(results, viewerClerkId);
+    await Promise.all([
+      embedEngagementInPosts(results, viewerClerkId),
+      enrichPostsAuthorAvatars(results),
+    ]);
 
     return NextResponse.json({ results, page, limit, total }, { status: 200 });
   } catch (err) {

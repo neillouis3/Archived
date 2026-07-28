@@ -4,13 +4,13 @@
  *
  *   cd milestone && npm run db:delete-posts-without-media
  *
- * Requires MONGODB_URL (see .env). Uses Node 20+ --env-file in npm script.
+ * Requires MONGODB_URL or MONGODB_URI (see .env). Uses Node 20+ --env-file in npm script.
  */
 import mongoose from "mongoose";
 
-const uri = process.env.MONGODB_URL;
+const uri = process.env.MONGODB_URL || process.env.MONGODB_URI;
 if (!uri) {
-  console.error("Missing MONGODB_URL in environment.");
+  console.error("Missing MONGODB_URL or MONGODB_URI in environment.");
   process.exit(1);
 }
 

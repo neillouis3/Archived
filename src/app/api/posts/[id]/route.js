@@ -6,6 +6,7 @@ import Notifications from "@lib/models/notifications";
 import connection from "../../../../lib/mongo";
 import { getPostIfVisible } from "@lib/postAccess";
 import { embedEngagementInPosts } from "@lib/postEngagementBatch";
+import { enrichPostsAuthorAvatars } from "@lib/clerkActor";
 import { getUtapi } from "../../../../../server/uploadthing";
 
 function maybeExtractUploadThingFileKey(url) {
@@ -59,7 +60,10 @@ export async function GET(_req, context) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    await embedEngagementInPosts([post], viewerClerkId);
+    await Promise.all([
+      embedEngagementInPosts([post], viewerClerkId),
+      enrichPostsAuthorAvatars([post]),
+    ]);
     return NextResponse.json(post, { status: 200 });
   } catch (err) {
     console.error("GET /api/posts/[id] error:", err);

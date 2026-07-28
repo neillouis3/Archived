@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import Posts from "@lib/models/posts";
 import connection from "../../../../lib/mongo";
+import { enrichPostsAuthorAvatars } from "@lib/clerkActor";
 import {
   buildFollowingFeedFilter,
   getAcceptedFriendClerkIdsSet,
@@ -25,13 +26,16 @@ export async function GET(req) {
     const friendSet = await getAcceptedFriendClerkIdsSet(viewerClerkId);
     const filter = buildFollowingFeedFilter(viewerClerkId, followingIds, friendSet);
 
-    const results = await Posts.find(filter)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean();
+    const [results, total] = await Promise.all([
+      Posts.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Posts.countDocuments(filter),
+    ]);
 
-    const total = await Posts.countDocuments(filter);
+    await enrichPostsAuthorAvatars(results);
 
     return NextResponse.json({ results, page, limit, total }, { status: 200 });
   } catch (err) {

@@ -56,3 +56,22 @@ export async function getActorImageUrls(userIds) {
 
   return map;
 }
+
+/**
+ * Overwrite denormalized `avatarUrl` on lean post docs with live Clerk image URLs.
+ * Posts snapshot avatar at create time; Clerk URLs go stale after profile photo changes.
+ * @param {object[]} posts
+ */
+export async function enrichPostsAuthorAvatars(posts) {
+  if (!posts?.length) return;
+  const authorIds = [
+    ...new Set(posts.map((p) => p.authorClerkId).filter(Boolean)),
+  ];
+  if (authorIds.length === 0) return;
+
+  const images = await getActorImageUrls(authorIds);
+  for (const p of posts) {
+    const live = images.get(p.authorClerkId);
+    if (live) p.avatarUrl = live;
+  }
+}
