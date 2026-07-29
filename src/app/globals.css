@@ -16,6 +16,47 @@
 
 @import "@heroui/styles";
 
+/*
+  Dropdown open animation — React Aria pattern (not HeroUI keyframes).
+
+  RAC positions the popover, then toggles data-entering. It cancels CSS
+  transitions while measuring, then removes data-entering so opacity/transform
+  can transition in. HeroUI's animate-in keyframes fight that (menu stays
+  invisible until animationend, then snaps). Sidebar context is unrelated —
+  the menu portals to document.body.
+*/
+.dropdown__popover {
+  transition:
+    opacity 150ms var(--ease-smooth, ease),
+    transform 150ms var(--ease-smooth, ease);
+}
+
+.dropdown__popover[data-entering],
+.dropdown__popover[data-exiting] {
+  animation: none !important;
+  opacity: 0;
+}
+
+.dropdown__popover[data-entering][data-placement="top"],
+.dropdown__popover[data-exiting][data-placement="top"] {
+  transform: translateY(6px);
+}
+
+.dropdown__popover[data-entering][data-placement="bottom"],
+.dropdown__popover[data-exiting][data-placement="bottom"] {
+  transform: translateY(-6px);
+}
+
+.dropdown__popover[data-entering][data-placement="left"],
+.dropdown__popover[data-exiting][data-placement="left"] {
+  transform: translateX(6px);
+}
+
+.dropdown__popover[data-entering][data-placement="right"],
+.dropdown__popover[data-exiting][data-placement="right"] {
+  transform: translateX(-6px);
+}
+
 :root,
 .light {
   --background: #fafaf9;
