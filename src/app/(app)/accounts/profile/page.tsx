@@ -68,7 +68,7 @@ function websiteDisplayLabel(raw: string): string {
 // ── component ──────────────────────────────────────────────────────────────
 export default function ProfilePage() {
   const { isSignedIn, user, isLoaded } = useUser();
-  const [contentTab, setContentTab] = useState<ProfileContentTab>("posts");
+  const [contentTab, setContentTab] = useState<ProfileContentTab>("pictures");
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [postsLoading, setPostsLoading] = useState(true);
   const [repostPosts, setRepostPosts] = useState<FeedPost[]>([]);

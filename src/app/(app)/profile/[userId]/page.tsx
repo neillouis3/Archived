@@ -43,7 +43,7 @@ export default function PublicProfilePage() {
   const [postsLoading, setPostsLoading] = useState(true);
   const [repostPosts, setRepostPosts] = useState<FeedPost[]>([]);
   const [repostsLoading, setRepostsLoading] = useState(false);
-  const [contentTab, setContentTab] = useState<ProfileContentTab>("posts");
+  const [contentTab, setContentTab] = useState<ProfileContentTab>("pictures");
   const [followStats, setFollowStats] = useState<{
     followerCount: number;
     followingCount: number;

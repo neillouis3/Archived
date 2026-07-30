@@ -920,7 +920,7 @@ export default function PostDetailModal({
               </div>
 
               <div className="shrink-0 border-t border-stone-200 px-4 py-3">
-                <div className="flex items-center gap-5">
+                <div className="flex items-center gap-2.5">
                   <button
                     type="button"
                     disabled={!isLoaded || !signedIn}

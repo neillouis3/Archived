@@ -600,8 +600,8 @@ function ArchivePost({
         />
       </div>
 
-      <div className="mt-3 flex w-full items-center gap-5">
-        <div className="flex h-6 min-w-[2.75rem] items-center gap-1">
+      <div className="mt-3 flex w-full items-center gap-2.5">
+        <div className="flex h-6 items-center gap-1">
           <button
             type="button"
             disabled={!isLoaded || !signedIn}
@@ -621,7 +621,7 @@ function ArchivePost({
           ) : null}
         </div>
 
-        <div className="flex h-6 min-w-[2.75rem] items-center gap-1">
+        <div className="flex h-6 items-center gap-1">
           <button
             type="button"
             disabled={!isLoaded || !signedIn}
@@ -642,7 +642,7 @@ function ArchivePost({
         </div>
 
         {!isOwner ? (
-          <div className="flex h-6 min-w-[2.75rem] items-center gap-1">
+          <div className="flex h-6 items-center gap-1">
             <button
               type="button"
               disabled={!isLoaded || !signedIn || repostPending}
