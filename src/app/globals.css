@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Class-based dark mode (next-themes adds `.dark` on <html>) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Theme easings must load before @heroui/styles so its @apply animate-* ease-* rules resolve. */
 @theme inline {
   --color-background: var(--background);
@@ -16,68 +19,29 @@
 
 @import "@heroui/styles";
 
-/*
-  Dropdown open animation — React Aria pattern (not HeroUI keyframes).
-
-  RAC positions the popover, then toggles data-entering. It cancels CSS
-  transitions while measuring, then removes data-entering so opacity/transform
-  can transition in. HeroUI's animate-in keyframes fight that (menu stays
-  invisible until animationend, then snaps). Sidebar context is unrelated —
-  the menu portals to document.body.
-*/
-.dropdown__popover {
-  transition:
-    opacity 150ms var(--ease-smooth, ease),
-    transform 150ms var(--ease-smooth, ease);
-}
-
-.dropdown__popover[data-entering],
-.dropdown__popover[data-exiting] {
-  animation: none !important;
-  opacity: 0;
-}
-
-.dropdown__popover[data-entering][data-placement="top"],
-.dropdown__popover[data-exiting][data-placement="top"] {
-  transform: translateY(6px);
-}
-
-.dropdown__popover[data-entering][data-placement="bottom"],
-.dropdown__popover[data-exiting][data-placement="bottom"] {
-  transform: translateY(-6px);
-}
-
-.dropdown__popover[data-entering][data-placement="left"],
-.dropdown__popover[data-exiting][data-placement="left"] {
-  transform: translateX(6px);
-}
-
-.dropdown__popover[data-entering][data-placement="right"],
-.dropdown__popover[data-exiting][data-placement="right"] {
-  transform: translateX(-6px);
+/* Secondary SearchField: keep soft fill, no accent focus ring */
+.search-field--secondary .search-field__group:focus-within,
+.search-field--secondary .search-field__group[data-focus-within="true"] {
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-ring-color: transparent;
+  box-shadow: none;
 }
 
 :root,
-.light {
-  --background: #fafaf9;
+.light,
+[data-theme="light"] {
+  color-scheme: light;
+  --background: #ffffff;
   --midground: #ffffff;
   --foreground: #1c1917;
 }
 
-.dark {
+.dark,
+[data-theme="dark"] {
   color-scheme: dark;
   --background: #0c0a09;
-  --midground: #1c1917;
+  --midground: #171412;
   --foreground: #fafaf9;
-
-  /* Surfaces, borders, and hovers — utilities read these via --color-stone-* */
-  --color-stone-50: #1c1917;
-  --color-stone-100: #292524;
-  --color-stone-200: #44403c;
-  --color-stone-300: #57534e;
-  --color-stone-400: #78716c;
-  --color-stone-500: #a8a29e;
-  --color-stone-600: #d6d3d1;
 }
 
 body {
@@ -95,76 +59,181 @@ h6 {
   font-weight: inherit;
 }
 
+/*
+  Map common light-only utilities so existing screens pick up dark theme
+  without rewriting every className.
+*/
 @layer utilities {
-  .dark .bg-white {
-    background-color: var(--midground);
+  .dark .bg-white,
+  .dark .bg-background {
+    background-color: var(--background);
   }
 
   .dark .bg-white\/80 {
     background-color: color-mix(in srgb, var(--midground) 80%, transparent);
   }
 
+  .dark .bg-white\/90 {
+    background-color: color-mix(in srgb, var(--midground) 90%, transparent);
+  }
+
   .dark .hover\:bg-white:hover {
     background-color: var(--midground);
   }
 
-  .dark .text-stone-800,
-  .dark .hover\:text-stone-800:hover {
+  .dark .text-black {
     color: #fafaf9;
   }
 
+  .dark .text-neutral-900,
+  .dark .text-stone-900 {
+    color: #fafaf9;
+  }
+
+  .dark .text-neutral-800,
+  .dark .text-stone-800,
+  .dark .hover\:text-stone-800:hover,
+  .dark .hover\:text-neutral-800:hover {
+    color: #f5f5f4;
+  }
+
+  .dark .text-neutral-700,
   .dark .text-stone-700,
-  .dark .hover\:text-stone-700:hover {
+  .dark .hover\:text-stone-700:hover,
+  .dark .hover\:text-neutral-700:hover {
     color: #e7e5e4;
   }
 
+  .dark .text-neutral-600,
   .dark .text-stone-600,
   .dark .hover\:text-stone-600:hover {
     color: #d6d3d1;
   }
 
+  .dark .text-neutral-500,
   .dark .text-stone-500,
   .dark .hover\:text-stone-500:hover {
     color: #a8a29e;
   }
 
+  .dark .text-neutral-400,
   .dark .text-stone-400,
   .dark .hover\:text-stone-400:hover {
     color: #78716c;
   }
 
+  .dark .text-neutral-300,
   .dark .text-stone-300 {
     color: #57534e;
   }
 
-  .dark .placeholder-stone-300::placeholder {
+  .dark .placeholder-stone-300::placeholder,
+  .dark .placeholder\:text-stone-300::placeholder,
+  .dark .placeholder\:text-neutral-400::placeholder {
     color: #57534e;
   }
 
-  .dark .placeholder\:text-stone-300::placeholder {
-    color: #57534e;
+  .dark .bg-neutral-50,
+  .dark .bg-neutral-50\/80,
+  .dark .bg-stone-50 {
+    background-color: #1c1917;
+  }
+
+  .dark .bg-neutral-100,
+  .dark .bg-stone-100,
+  .dark .hover\:bg-neutral-100:hover,
+  .dark .hover\:bg-stone-100:hover,
+  .dark .hover\:bg-neutral-50:hover,
+  .dark .hover\:bg-stone-50:hover,
+  .dark .before\:bg-neutral-100::before,
+  .dark .hover\:before\:bg-neutral-100:hover::before {
+    background-color: #292524;
+  }
+
+  .dark .bg-neutral-200,
+  .dark .bg-stone-200,
+  .dark .hover\:bg-neutral-200:hover {
+    background-color: #44403c;
+  }
+
+  .dark .border-neutral-100,
+  .dark .border-stone-100,
+  .dark .border-neutral-200,
+  .dark .border-neutral-200\/60,
+  .dark .border-neutral-200\/70,
+  .dark .border-neutral-200\/90,
+  .dark .border-stone-200,
+  .dark .border-stone-200\/60,
+  .dark .border-stone-200\/70,
+  .dark .border-stone-200\/80,
+  .dark .border-stone-200\/90,
+  .dark .border-gray-200 {
+    border-color: rgb(255 255 255 / 0.06);
+  }
+
+  .dark .border-neutral-300,
+  .dark .border-stone-300,
+  .dark .hover\:border-neutral-300:hover,
+  .dark .hover\:border-stone-300:hover,
+  .dark .hover\:border-stone-400:hover,
+  .dark .focus\:border-stone-400:focus,
+  .dark .focus-within\:border-neutral-300:focus-within,
+  .dark .focus-within\:border-stone-300:focus-within {
+    border-color: rgb(255 255 255 / 0.1);
+  }
+
+  .dark .border-dashed.border-neutral-200,
+  .dark .border-dashed.border-stone-200 {
+    border-color: rgb(255 255 255 / 0.12);
   }
 
   .dark .ring-white {
-    --tw-ring-color: var(--background);
+    --tw-ring-color: #ffffff;
   }
 
-  .dark .focus-visible\:ring-stone-400:focus-visible {
-    --tw-ring-color: #78716c;
+  .dark .border-white {
+    border-color: #ffffff;
+  }
+
+  .dark .ring-1.ring-neutral-200,
+  .dark .ring-1.ring-neutral-200\/70,
+  .dark .ring-1.ring-stone-200,
+  .dark .ring-1.ring-stone-200\/40,
+  .dark .ring-1.ring-stone-200\/60,
+  .dark .ring-neutral-200,
+  .dark .ring-stone-200,
+  .dark .ring-stone-200\/60,
+  .dark .ring-inset.ring-stone-200 {
+    --tw-ring-color: rgb(255 255 255 / 0.06);
+  }
+
+  .dark .focus-visible\:ring-stone-400:focus-visible,
+  .dark .focus-visible\:ring-neutral-400:focus-visible {
+    --tw-ring-color: rgb(255 255 255 / 0.18);
+  }
+
+  .dark .divide-stone-100 > :not([hidden]) ~ :not([hidden]),
+  .dark .divide-stone-100\/80 > :not([hidden]) ~ :not([hidden]),
+  .dark .divide-stone-200\/60 > :not([hidden]) ~ :not([hidden]),
+  .dark .divide-neutral-200 > :not([hidden]) ~ :not([hidden]) {
+    border-color: rgb(255 255 255 / 0.05);
   }
 
   /* Primary pills/buttons stay light-on-dark */
-  .dark .bg-stone-800 {
+  .dark .bg-stone-800,
+  .dark .bg-black {
     background-color: #fafaf9;
     color: #1c1917;
   }
 
   .dark .bg-stone-800.text-white,
-  .dark .bg-stone-800 .text-white {
+  .dark .bg-stone-800 .text-white,
+  .dark .bg-black.text-white {
     color: #1c1917;
   }
 
-  .dark .hover\:bg-stone-700:hover {
+  .dark .hover\:bg-stone-700:hover,
+  .dark .hover\:bg-neutral-800:hover {
     background-color: #e7e5e4;
   }
 
@@ -173,18 +242,24 @@ h6 {
   }
 
   .dark .border-stone-600 {
-    border-color: #78716c;
+    border-color: rgb(255 255 255 / 0.14);
   }
 
-  .dark .ring-stone-200,
-  .dark .ring-stone-200\/60,
-  .dark .ring-inset.ring-stone-200 {
-    --tw-ring-color: #57534e;
+  .dark .shadow-2xl,
+  .dark .shadow-\[0_8px_30px_rgba\(0\,0\,0\,0\.08\)\] {
+    --tw-shadow-color: rgb(0 0 0 / 0.45);
+    box-shadow: 0 8px 30px rgb(0 0 0 / 0.35);
   }
 
-  .dark .divide-stone-100 > :not([hidden]) ~ :not([hidden]),
-  .dark .divide-stone-100\/80 > :not([hidden]) ~ :not([hidden]),
-  .dark .divide-stone-200\/60 > :not([hidden]) ~ :not([hidden]) {
-    border-color: #44403c;
+  /* Soften border-heavy surfaces: prefer fill over outline */
+  .dark .border.border-neutral-200,
+  .dark .border.border-neutral-200\/60,
+  .dark .border.border-neutral-200\/70,
+  .dark .border.border-stone-200,
+  .dark .border.border-stone-200\/60,
+  .dark .border.border-stone-200\/70,
+  .dark .border.border-stone-200\/80 {
+    border-color: transparent;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.05);
   }
 }

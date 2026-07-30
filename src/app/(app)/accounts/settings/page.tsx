@@ -2,7 +2,28 @@
 
 import { useState, useEffect, useRef } from "react";
 import { UserProfile, useUser } from "@clerk/nextjs";
-import { DatePicker, Separator } from "@heroui/react";
+import {
+  Avatar,
+  Button,
+  Calendar,
+  DateField,
+  DatePicker,
+  Description,
+  Fieldset,
+  Input,
+  Label,
+  Modal,
+  TextArea,
+  TextField,
+  useOverlayState,
+} from "@heroui/react";
+import {
+  Cancel01Icon,
+  Image01Icon,
+  ImageAdd01Icon,
+  ImageDelete01Icon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { DateValue, parseDate } from "@internationalized/date";
 import {
   pickUploadThingPublicUrl,
@@ -78,6 +99,7 @@ export default function SettingsPage() {
   const [avatarUploading, setAvatarUploading] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const identityPhotoModal = useOverlayState();
 
   useEffect(() => {
     if (!isLoaded || !user) return;
@@ -179,6 +201,28 @@ export default function SettingsPage() {
     }
   };
 
+  const handleRemoveAvatar = async () => {
+    if (!user?.hasImage) return;
+    setAvatarUploading(true);
+    try {
+      await user.setProfileImage({ file: null });
+      await user.reload();
+      const imageUrl = user.imageUrl;
+      if (imageUrl) {
+        await fetch("/api/posts/sync-avatar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ avatarUrl: imageUrl }),
+        });
+      }
+    } catch {
+      // silent
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!user) return;
     try {
@@ -206,20 +250,21 @@ export default function SettingsPage() {
   if (!isLoaded || !user) return null;
 
   return (
-    <div className="flex-1 min-w-0 flex min-h-screen flex-col border-x-0 sm:border-x sm:border-stone-200/80 lg:flex-row">
-
-      {/* Settings nav */}
-      <div className="w-full flex-shrink-0 border-b border-stone-200/80 px-3 py-4 sm:px-5 sm:py-8 lg:w-56 lg:border-b-0 lg:border-r">
-        <p className="text-xs text-stone-400 mb-3 px-2 sm:mb-4">Settings</p>
+    <div className="flex min-h-screen min-w-0 flex-1 flex-col lg:flex-row">
+      {/* Settings nav — no vertical divider */}
+      <div className="w-full flex-shrink-0 px-3 py-4 sm:px-5 sm:py-8 lg:w-56">
+        <p className="mb-3 px-2 text-sm text-stone-400 sm:mb-4">Settings</p>
         <nav className="-mx-1 flex flex-row gap-0.5 overflow-x-auto pb-1 lg:mx-0 lg:flex-col lg:overflow-visible lg:pb-0">
           {tabs.map(({ key, label, icon: Icon }) => (
             <button
               key={key}
+              type="button"
               onClick={() => setActiveTab(key)}
-              className={`flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-lg px-3 py-2.5 text-xs transition-colors text-left lg:w-full
-                ${activeTab === key
-                  ? "bg-white ring-1 ring-inset ring-stone-200 text-stone-800 font-medium"
-                  : "text-stone-400 hover:text-stone-700 hover:bg-white"
+              className={`flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-lg px-3 py-2.5 text-left text-sm transition-colors lg:w-full
+                ${
+                  activeTab === key
+                    ? "bg-white font-medium text-stone-800 ring-1 ring-inset ring-stone-200"
+                    : "text-stone-400 hover:bg-white hover:text-stone-700"
                 }`}
             >
               <Icon />
@@ -230,60 +275,34 @@ export default function SettingsPage() {
       </div>
 
       {/* Settings content */}
-      <div className="max-w-2xl flex-1 px-4 py-6 sm:px-8 sm:py-8">
-
+      <div className="max-w-3xl flex-1 px-4 py-6 sm:px-8 sm:py-8">
         {/* ── Profile tab ─────────────────────────────────────── */}
         {activeTab === "profile" && (
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-6 text-sm">
             <div>
-              <h2
-                className="text-lg font-normal text-stone-800 mb-1"
-               
-              >
+              <h2 className="mb-0.5 text-sm font-medium text-stone-800">
                 Edit profile
               </h2>
-              <p className="text-xs text-stone-400">Manage your public information.</p>
+              <p className="text-sm text-stone-400">Manage your public information.</p>
             </div>
 
-            {/* Avatar row */}
-            <div className="flex items-center gap-5 p-5 bg-white rounded-xl border border-stone-200/60">
-              <img
-                src={user.imageUrl}
-                alt="Avatar"
-                className="w-16 h-16 rounded-full object-cover flex-shrink-0"
-              />
-              <div>
-                <p className="text-sm font-medium text-stone-700">{user.fullName}</p>
-                <p className="text-xs text-stone-400 mb-2">@{user.username}</p>
-                <input
-                  ref={avatarInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => void handleAvatarFileChange(e)}
-                />
-                <button
-                  type="button"
-                  disabled={avatarUploading}
-                  onClick={() => avatarInputRef.current?.click()}
-                  className="text-xs text-stone-500 border border-stone-300 rounded-lg px-2.5 py-1 hover:bg-stone-100 transition-colors disabled:opacity-50"
-                >
-                  {avatarUploading ? "Uploading…" : "Change photo"}
-                </button>
-              </div>
-            </div>
-
-            {/* Profile banner / cover */}
-            <div id="profile-banner" className="flex flex-col gap-2">
-              <label className="text-xs text-stone-400">
-                Profile banner
-              </label>
-              <div className="relative h-36 w-full rounded-xl overflow-hidden border border-stone-200/60 bg-stone-200">
+            {/* Identity: banner + avatar merged */}
+            <div
+              id="profile-banner"
+              className="overflow-hidden rounded-2xl border border-stone-200/70 bg-white"
+            >
+              <button
+                type="button"
+                disabled={coverUploading || avatarUploading}
+                onClick={() => identityPhotoModal.open()}
+                className="relative block h-28 w-full bg-stone-200 text-left sm:h-32 disabled:opacity-60"
+                aria-label="Change profile photos"
+              >
                 {coverUrl ? (
                   <img
                     src={coverUrl}
                     alt=""
-                    className="absolute inset-0 w-full h-full object-cover"
+                    className="absolute inset-0 h-full w-full object-cover"
                   />
                 ) : (
                   <div
@@ -294,155 +313,340 @@ export default function SettingsPage() {
                     }}
                   />
                 )}
-              </div>
-              <input
-                ref={coverInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => void handleCoverFileChange(e)}
-              />
-              <div className="flex flex-wrap items-center gap-2">
+                <span className="absolute inset-0 bg-black/0 transition-colors hover:bg-black/10" />
+              </button>
+
+              <div className="flex flex-wrap items-end gap-3 px-4 pb-4 pt-0">
                 <button
                   type="button"
-                  disabled={coverUploading}
-                  onClick={() => coverInputRef.current?.click()}
-                  className="text-xs text-stone-600 border border-stone-300 rounded-lg px-3 py-1.5 hover:bg-stone-100 transition-colors disabled:opacity-50"
+                  disabled={avatarUploading || coverUploading}
+                  onClick={() => identityPhotoModal.open()}
+                  className="-mt-8 shrink-0 rounded-full disabled:opacity-60"
+                  aria-label="Change profile photos"
                 >
-                  {coverUploading ? "Working…" : coverUrl ? "Replace banner" : "Upload banner"}
-                </button>
-                {coverUrl ? (
-                  <button
-                    type="button"
-                    disabled={coverUploading}
-                    onClick={() => void handleRemoveCover()}
-                    className="text-xs text-stone-400 border border-stone-200 rounded-lg px-3 py-1.5 hover:bg-stone-50 transition-colors disabled:opacity-50"
+                  <Avatar
+                    size="lg"
+                    className="size-[4.5rem] rounded-full shadow-none ring-2 ring-white"
                   >
-                    Remove
-                  </button>
-                ) : null}
+                    <Avatar.Image
+                      src={user.imageUrl}
+                      alt={user.fullName || user.username || "Avatar"}
+                      className="rounded-full object-cover"
+                    />
+                    <Avatar.Fallback className="rounded-full text-sm">
+                      {(user.fullName || user.username || "?").slice(0, 2).toUpperCase()}
+                    </Avatar.Fallback>
+                  </Avatar>
+                </button>
+                <div className="min-w-0 flex-1 pb-0.5 pt-2">
+                  <p className="truncate text-sm font-medium text-stone-800">
+                    {user.fullName}
+                  </p>
+                  <p className="truncate text-sm text-stone-400">@{user.username}</p>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  isDisabled={avatarUploading || coverUploading}
+                  onPress={() => identityPhotoModal.open()}
+                  className="mb-0.5 h-7 min-w-0 px-2 text-sm text-stone-500 hover:bg-stone-100 hover:text-stone-700"
+                >
+                  {avatarUploading || coverUploading ? "Uploading…" : "Change photo"}
+                </Button>
               </div>
-              <p className="text-xs text-stone-400">
-                Wide images work best. Shown on your profile and public profile.
+              <p className="border-t border-stone-100 px-4 py-2.5 text-sm text-stone-400">
+                Tap to update your photo or banner. Wide banners work best.
               </p>
             </div>
 
-            {/* Bio */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-stone-400">Bio</label>
-              <textarea
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                placeholder="Tell people a little about yourself..."
-                rows={4}
-                maxLength={200}
-                className="w-full bg-white border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-700 placeholder-stone-300 outline-none resize-none focus:border-stone-400 transition-colors"
-              />
-              <p className="text-xs text-stone-300 text-right">{bio.length}/200</p>
-            </div>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => void handleAvatarFileChange(e)}
+            />
+            <input
+              ref={coverInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => void handleCoverFileChange(e)}
+            />
 
-            {/* Website */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-stone-400">Website</label>
-              <input
-                type="url"
-                value={website}
-                onChange={(e) => setWebsite(e.target.value)}
-                placeholder="https://example.com"
-                className="w-full bg-white border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-700 placeholder-stone-300 outline-none focus:border-stone-400 transition-colors"
-              />
-            </div>
+            {/* Photo + banner sheet */}
+            <Modal state={identityPhotoModal}>
+              <Modal.Backdrop className="bg-black/50">
+                <Modal.Container className="flex items-center justify-center p-4">
+                  <Modal.Dialog
+                    aria-label="Change profile photos"
+                    className="w-full max-w-[360px] overflow-hidden rounded-2xl bg-white shadow-2xl"
+                  >
+                    <div className="relative px-5 pb-1 pt-5">
+                      <p className="pr-10 text-sm font-medium text-neutral-900">
+                        Change profile photos
+                      </p>
+                      <Modal.CloseTrigger className="absolute right-3 top-3 rounded-full p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-800">
+                        <HugeiconsIcon
+                          icon={Cancel01Icon}
+                          size={18}
+                          strokeWidth={1.8}
+                        />
+                      </Modal.CloseTrigger>
+                    </div>
+                    <div className="py-2">
+                      <button
+                        type="button"
+                        disabled={avatarUploading}
+                        onClick={() => {
+                          identityPhotoModal.close();
+                          avatarInputRef.current?.click();
+                        }}
+                        className="mx-2 flex w-[calc(100%-1rem)] items-center justify-between gap-3 rounded-xl px-3 py-3 text-left text-sm text-neutral-900 transition-colors hover:bg-neutral-100 disabled:opacity-50"
+                      >
+                        <span>Upload photo</span>
+                        <HugeiconsIcon
+                          icon={ImageAdd01Icon}
+                          size={18}
+                          strokeWidth={1.6}
+                          className="shrink-0 text-neutral-800"
+                        />
+                      </button>
+                      {user.hasImage ? (
+                        <button
+                          type="button"
+                          disabled={avatarUploading}
+                          onClick={() => {
+                            identityPhotoModal.close();
+                            void handleRemoveAvatar();
+                          }}
+                          className="mx-2 flex w-[calc(100%-1rem)] items-center justify-between gap-3 rounded-xl px-3 py-3 text-left text-sm text-red-600 transition-colors hover:bg-neutral-100 disabled:opacity-50"
+                        >
+                          <span>Remove current photo</span>
+                          <HugeiconsIcon
+                            icon={ImageDelete01Icon}
+                            size={18}
+                            strokeWidth={1.6}
+                            className="shrink-0 text-red-600"
+                          />
+                        </button>
+                      ) : null}
+                      <button
+                        type="button"
+                        disabled={coverUploading}
+                        onClick={() => {
+                          identityPhotoModal.close();
+                          coverInputRef.current?.click();
+                        }}
+                        className="mx-2 flex w-[calc(100%-1rem)] items-center justify-between gap-3 rounded-xl px-3 py-3 text-left text-sm text-neutral-900 transition-colors hover:bg-neutral-100 disabled:opacity-50"
+                      >
+                        <span>Upload banner</span>
+                        <HugeiconsIcon
+                          icon={Image01Icon}
+                          size={18}
+                          strokeWidth={1.6}
+                          className="shrink-0 text-neutral-800"
+                        />
+                      </button>
+                      {coverUrl ? (
+                        <button
+                          type="button"
+                          disabled={coverUploading}
+                          onClick={() => {
+                            identityPhotoModal.close();
+                            void handleRemoveCover();
+                          }}
+                          className="mx-2 flex w-[calc(100%-1rem)] items-center justify-between gap-3 rounded-xl px-3 py-3 text-left text-sm text-red-600 transition-colors hover:bg-neutral-100 disabled:opacity-50"
+                        >
+                          <span>Remove current banner</span>
+                          <HugeiconsIcon
+                            icon={ImageDelete01Icon}
+                            size={18}
+                            strokeWidth={1.6}
+                            className="shrink-0 text-red-600"
+                          />
+                        </button>
+                      ) : null}
+                      <button
+                        type="button"
+                        onClick={() => identityPhotoModal.close()}
+                        className="mx-2 flex w-[calc(100%-1rem)] items-center justify-between gap-3 rounded-xl px-3 py-3 text-left text-sm text-neutral-900 transition-colors hover:bg-neutral-100"
+                      >
+                        <span>Cancel</span>
+                        <HugeiconsIcon
+                          icon={Cancel01Icon}
+                          size={18}
+                          strokeWidth={1.6}
+                          className="shrink-0 text-neutral-800"
+                        />
+                      </button>
+                    </div>
+                  </Modal.Dialog>
+                </Modal.Container>
+              </Modal.Backdrop>
+            </Modal>
 
-            {/* Location */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-stone-400">Location</label>
-              <input
-                type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="City or region"
-                className="w-full bg-white border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-700 placeholder-stone-300 outline-none focus:border-stone-400 transition-colors"
-              />
-            </div>
+            {/* About */}
+            <Fieldset className="gap-3 border-0 bg-transparent p-0 shadow-none">
+              <Fieldset.Legend className="text-sm font-medium text-stone-800">
+                About
+              </Fieldset.Legend>
+              <Description className="text-sm text-stone-400">
+                How you show up on your public profile.
+              </Description>
+              <Fieldset.Group className="grid gap-3 sm:grid-cols-2">
+                <TextField
+                  value={bio}
+                  onChange={setBio}
+                  className="sm:col-span-2"
+                  fullWidth
+                >
+                  <Label className="text-sm text-stone-500">Bio</Label>
+                  <TextArea
+                    rows={3}
+                    maxLength={200}
+                    placeholder="Tell people a little about yourself…"
+                    className="min-h-[5.5rem] resize-none rounded-xl border border-stone-200 bg-white text-sm text-stone-700 shadow-none"
+                  />
+                  <Description className="text-right text-sm text-stone-300">
+                    {bio.length}/200
+                  </Description>
+                </TextField>
 
-            {/* School or work */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-stone-400">School or workplace</label>
-              <input
-                type="text"
-                value={schoolOrWork}
-                onChange={(e) => setSchoolOrWork(e.target.value)}
-                placeholder="University, company, or studio"
-                className="w-full bg-white border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-700 placeholder-stone-300 outline-none focus:border-stone-400 transition-colors"
-              />
-            </div>
+                <TextField value={website} onChange={setWebsite} fullWidth>
+                  <Label className="text-sm text-stone-500">Website</Label>
+                  <Input
+                    type="url"
+                    placeholder="https://example.com"
+                    className="rounded-xl border border-stone-200 bg-white text-sm text-stone-700 shadow-none"
+                  />
+                </TextField>
 
-            <Separator className="bg-stone-200/80" />
+                <TextField value={location} onChange={setLocation} fullWidth>
+                  <Label className="text-sm text-stone-500">Location</Label>
+                  <Input
+                    type="text"
+                    placeholder="City or region"
+                    className="rounded-xl border border-stone-200 bg-white text-sm text-stone-700 shadow-none"
+                  />
+                </TextField>
 
-            <div>
-              <p className="text-xs text-stone-400 mb-1">Social links</p>
-              <p className="text-xs text-stone-400 mb-4">Optional. Use a profile URL or @handle where shown.</p>
-              <div className="flex flex-col gap-4">
+                <TextField value={schoolOrWork} onChange={setSchoolOrWork} fullWidth>
+                  <Label className="text-sm text-stone-500">School or workplace</Label>
+                  <Input
+                    type="text"
+                    placeholder="University, company, or studio"
+                    className="rounded-xl border border-stone-200 bg-white text-sm text-stone-700 shadow-none"
+                  />
+                </TextField>
+
+                <DatePicker
+                  value={birthday}
+                  onChange={setBirthday}
+                  className="flex w-full flex-col gap-1.5"
+                >
+                  <Label className="text-sm text-stone-500">Birthday</Label>
+                  <DateField.Group
+                    fullWidth
+                    variant="secondary"
+                    className="rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm text-stone-700 shadow-none transition-colors hover:border-stone-400"
+                  >
+                    <DateField.Input>
+                      {(segment) => <DateField.Segment segment={segment} />}
+                    </DateField.Input>
+                    <DateField.Suffix>
+                      <DatePicker.Trigger>
+                        <DatePicker.TriggerIndicator className="text-stone-400" />
+                      </DatePicker.Trigger>
+                    </DateField.Suffix>
+                  </DateField.Group>
+                  <DatePicker.Popover className="z-[80] rounded-xl border border-stone-200 bg-white p-2 shadow-lg">
+                    <Calendar aria-label="Choose birthday">
+                      <Calendar.Header>
+                        <Calendar.YearPickerTrigger>
+                          <Calendar.YearPickerTriggerHeading />
+                          <Calendar.YearPickerTriggerIndicator />
+                        </Calendar.YearPickerTrigger>
+                        <Calendar.NavButton slot="previous" />
+                        <Calendar.NavButton slot="next" />
+                      </Calendar.Header>
+                      <Calendar.Grid>
+                        <Calendar.GridHeader>
+                          {(day) => (
+                            <Calendar.HeaderCell>{day}</Calendar.HeaderCell>
+                          )}
+                        </Calendar.GridHeader>
+                        <Calendar.GridBody>
+                          {(date) => <Calendar.Cell date={date} />}
+                        </Calendar.GridBody>
+                      </Calendar.Grid>
+                    </Calendar>
+                  </DatePicker.Popover>
+                </DatePicker>
+              </Fieldset.Group>
+            </Fieldset>
+
+            {/* Social */}
+            <Fieldset className="gap-3 border-0 bg-transparent p-0 shadow-none">
+              <Fieldset.Legend className="text-sm font-medium text-stone-800">
+                Social links
+              </Fieldset.Legend>
+              <Description className="text-sm text-stone-400">
+                Optional. Profile URL or @handle where shown.
+              </Description>
+              <Fieldset.Group className="grid gap-3 sm:grid-cols-2">
                 {SOCIAL_FIELD_CONFIG.map(({ key, label, placeholder }) => (
-                  <div key={key} className="flex flex-col gap-1.5">
-                    <label className="text-xs text-stone-500">{label}</label>
-                    <input
+                  <TextField
+                    key={key}
+                    value={social[key]}
+                    onChange={(v) => setSocial((s) => ({ ...s, [key]: v }))}
+                    fullWidth
+                  >
+                    <Label className="text-sm text-stone-500">{label}</Label>
+                    <Input
                       type="text"
-                      value={social[key]}
-                      onChange={(e) => setSocial((s) => ({ ...s, [key]: e.target.value }))}
                       placeholder={placeholder}
-                      className="w-full bg-white border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-700 placeholder-stone-300 outline-none focus:border-stone-400 transition-colors"
                       autoComplete="off"
+                      className="rounded-xl border border-stone-200 bg-white text-sm text-stone-700 shadow-none"
                     />
-                  </div>
+                  </TextField>
                 ))}
-              </div>
-            </div>
+              </Fieldset.Group>
+            </Fieldset>
 
-            {/* Birthday */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-stone-400">Birthday</label>
-              <DatePicker
-                value={birthday || undefined}
-                onChange={setBirthday}
-                className="max-w-sm bg-white border border-stone-200 shadow-none hover:border-stone-400 rounded-xl text-sm text-stone-700"
-              />
-            </div>
-
-            {/* Save */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleSubmit}
-                className="flex items-center gap-2 bg-stone-800 hover:bg-stone-700 text-white text-xs rounded-xl px-5 py-2.5 transition-colors"
+            <div className="flex items-center gap-3 pt-1">
+              <Button
+                type="button"
+                size="sm"
+                onPress={() => void handleSubmit()}
+                className="gap-2 bg-stone-800 text-sm text-white hover:bg-stone-700"
               >
                 {saved && <CheckIcon />}
                 {saved ? "Saved" : "Save changes"}
-              </button>
-              {saved && (
-                <p className="text-xs text-stone-400">Your profile has been updated.</p>
-              )}
+              </Button>
+              {saved ? (
+                <p className="text-sm text-stone-400">Your profile has been updated.</p>
+              ) : null}
             </div>
           </div>
         )}
 
         {/* ── Account tab ─────────────────────────────────────── */}
         {activeTab === "account" && (
-          <div>
+          <div className="text-sm">
             <div className="mb-6">
-              <h2
-                className="text-lg font-normal text-stone-800 mb-1"
-               
-              >
+              <h2 className="mb-0.5 text-sm font-medium text-stone-800">
                 Account
               </h2>
-              <p className="text-xs text-stone-400">Manage your login and security settings.</p>
+              <p className="text-sm text-stone-400">Manage your login and security settings.</p>
             </div>
             <UserProfile
               appearance={{
                 ...clerkAppearance,
                 variables: {
                   ...clerkAppearance.variables,
-                  fontSize: "13px",
+                  fontSize: "14px",
                 },
                 elements: {
                   ...clerkAppearance.elements,
@@ -458,30 +662,26 @@ export default function SettingsPage() {
 
         {/* ── Notifications tab ────────────────────────────────── */}
         {activeTab === "notifications" && (
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-6 text-sm">
             <div>
-              <h2
-                className="text-lg font-normal text-stone-800 mb-1"
-               
-              >
+              <h2 className="mb-0.5 text-sm font-medium text-stone-800">
                 Notifications
               </h2>
-              <p className="text-xs text-stone-400">Choose what you want to be notified about.</p>
+              <p className="text-sm text-stone-400">Choose what you want to be notified about.</p>
             </div>
 
             <div className="flex flex-col divide-y divide-stone-200/60">
               {notifSettings.map(({ key, label }) => (
                 <div key={key} className="flex items-center justify-between py-4">
                   <span className="text-sm text-stone-600">{label}</span>
-                  {/* Toggle */}
                   <button
                     onClick={() => setNotifs((prev) => ({ ...prev, [key]: !prev[key] }))}
-                    className={`relative w-9 h-5 rounded-full transition-colors ${
+                    className={`relative h-5 w-9 rounded-full transition-colors ${
                       notifs[key] ? "bg-stone-700" : "bg-stone-200"
                     }`}
                   >
                     <span
-                      className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${
+                      className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
                         notifs[key] ? "translate-x-4" : "translate-x-0"
                       }`}
                     />
@@ -490,11 +690,13 @@ export default function SettingsPage() {
               ))}
             </div>
 
-            <button
-              className="self-start flex items-center gap-2 bg-stone-800 hover:bg-stone-700 text-white text-xs rounded-xl px-5 py-2.5 transition-colors mt-2"
+            <Button
+              type="button"
+              size="sm"
+              className="self-start bg-stone-800 text-sm text-white hover:bg-stone-700"
             >
               Save preferences
-            </button>
+            </Button>
           </div>
         )}
 

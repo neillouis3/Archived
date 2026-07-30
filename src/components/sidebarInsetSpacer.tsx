@@ -1,12 +1,17 @@
 "use client";
 
-import { useSidebar } from "./sidebarContext";
+import { SIDEBAR_COLLAPSED_W } from "@/lib/sidebarWidths";
 
-/** Below `lg`: reserves height for the fixed mobile header. At `lg+`: reserves width for the left rail. */
+/**
+ * Reserves space for chrome.
+ * - Mobile: header height
+ * - lg+: collapsed left rail only (hover expand overlays)
+ *
+ * Do NOT match the right sidebar width here — the rails are different widths.
+ * Equal gaps come from centering page content in the flex-1 middle between
+ * the left spacer (72) and the right spacer (right rail width).
+ */
 export function SidebarInsetSpacer() {
-  const { state } = useSidebar();
-  const collapsed = state === "collapsed";
-
   return (
     <>
       <div
@@ -15,9 +20,8 @@ export function SidebarInsetSpacer() {
       />
       <div
         aria-hidden
-        className={`hidden shrink-0 lg:block transition-[width] duration-200 ease-out ${
-          collapsed ? "w-[4.5rem]" : "w-[17rem]"
-        }`}
+        className="hidden shrink-0 lg:block"
+        style={{ width: SIDEBAR_COLLAPSED_W }}
       />
     </>
   );

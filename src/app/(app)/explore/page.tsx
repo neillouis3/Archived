@@ -11,7 +11,7 @@ import { PostGridCard, postGridClassName } from "@/components/postGridCard";
 import { ExploreSearchBar } from "@/components/exploreSearchBar";
 import {
   type FeedPost,
-  feedPostMediaEntryUrl,
+  feedPostMediaUrls,
   type PostsListResponse,
 } from "@/types/feedPost";
 
@@ -47,7 +47,7 @@ function ExplorePageInner() {
   const refetchExplorePosts = useCallback(async () => {
     setPostsLoading(true);
     try {
-      const qs = new URLSearchParams({ skipTotal: "1", skipEngagement: "1" });
+      const qs = new URLSearchParams({ skipTotal: "1" });
       if (q) qs.set("search", q);
       const res = await fetch(`/api/posts?${qs.toString()}`, {
         credentials: "include",
@@ -115,34 +115,36 @@ function ExplorePageInner() {
     router.push("/explore");
   }
 
-  const allImages = posts.flatMap((post) =>
-    (post.media || []).flatMap((m, idx) => {
-      const url = feedPostMediaEntryUrl(m);
-      if (!url) return [];
-      return [
-        {
-          url,
-          postId: post._id,
-          bodySnippet:
-            typeof post.body === "string" && post.body.trim()
-              ? post.body.trim().slice(0, 60)
-              : "",
-          username: post.username,
-          authorClerkId: post.authorClerkId,
-          imageIndex: idx,
-        },
-      ];
+  const postTiles = posts
+    .map((post) => {
+      const urls = feedPostMediaUrls(post.media);
+      const url = urls[0];
+      if (!url) return null;
+      return {
+        url,
+        postId: String(post._id),
+        bodySnippet:
+          typeof post.body === "string" && post.body.trim()
+            ? post.body.trim().slice(0, 60)
+            : "",
+        username: post.username,
+        hasMultiple: urls.length > 1,
+        likeCount: post.engagement?.likeCount ?? 0,
+        commentCount: post.engagement?.commentCount ?? 0,
+      };
     })
-  );
+    .filter(
+      (row): row is NonNullable<typeof row> => row != null
+    );
 
   const showPeopleSearch = isLoaded && isSignedIn && q.length >= 2;
   const searchComplete = !postsLoading && (!showPeopleSearch || !peopleLoading);
   const hasPeople = showPeopleSearch && peopleResults.length > 0;
-  const hasPosts = allImages.length > 0;
+  const hasPosts = postTiles.length > 0;
   const noResults = !!q && searchComplete && !hasPeople && !hasPosts;
 
   return (
-    <div className="flex-1 min-w-0 flex flex-col items-center border-x-0 sm:border-x sm:border-stone-200/80">
+    <div className="flex-1 min-w-0 flex flex-col items-center">
       <div className="w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
         <div className="mb-6 sm:mb-8">
           <ExploreSearchBar
@@ -207,13 +209,15 @@ function ExplorePageInner() {
             </div>
           ) : (
             <div className={postGridClassName}>
-              {allImages.map((img) => (
+              {postTiles.map((tile) => (
                 <PostGridCard
-                  key={`${img.postId}-${img.imageIndex}`}
-                  href={`/post/${encodeURIComponent(String(img.postId))}`}
-                  src={img.url}
-                  alt={img.bodySnippet || `Post by ${img.username}`}
-                  caption={img.username}
+                  key={tile.postId}
+                  postId={tile.postId}
+                  src={tile.url}
+                  alt={tile.bodySnippet || `Post by ${tile.username}`}
+                  hasMultiple={tile.hasMultiple}
+                  likeCount={tile.likeCount}
+                  commentCount={tile.commentCount}
                 />
               ))}
             </div>
@@ -226,7 +230,7 @@ function ExplorePageInner() {
 
 function ExploreFallback() {
   return (
-    <div className="flex-1 min-w-0 flex flex-col items-center border-x-0 sm:border-x sm:border-stone-200/80">
+    <div className="flex-1 min-w-0 flex flex-col items-center">
       <div className="w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
         <div className="mb-6 sm:mb-8">
           <div className="h-12 w-full bg-stone-100 rounded-xl animate-pulse" />

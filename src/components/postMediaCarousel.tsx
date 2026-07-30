@@ -1,6 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
+import {
+  clampPostAspectRatio,
+  loadImageSize,
+  POST_ASPECT_SQUARE,
+} from "@/lib/postAspectRatio";
 
 const NOISE_OVERLAY = {
   backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
@@ -27,17 +32,83 @@ function ChevronRightIcon() {
 type PostMediaCarouselProps = {
   media: string[];
   alt: string;
+  className?: string;
+  /**
+   * Modal layout: height-capped frame; width follows clamped aspect ratio.
+   * Feed: width-driven frame (default).
+   */
+  variant?: "feed" | "modal";
+  /** Explicit pixel box for modal (parent sizes from aspect ratio). */
+  frameSize?: { width: number; height: number };
+  /** Prefer this frame when set (from post.aspectRatio). */
+  forcedAspectRatio?: number;
+  /** Notified when the clamped frame ratio is known (modal sizing). */
+  onAspectRatio?: (ratio: number) => void;
 };
 
-export function PostMediaCarousel({ media, alt }: PostMediaCarouselProps) {
+export function PostMediaCarousel({
+  media,
+  alt,
+  className,
+  variant = "feed",
+  frameSize,
+  forcedAspectRatio,
+  onAspectRatio,
+}: PostMediaCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [aspectRatio, setAspectRatio] = useState(
+    () =>
+      (typeof forcedAspectRatio === "number" && forcedAspectRatio > 0
+        ? forcedAspectRatio
+        : POST_ASPECT_SQUARE)
+  );
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollEndTimer = useRef<number | null>(null);
+  const onAspectRatioRef = useRef(onAspectRatio);
+  onAspectRatioRef.current = onAspectRatio;
+  const firstUrl = media[0] ?? "";
 
   useEffect(() => {
     setActiveIndex(0);
     scrollRef.current?.scrollTo({ left: 0, behavior: "auto" });
-  }, [media]);
+  }, [firstUrl]);
+
+  useEffect(() => {
+    if (typeof forcedAspectRatio === "number" && forcedAspectRatio > 0) {
+      setAspectRatio(forcedAspectRatio);
+      onAspectRatioRef.current?.(forcedAspectRatio);
+      return;
+    }
+    if (!firstUrl) {
+      setAspectRatio(POST_ASPECT_SQUARE);
+      onAspectRatioRef.current?.(POST_ASPECT_SQUARE);
+      return;
+    }
+    let cancelled = false;
+    void loadImageSize(firstUrl)
+      .then(({ width, height }) => {
+        if (cancelled) return;
+        const ratio = clampPostAspectRatio(width, height);
+        setAspectRatio(ratio);
+        onAspectRatioRef.current?.(ratio);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setAspectRatio(POST_ASPECT_SQUARE);
+        onAspectRatioRef.current?.(POST_ASPECT_SQUARE);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [firstUrl, forcedAspectRatio]);
+
+  function applyNaturalSize(width: number, height: number) {
+    if (typeof forcedAspectRatio === "number" && forcedAspectRatio > 0) return;
+    if (!width || !height) return;
+    const ratio = clampPostAspectRatio(width, height);
+    setAspectRatio((prev) => (Math.abs(prev - ratio) < 0.001 ? prev : ratio));
+    onAspectRatioRef.current?.(ratio);
+  }
 
   useEffect(() => {
     return () => {
@@ -86,7 +157,9 @@ export function PostMediaCarousel({ media, alt }: PostMediaCarouselProps) {
 
   if (media.length === 0) {
     return (
-      <div className="flex h-full w-full min-h-[12rem] items-center justify-center bg-white px-4 text-center text-xs text-stone-400">
+      <div
+        className={`flex aspect-square w-full items-center justify-center bg-black px-4 text-center text-xs text-stone-400 ${className ?? ""}`}
+      >
         No photo for this post
       </div>
     );
@@ -94,10 +167,31 @@ export function PostMediaCarousel({ media, alt }: PostMediaCarouselProps) {
 
   const hasMultiple = media.length > 1;
   const navButtonClass =
-    "absolute top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-white shadow-sm backdrop-blur-[1px] transition-opacity hover:bg-black/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 opacity-80 md:opacity-0 md:group-hover/carousel:opacity-100 md:focus-visible:opacity-100";
+    "absolute top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-stone-800 shadow-sm transition-opacity hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 opacity-90 md:opacity-0 md:group-hover/carousel:opacity-100 md:focus-visible:opacity-100";
+
+  const frameStyle: CSSProperties =
+    variant === "modal" && frameSize
+      ? {
+          width: frameSize.width,
+          height: frameSize.height,
+        }
+      : variant === "modal"
+        ? {
+            aspectRatio: String(aspectRatio),
+            width: `min(100%, 640px, calc(90vh * ${aspectRatio}))`,
+            maxHeight: "90vh",
+            height: "auto",
+          }
+        : {
+            aspectRatio: String(aspectRatio),
+            width: "100%",
+          };
 
   return (
-    <div className="group/carousel relative aspect-square w-full overflow-hidden">
+    <div
+      className={`group/carousel relative overflow-hidden bg-black ${className ?? ""}`}
+      style={frameStyle}
+    >
       <div
         ref={scrollRef}
         tabIndex={hasMultiple ? 0 : -1}
@@ -111,25 +205,36 @@ export function PostMediaCarousel({ media, alt }: PostMediaCarouselProps) {
         {media.map((url, i) => {
           const nearActive = Math.abs(i - activeIndex) <= 1;
           return (
-          <div key={`${url}-${i}`} className="relative h-full w-full shrink-0 snap-center snap-always">
-            {nearActive || i === 0 ? (
-              <img
-                src={url}
-                alt={i === 0 ? alt : `${alt} (${i + 1} of ${media.length})`}
-                draggable={false}
-                loading={i === 0 ? "eager" : "lazy"}
-                decoding="async"
-                className="h-full w-full object-cover select-none"
-                style={IMAGE_FILTER}
-              />
-            ) : (
-              <div className="h-full w-full bg-stone-100" aria-hidden />
-            )}
             <div
-              className="pointer-events-none absolute inset-0 opacity-[0.03]"
-              style={NOISE_OVERLAY}
-            />
-          </div>
+              key={`${url}-${i}`}
+              className="relative h-full w-full shrink-0 snap-center snap-always"
+            >
+              {nearActive || i === 0 ? (
+                <img
+                  src={url}
+                  alt={i === 0 ? alt : `${alt} (${i + 1} of ${media.length})`}
+                  draggable={false}
+                  loading={i === 0 ? "eager" : "lazy"}
+                  decoding="async"
+                  className="h-full w-full select-none object-cover"
+                  style={IMAGE_FILTER}
+                  onLoad={
+                    i === 0
+                      ? (e) => {
+                          const el = e.currentTarget;
+                          applyNaturalSize(el.naturalWidth, el.naturalHeight);
+                        }
+                      : undefined
+                  }
+                />
+              ) : (
+                <div className="h-full w-full bg-stone-900" aria-hidden />
+              )}
+              <div
+                className="pointer-events-none absolute inset-0 opacity-[0.03]"
+                style={NOISE_OVERLAY}
+              />
+            </div>
           );
         })}
       </div>
@@ -172,7 +277,9 @@ export function PostMediaCarousel({ media, alt }: PostMediaCarouselProps) {
                 aria-label={`Photo ${i + 1} of ${media.length}`}
                 onClick={() => goTo(i)}
                 className={`rounded-full transition-all ${
-                  i === activeIndex ? "h-1.5 w-1.5 bg-white" : "h-1 w-1 bg-white/45 hover:bg-white/70"
+                  i === activeIndex
+                    ? "h-1.5 w-1.5 bg-white"
+                    : "h-1 w-1 bg-white/45 hover:bg-white/70"
                 }`}
               />
             ))}

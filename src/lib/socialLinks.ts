@@ -61,6 +61,50 @@ export function parseSocialMedia(meta: unknown): SocialMediaFields {
   return base;
 }
 
+/** Display handle for profile chips, e.g. `@neillouis3`. */
+export function formatSocialHandle(
+  platform: keyof SocialMediaFields,
+  raw: string
+): string {
+  const t = raw.trim();
+  if (!t) return "";
+
+  if (!/^https?:\/\//i.test(t)) {
+    const h = t.replace(/^@/, "").replace(/\/+$/, "");
+    return h ? `@${h}` : "";
+  }
+
+  try {
+    const u = new URL(t);
+    const parts = u.pathname.replace(/\/+$/, "").split("/").filter(Boolean);
+    let handle = "";
+
+    switch (platform) {
+      case "linkedin": {
+        const i = parts.indexOf("in");
+        handle = (i >= 0 ? parts[i + 1] : parts[0]) ?? "";
+        break;
+      }
+      case "youtube": {
+        const at = parts.find((p) => p.startsWith("@"));
+        handle = (at ?? parts[parts.length - 1] ?? "").replace(/^@/, "");
+        break;
+      }
+      case "tiktok":
+        handle = (parts[0] ?? "").replace(/^@/, "");
+        break;
+      default:
+        handle = (parts[0] ?? "").replace(/^@/, "");
+        break;
+    }
+
+    handle = handle.replace(/\/+$/, "");
+    return handle ? `@${handle}` : t;
+  } catch {
+    return t;
+  }
+}
+
 /** Form labels / placeholders (settings) and short labels (profile). */
 export const SOCIAL_FIELD_CONFIG: {
   key: keyof SocialMediaFields;

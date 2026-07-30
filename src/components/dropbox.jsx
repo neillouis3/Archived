@@ -1,18 +1,53 @@
 // Dropzone.jsx
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import Image from "next/image";
 import { Button } from "@heroui/react";
+import { Album02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 
 export const CopyDocumentIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-14 text-stone-300">
-    <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-  </svg>
+  <HugeiconsIcon
+    icon={Album02Icon}
+    size={56}
+    strokeWidth={1.5}
+    className="text-stone-300"
+  />
 );
 
-const Dropzone = ({ files, setFiles, rejected, setRejected, className }) => {
+function CreateMediaIcons() {
+  return (
+    <div className="mb-6 flex items-center justify-center" aria-hidden>
+      <HugeiconsIcon
+        icon={Album02Icon}
+        size={112}
+        strokeWidth={1.25}
+        className="text-stone-900"
+      />
+    </div>
+  );
+}
+
+/**
+ * @param {{
+ *   files: File[],
+ *   setFiles: Function,
+ *   rejected: any[],
+ *   setRejected: Function,
+ *   className?: string,
+ *   variant?: 'default' | 'create',
+ * }} props
+ */
+const Dropzone = ({
+  files,
+  setFiles,
+  rejected,
+  setRejected,
+  className = "",
+  variant = "default",
+}) => {
   const AUTO_CLEAR_REJECT_MS = 4500;
 
   const onDrop = useCallback((acceptedFiles, rejectedFiles) => {
@@ -38,66 +73,125 @@ const Dropzone = ({ files, setFiles, rejected, setRejected, className }) => {
     noClick: true,
   });
 
-  useEffect(() => {
-    return () => files.forEach((file) => URL.revokeObjectURL(file.preview));
-  }, [files]);
+  const removeFile = (name) =>
+    setFiles((f) => {
+      const target = f.find((file) => file.name === name);
+      if (target?.preview) URL.revokeObjectURL(target.preview);
+      return f.filter((file) => file.name !== name);
+    });
 
-  const removeFile = (name) => setFiles((f) => f.filter((file) => file.name !== name));
+  const isCreate = variant === "create";
+  const empty = files.length === 0;
 
   return (
-    <div {...getRootProps()} className="h-fit">
-      {/* Drop zone */}
-      <div
-        className={`mb-6 rounded-xl border-2 border-dashed transition-colors p-8 flex flex-col items-center justify-center gap-3
-          ${isDragActive ? "border-stone-400 bg-white" : "border-stone-200 bg-white"}`}
-      >
-        <input {...getInputProps()} />
-        <CopyDocumentIcon />
-        <p className="text-sm text-stone-400">
-          {isDragActive ? "Drop files here..." : "Drag & drop files here"}
-        </p>
-        {/* HeroUI v3 Button */}
-        <Button
-          variant="solid"
-          size="sm"
-          onPress={open}
-          className="bg-stone-800 hover:bg-stone-700 text-white text-xs rounded-lg px-4 mt-1"
-        >
-          Select from computer
-        </Button>
-      </div>
+    <div
+      {...getRootProps()}
+      className={`${isCreate && empty ? "flex h-full min-h-0 flex-1 flex-col" : "h-fit"} ${className}`}
+    >
+      <input {...getInputProps()} />
 
-      {/* Accepted files */}
-      {files.length > 0 && (
-        <ul className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {files.map((file) => (
-            <li key={file.name} className="relative h-28 rounded-xl overflow-hidden border border-stone-200/60 shadow-sm">
-              <Image src={file.preview} alt={file.name} width={100} height={100} className="h-full w-full object-cover" />
-              <button
-                type="button"
-                onClick={() => removeFile(file.name)}
-                className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center text-xs hover:bg-black/80 transition-colors"
+      {empty ? (
+        isCreate ? (
+          <div
+            className={`flex flex-1 flex-col items-center justify-center gap-3 px-6 py-16 transition-colors ${
+              isDragActive ? "bg-stone-50" : "bg-white"
+            }`}
+          >
+            <CreateMediaIcons />
+            <p className="text-xl font-light text-stone-900">
+              {isDragActive ? "Drop photos here" : "Drag photos and videos here"}
+            </p>
+            <Button
+              variant="solid"
+              size="sm"
+              onPress={open}
+              className="mt-3 rounded-lg bg-[#0095f6] px-4 text-sm font-semibold text-white hover:bg-[#1877f2]"
+            >
+              Select from computer
+            </Button>
+          </div>
+        ) : (
+          <div
+            className={`mb-6 flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-8 transition-colors ${
+              isDragActive ? "border-stone-400 bg-white" : "border-stone-200 bg-white"
+            }`}
+          >
+            <CopyDocumentIcon />
+            <p className="text-sm text-stone-400">
+              {isDragActive ? "Drop files here..." : "Drag & drop files here"}
+            </p>
+            <Button
+              variant="solid"
+              size="sm"
+              onPress={open}
+              className="mt-1 rounded-lg bg-stone-800 px-4 text-xs text-white hover:bg-stone-700"
+            >
+              Select from computer
+            </Button>
+          </div>
+        )
+      ) : isCreate ? null : (
+        <div>
+          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {files.map((file) => (
+              <li
+                key={file.name}
+                className="relative h-28 overflow-hidden rounded-xl border border-stone-200/60 shadow-sm"
               >
-                ×
-              </button>
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent px-2 py-1.5">
-                <p className="text-xs text-white/80 truncate">{file.name}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
+                <Image
+                  src={file.preview}
+                  alt={file.name}
+                  width={100}
+                  height={100}
+                  className="h-full w-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeFile(file.name)}
+                  className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-xs text-white transition-colors hover:bg-black/80"
+                >
+                  ×
+                </button>
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent px-2 py-1.5">
+                  <p className="truncate text-xs text-white/80">{file.name}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-4">
+            <Button
+              variant="solid"
+              size="sm"
+              onPress={open}
+              className="rounded-lg bg-stone-800 px-4 text-xs text-white hover:bg-stone-700"
+            >
+              Add more
+            </Button>
+          </div>
+        </div>
       )}
 
-      {/* Rejected files toast */}
-      <div className="fixed bottom-6 right-6 max-w-xs z-50">
+      <div className="fixed bottom-6 right-6 z-50 max-w-xs">
         {rejected.map(({ id, file, errors }) => (
-          <div key={id} className="mb-3 rounded-xl border border-red-200 bg-red-50 p-3 shadow-md" role="status" aria-live="polite">
+          <div
+            key={id}
+            className="mb-3 rounded-xl border border-red-200 bg-red-50 p-3 shadow-md"
+            role="status"
+            aria-live="polite"
+          >
             <div className="flex items-start gap-3">
               <div className="flex-1">
                 <div className="text-sm font-medium text-red-700">{file.name}</div>
-                <div className="text-xs text-red-500 mt-0.5">{errors.map((e) => e.message).join(", ")}</div>
+                <div className="mt-0.5 text-xs text-red-500">
+                  {errors.map((e) => e.message).join(", ")}
+                </div>
               </div>
-              <button onClick={() => setRejected((prev) => prev.filter((r) => r.id !== id))} className="text-red-400 hover:text-red-600 text-base leading-none">×</button>
+              <button
+                onClick={() => setRejected((prev) => prev.filter((r) => r.id !== id))}
+                className="text-base leading-none text-red-400 hover:text-red-600"
+              >
+                ×
+              </button>
             </div>
           </div>
         ))}

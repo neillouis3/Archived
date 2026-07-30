@@ -42,16 +42,40 @@ export async function GET(
     }
 
     const posts = await Posts.find(filter)
-      .select("media")
+      .select("media createdAt aspectRatio")
       .sort({ createdAt: -1 })
       .limit(limit)
       .lean();
 
-    const mediaUrls = posts.flatMap((post) =>
-      ((post as { media?: { url: string }[] }).media || []).map((m) => m.url)
-    );
+    // Newest posts first; within each post, media left→right in a 2-col grid.
+    /** @type {{ id: string, url: string, postId: string, aspectRatio: number | null }[]} */
+    const items: {
+      id: string;
+      url: string;
+      postId: string;
+      aspectRatio: number | null;
+    }[] = [];
+    for (const post of posts) {
+      const postId = String(post._id);
+      const rawAr = (post as { aspectRatio?: unknown }).aspectRatio;
+      const aspectRatio =
+        typeof rawAr === "number" && rawAr > 0 ? rawAr : null;
+      const media = (post as { media?: { url?: string }[] }).media || [];
+      media.forEach((m, i) => {
+        const url = typeof m?.url === "string" ? m.url.trim() : "";
+        if (!url) return;
+        items.push({
+          id: `${postId}-${i}`,
+          url,
+          postId,
+          aspectRatio,
+        });
+      });
+    }
 
-    return NextResponse.json({ success: true, mediaUrls });
+    const mediaUrls = items.map((item) => item.url);
+
+    return NextResponse.json({ success: true, items, mediaUrls });
   } catch (error) {
     console.error("Error fetching media:", error);
     return NextResponse.json(

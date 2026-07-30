@@ -3,6 +3,7 @@
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Label, SearchField } from "@heroui/react";
 
 export type UserSearchHit = {
   id: string;
@@ -23,7 +24,6 @@ export default function UserSearch({
   className = "",
   inputClassName = "",
   placeholder = "Search people…",
-  variant = "default",
 }: Props) {
   const { isSignedIn, isLoaded } = useUser();
   const [query, setQuery] = useState("");
@@ -75,62 +75,41 @@ export default function UserSearch({
 
   if (!isSignedIn) {
     return (
-      <div className={`text-xs text-stone-400 px-1 ${className}`}>
+      <div className={`px-1 text-xs text-stone-400 ${className}`}>
         Sign in to search people.
       </div>
     );
   }
 
-  const isSidebar = variant === "sidebar";
-
   return (
     <div ref={wrapRef} className={`relative ${className}`}>
-      <div
-        className={
-          isSidebar
-            ? `flex items-center gap-2 rounded-lg border border-stone-200/90 bg-white/80 px-2.5 py-2 focus-within:border-stone-300 ${inputClassName}`
-            : `flex items-center gap-3 rounded-xl border border-stone-200/90 bg-white px-4 py-3 focus-within:border-stone-300 focus-within:shadow-[0_0_0_3px_rgba(120,113,108,0.12)] ${inputClassName}`
-        }
+      <SearchField
+        value={query}
+        onChange={(v) => {
+          setQuery(v);
+          setOpen(true);
+        }}
+        fullWidth
+        variant="secondary"
+        aria-label="Search people"
+        className={inputClassName}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.25}
-          stroke="currentColor"
-          className={`text-stone-400 flex-shrink-0 ${isSidebar ? "w-4 h-4" : "w-5 h-5"}`}
-          aria-hidden
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-          />
-        </svg>
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => setOpen(true)}
-          placeholder={placeholder}
-          autoComplete="off"
-          className={`min-w-0 flex-1 bg-transparent text-stone-800 placeholder:text-stone-400 outline-none ${
-            isSidebar ? "text-xs" : "text-[15px]"
-          }`}
-        />
-        {loading && (
-          <span className="text-xs text-stone-400 tabular-nums">…</span>
-        )}
-      </div>
+        <Label className="sr-only">Search people</Label>
+        <SearchField.Group onFocus={() => setOpen(true)}>
+          <SearchField.SearchIcon />
+          <SearchField.Input placeholder={placeholder} />
+          {loading ? (
+            <span className="pr-2 text-xs tabular-nums text-stone-400">…</span>
+          ) : (
+            <SearchField.ClearButton />
+          )}
+        </SearchField.Group>
+      </SearchField>
 
       {open && query.trim().length >= 2 && (
-        <div
-          className={`absolute left-0 right-0 z-50 mt-1 rounded-xl border border-stone-200/90 bg-white shadow-lg overflow-hidden max-h-72 overflow-y-auto ${
-            isSidebar ? "top-full" : "top-full"
-          }`}
-        >
+        <div className="absolute top-full right-0 left-0 z-50 mt-1 max-h-72 overflow-hidden overflow-y-auto rounded-xl border border-stone-200/90 bg-white shadow-lg">
           {results.length === 0 && !loading ? (
-            <p className="text-xs text-stone-400 px-3 py-3">No people found.</p>
+            <p className="px-3 py-3 text-xs text-stone-400">No people found.</p>
           ) : (
             <ul className="py-1">
               {results.map((u) => (
@@ -141,18 +120,18 @@ export default function UserSearch({
                       setOpen(false);
                       setQuery("");
                     }}
-                    className="flex items-center gap-2.5 px-3 py-2 hover:bg-stone-50 transition-colors"
+                    className="flex items-center gap-2.5 px-3 py-2 transition-colors hover:bg-stone-50"
                   >
                     <img
                       src={u.imageUrl}
                       alt=""
-                      className="w-8 h-8 rounded-full object-cover ring-1 ring-stone-200/60"
+                      className="h-8 w-8 rounded-full object-cover ring-1 ring-stone-200/60"
                     />
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-medium text-stone-800 truncate">
+                      <p className="truncate text-xs font-medium text-stone-800">
                         {u.fullName}
                       </p>
-                      <p className="text-xs text-stone-400 truncate">
+                      <p className="truncate text-xs text-stone-400">
                         {u.username ? `@${u.username}` : u.id.slice(0, 12) + "…"}
                       </p>
                     </div>

@@ -14,7 +14,7 @@ export type EditPostVisibility = "public" | "friends" | "private";
 
 type EditPostModalProps = {
   state: ReturnType<typeof useOverlayState>;
-  trigger: ReactElement;
+  trigger?: ReactElement | null;
   postId: string;
   initialBio: string;
   initialLocation: string;
@@ -29,7 +29,7 @@ type EditPostModalProps = {
 
 export default function EditPostModal({
   state,
-  trigger,
+  trigger = null,
   postId,
   initialBio,
   initialLocation,
@@ -110,7 +110,7 @@ export default function EditPostModal({
   return (
     <Modal state={state}>
       {trigger}
-      <Modal.Backdrop>
+      <Modal.Backdrop className="!z-[110]">
         <Modal.Container className="w-full max-w-full p-4 sm:p-6">
           <Modal.Dialog className="bg-white rounded-2xl shadow-2xl overflow-hidden w-full max-w-lg min-w-0 mx-auto">
             {({ close }) => (

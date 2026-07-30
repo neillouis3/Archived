@@ -3,66 +3,188 @@
 import { useUser } from "@clerk/nextjs";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { memo, useEffect, useRef, useState } from "react";
-import { Button, Tooltip, useOverlayState } from "@heroui/react";
+import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { Button, useOverlayState } from "@heroui/react";
+import {
+  FavouriteIcon,
+  MoreHorizontalIcon,
+  Location01Icon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { MessageCircleIcon, BookmarkIcon as LucideBookmarkIcon } from "lucide-react";
 import type { EditPostVisibility } from "@/components/editPostModal";
 import { PostMediaCarousel } from "@/components/postMediaCarousel";
+import FollowButton from "@/components/FollowButton";
 
 const EditPostModal = dynamic(() => import("@/components/editPostModal"), {
   ssr: false,
 });
 
-const HeartIcon = ({ filled }: { filled?: boolean }) =>
-  filled ? (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-      <path d="m11.645 20.91-.007-.003-.022-.012a15.247 15.247 0 0 1-.383-.218 25.18 25.18 0 0 1-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0 1 12 5.052 5.5 5.5 0 0 1 16.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 0 1-4.244 3.17 15.247 15.247 0 0 1-.383.219l-.022.012-.007.004-.003.001a.752.752 0 0 1-.704 0l-.003-.001Z" />
-    </svg>
-  ) : (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-    </svg>
-  );
+const HeartIcon = ({ filled }: { filled?: boolean }) => (
+  <HugeiconsIcon
+    icon={FavouriteIcon}
+    size={24}
+    strokeWidth={filled ? 0 : 1.75}
+    fill={filled ? "currentColor" : "none"}
+    className={`block size-6 shrink-0 ${filled ? "text-red-500" : ""}`}
+  />
+);
 
 const ChatIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 0 1-.923 1.785A5.969 5.969 0 0 0 6 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337Z" />
-  </svg>
+  <MessageCircleIcon absoluteStrokeWidth className="block size-6 shrink-0" strokeWidth={1.75} />
 );
 
-const BookmarkIcon = ({ filled }: { filled?: boolean }) =>
-  filled ? (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-      <path fillRule="evenodd" d="M6.32 2.577a49.255 49.255 0 0 1 11.36 0c1.497.174 2.57 1.46 2.57 2.93V21a.75.75 0 0 1-1.085.67L12 18.089l-7.165 3.583A.75.75 0 0 1 3.75 21V5.507c0-1.47 1.073-2.756 2.57-2.93Z" clipRule="evenodd" />
-    </svg>
-  ) : (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
-    </svg>
-  );
+const BookmarkIcon = ({ filled }: { filled?: boolean }) => (
+  <LucideBookmarkIcon
+    absoluteStrokeWidth
+    className="block size-6 shrink-0"
+    strokeWidth={1.75}
+    fill={filled ? "currentColor" : "none"}
+  />
+);
 
 const DotsIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
-  </svg>
+  <HugeiconsIcon icon={MoreHorizontalIcon} size={20} strokeWidth={2} />
 );
 
+function PostMoreMenu({
+  postId,
+  isOwner,
+  onEdit,
+}: {
+  postId: string;
+  isOwner: boolean;
+  onEdit?: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState<{ top: number; right: number } | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  function updatePosition() {
+    const el = triggerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    setPos({
+      top: rect.bottom + 6,
+      right: Math.max(8, window.innerWidth - rect.right),
+    });
+  }
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setPos(null);
+      return;
+    }
+    updatePosition();
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    function onPointerDown(e: MouseEvent | TouchEvent) {
+      const target = e.target as Node;
+      if (triggerRef.current?.contains(target)) return;
+      if (menuRef.current?.contains(target)) return;
+      setOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    function onReposition() {
+      updatePosition();
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("touchstart", onPointerDown);
+    document.addEventListener("keydown", onKey);
+    window.addEventListener("resize", onReposition);
+    window.addEventListener("scroll", onReposition, true);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("touchstart", onPointerDown);
+      document.removeEventListener("keydown", onKey);
+      window.removeEventListener("resize", onReposition);
+      window.removeEventListener("scroll", onReposition, true);
+    };
+  }, [open]);
+
+  async function copyLink() {
+    const url = `${window.location.origin}/post/${encodeURIComponent(postId)}`;
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      /* ignore */
+    }
+    setOpen(false);
+  }
+
+  const menu =
+    open && pos
+      ? createPortal(
+          <div
+            ref={menuRef}
+            role="menu"
+            className="fixed z-[100] min-w-[160px] overflow-hidden rounded-xl border border-stone-200 bg-white py-1 shadow-[0_8px_30px_rgba(0,0,0,0.08)]"
+            style={{ top: pos.top, right: pos.right }}
+          >
+            {isOwner ? (
+              <button
+                type="button"
+                role="menuitem"
+                className="flex w-full px-3 py-2.5 text-left text-sm text-stone-900 hover:bg-stone-50"
+                onClick={() => {
+                  setOpen(false);
+                  onEdit?.();
+                }}
+              >
+                Edit
+              </button>
+            ) : null}
+            <button
+              type="button"
+              role="menuitem"
+              className="flex w-full px-3 py-2.5 text-left text-sm text-stone-900 hover:bg-stone-50"
+              onClick={() => void copyLink()}
+            >
+              Copy link
+            </button>
+          </div>,
+          document.body
+        )
+      : null;
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        aria-label="More options"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-stone-900 hover:bg-stone-100 transition-colors"
+      >
+        <DotsIcon />
+      </button>
+      {menu}
+    </>
+  );
+}
+
 const PinIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3 shrink-0 text-stone-300">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-  </svg>
+  <HugeiconsIcon
+    icon={Location01Icon}
+    size={12}
+    strokeWidth={1.5}
+    className="shrink-0 text-stone-300"
+  />
 );
 
 function parseVisibility(v: unknown): EditPostVisibility {
   return v === "friends" || v === "private" ? v : "public";
 }
 
-function formatDate(dateStr?: string) {
-  if (!dateStr) return "Feb 16";
-  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
-
-function formatCommentTime(dateStr?: string) {
+function formatRelativeTime(dateStr?: string) {
   if (!dateStr) return "";
   const d = new Date(dateStr);
   const now = new Date();
@@ -70,7 +192,12 @@ function formatCommentTime(dateStr?: string) {
   if (diff < 1) return "now";
   if (diff < 60) return `${Math.floor(diff)}m`;
   if (diff < 1440) return `${Math.floor(diff / 60)}h`;
+  if (diff < 1440 * 7) return `${Math.floor(diff / 1440)}d`;
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function formatCommentTime(dateStr?: string) {
+  return formatRelativeTime(dateStr);
 }
 
 type CommentRow = {
@@ -104,6 +231,10 @@ interface ArchivePostProps {
   /** From GET /api/posts batch — avoids a per-post /engagement request. */
   initialEngagement?: PostEngagementSnapshot | null;
   onPostDeleted?: (postId: string) => void;
+  /** Instagram-style follow CTA on suggested posts. */
+  showFollow?: boolean;
+  /** Stored post frame ratio (4/5, 1, 5/4, 1.91). */
+  aspectRatio?: number;
 }
 
 function ArchivePost({
@@ -119,6 +250,8 @@ function ArchivePost({
   location: locationProp,
   initialEngagement,
   onPostDeleted,
+  showFollow = false,
+  aspectRatio: aspectRatioProp,
 }: ArchivePostProps) {
   const { user, isLoaded } = useUser();
   const editModalState = useOverlayState({ defaultOpen: false });
@@ -305,55 +438,80 @@ function ArchivePost({
     });
   }
 
+  const relativeTime = formatRelativeTime(createdAt);
+
   return (
     <article className="flex flex-col">
       <div className="mb-3 flex w-full items-center gap-2.5">
-        {profileHref ? (
-          <Link
-            href={profileHref}
-            className="group/author -m-1 flex min-w-0 flex-1 items-center gap-2.5 rounded-lg p-1 transition-colors hover:bg-stone-100/80"
-            aria-label={`View ${resolvedUsername}'s profile`}
-          >
-            <img
-              src={resolvedImage}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              className="h-7 w-7 flex-shrink-0 rounded-full object-cover ring-1 ring-transparent transition-[box-shadow] group-hover/author:ring-stone-300"
-            />
-            <span className="truncate text-xs font-medium text-stone-700 underline-offset-2 decoration-stone-300 group-hover/author:text-stone-900 group-hover/author:underline">
-              {resolvedUsername}
-            </span>
-          </Link>
-        ) : (
-          <div className="flex min-w-0 flex-1 items-center gap-2.5">
+        <div className="flex min-w-0 items-center gap-2.5">
+          {profileHref ? (
+            <Link
+              href={profileHref}
+              className="shrink-0 rounded-full"
+              aria-label={`View ${resolvedUsername}'s profile`}
+            >
+              <img
+                src={resolvedImage}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                className="h-8 w-8 rounded-full object-cover"
+              />
+            </Link>
+          ) : (
             <img
               src={resolvedImage}
               alt={resolvedUsername}
               loading="lazy"
               decoding="async"
-              className="h-7 w-7 flex-shrink-0 rounded-full object-cover"
+              className="h-8 w-8 shrink-0 rounded-full object-cover"
             />
-            <span className="truncate text-xs font-medium text-stone-700">{resolvedUsername}</span>
-          </div>
-        )}
+          )}
+          <span className="flex min-w-0 items-center gap-1.5 truncate text-sm">
+            {profileHref ? (
+              <Link
+                href={profileHref}
+                className="truncate font-medium text-stone-900"
+              >
+                {resolvedUsername}
+              </Link>
+            ) : (
+              <span className="truncate font-medium text-stone-900">
+                {resolvedUsername}
+              </span>
+            )}
+            {relativeTime ? (
+              <>
+                <span className="shrink-0 text-stone-300" aria-hidden>
+                  ·
+                </span>
+                <time
+                  className="shrink-0 font-normal text-stone-400"
+                  dateTime={createdAt}
+                >
+                  {relativeTime}
+                </time>
+              </>
+            ) : null}
+          </span>
+        </div>
 
-        <div className="flex shrink-0 items-center gap-0.5">
-          <span className="text-xs text-stone-300">{formatDate(createdAt)}</span>
+        <div className="ml-auto flex shrink-0 items-center gap-1.5">
+          {showFollow && authorClerkId && !isOwner ? (
+            <FollowButton
+              targetUserId={authorClerkId}
+              hideIfFollowing
+              className="text-xs px-2.5 py-1 rounded-md border border-stone-200 text-stone-700 hover:bg-stone-100 transition-colors"
+            />
+          ) : null}
+          <PostMoreMenu
+            postId={postId}
+            isOwner={isOwner}
+            onEdit={() => editModalState.open()}
+          />
           {isOwner ? (
             <EditPostModal
               state={editModalState}
-              trigger={
-                <Button
-                  isIconOnly
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 min-w-0 rounded-md text-stone-300 hover:text-stone-500"
-                  aria-label="Edit post"
-                >
-                  <DotsIcon />
-                </Button>
-              }
               postId={postId}
               initialBio={displayBody}
               initialLocation={displayLocation}
@@ -372,7 +530,7 @@ function ArchivePost({
         </div>
       </div>
 
-      <div className="relative w-full overflow-hidden border border-stone-200/80 bg-white">
+      <div className="relative w-full overflow-hidden rounded-md border border-stone-200/80 bg-white">
         <PostMediaCarousel
           media={media}
           alt={
@@ -380,85 +538,73 @@ function ArchivePost({
               ? displayBody.trim().slice(0, 80)
               : `Post by ${resolvedUsername}`
           }
+          forcedAspectRatio={aspectRatioProp}
         />
       </div>
 
-      <div className="flex items-center gap-3 mt-2 w-full">
-        <div className="flex items-center gap-1">
-          <Tooltip>
-            <Tooltip.Trigger>
-              <Button
-                isIconOnly
-                variant="ghost"
-                size="sm"
-                isDisabled={!isLoaded || !signedIn}
-                onPress={toggleLike}
-                className={`w-7 h-7 min-w-0 rounded-md transition-colors ${liked ? "text-rose-400" : "text-stone-400 hover:text-stone-600"}`}
-              >
-                <HeartIcon filled={liked} />
-              </Button>
-            </Tooltip.Trigger>
-            <Tooltip.Content placement="top">
-              <p className="text-xs">
-                {!signedIn ? "Sign in to like" : liked ? "Unlike" : "Like"}
-              </p>
-            </Tooltip.Content>
-          </Tooltip>
-          {!engagementLoading && likeCount > 0 && (
-            <span className="text-xs font-medium text-stone-500 tabular-nums">{likeCount}</span>
-          )}
+      <div className="mt-3 flex w-full items-center gap-3">
+        <div className="flex h-6 items-center gap-1.5">
+          <button
+            type="button"
+            disabled={!isLoaded || !signedIn}
+            onClick={toggleLike}
+            title={!signedIn ? "Sign in to like" : liked ? "Unlike" : "Like"}
+            aria-label={!signedIn ? "Sign in to like" : liked ? "Unlike" : "Like"}
+            className={`grid size-6 shrink-0 place-items-center transition-colors disabled:opacity-40 ${
+              liked ? "text-rose-500" : "text-stone-500 hover:text-stone-800"
+            }`}
+          >
+            <HeartIcon filled={liked} />
+          </button>
+          {!engagementLoading && likeCount > 0 ? (
+            <span className="select-none text-sm font-medium leading-none text-stone-500 tabular-nums -translate-y-px">
+              {likeCount}
+            </span>
+          ) : null}
         </div>
 
-        <div className="flex items-center gap-1">
-          <Tooltip>
-            <Tooltip.Trigger>
-              <Button
-                isIconOnly
-                variant="ghost"
-                size="sm"
-                isDisabled={!isLoaded || !signedIn}
-                onPress={toggleComments}
-                className={`text-stone-400 hover:text-stone-600 w-7 h-7 min-w-0 rounded-md ${commentsOpen ? "text-stone-700" : ""}`}
-              >
-                <ChatIcon />
-              </Button>
-            </Tooltip.Trigger>
-            <Tooltip.Content placement="top">
-              <p className="text-xs">{!signedIn ? "Sign in to comment" : "Comments"}</p>
-            </Tooltip.Content>
-          </Tooltip>
-          {!engagementLoading && commentCount > 0 && (
-            <span className="text-xs font-medium text-stone-500 tabular-nums">{commentCount}</span>
-          )}
+        <div className="flex h-6 items-center gap-1.5">
+          <button
+            type="button"
+            disabled={!isLoaded || !signedIn}
+            onClick={toggleComments}
+            title={!signedIn ? "Sign in to comment" : "Comments"}
+            aria-label={!signedIn ? "Sign in to comment" : "Comments"}
+            className={`grid size-6 shrink-0 place-items-center transition-colors disabled:opacity-40 ${
+              commentsOpen ? "text-stone-800" : "text-stone-500 hover:text-stone-800"
+            }`}
+          >
+            <ChatIcon />
+          </button>
+          {!engagementLoading && commentCount > 0 ? (
+            <span className="select-none text-sm font-medium leading-none text-stone-500 tabular-nums -translate-y-px">
+              {commentCount}
+            </span>
+          ) : null}
         </div>
 
         <span className="min-w-2 flex-1" aria-hidden />
 
-        <Tooltip>
-          <Tooltip.Trigger>
-            <Button
-              isIconOnly
-              variant="ghost"
-              size="sm"
-              isDisabled={!isLoaded || !signedIn}
-              onPress={toggleSave}
-              className={`w-7 h-7 min-w-0 rounded-md transition-colors ${saved ? "text-stone-700" : "text-stone-400 hover:text-stone-600"}`}
-            >
-              <BookmarkIcon filled={saved} />
-            </Button>
-          </Tooltip.Trigger>
-          <Tooltip.Content placement="top">
-            <p className="text-xs">{!signedIn ? "Sign in to save" : saved ? "Unsave" : "Save"}</p>
-          </Tooltip.Content>
-        </Tooltip>
+        <button
+          type="button"
+          disabled={!isLoaded || !signedIn}
+          onClick={toggleSave}
+          title={!signedIn ? "Sign in to save" : saved ? "Unsave" : "Save"}
+          aria-label={!signedIn ? "Sign in to save" : saved ? "Unsave" : "Save"}
+          className={`grid size-6 shrink-0 place-items-center transition-colors disabled:opacity-40 ${
+            saved ? "text-stone-800" : "text-stone-500 hover:text-stone-800"
+          }`}
+        >
+          <BookmarkIcon filled={saved} />
+        </button>
       </div>
 
       {displayBody.trim() ? (
-        <p className="mt-1.5 text-xs leading-relaxed text-stone-500 line-clamp-3 break-words">
+        <p className="mt-1.5 text-sm leading-relaxed text-stone-500 line-clamp-3 break-words">
           {profileHref ? (
             <Link
               href={profileHref}
-              className="font-medium text-stone-700 hover:text-stone-900 hover:underline underline-offset-2 decoration-stone-300"
+              className="font-medium text-stone-700 hover:text-stone-900"
               aria-label={`View ${resolvedUsername}'s profile`}
             >
               {resolvedUsername}
@@ -471,7 +617,7 @@ function ArchivePost({
       ) : null}
 
       {displayLocation.trim() && (
-        <p className="text-xs text-stone-400 mt-1 flex items-center gap-1">
+        <p className="text-sm text-stone-400 mt-1 flex items-center gap-1">
           <PinIcon />
           <span className="truncate">{displayLocation.trim()}</span>
         </p>
@@ -481,10 +627,10 @@ function ArchivePost({
           <div className="mt-3 pt-3 border-t border-stone-200/80 space-y-3">
             <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
               {comments.length === 0 ? (
-                <p className="text-xs text-stone-400">No comments yet.</p>
+                <p className="text-sm text-stone-400">No comments yet.</p>
               ) : (
                 comments.map((c) => (
-                  <div key={c._id} className="flex gap-2 text-xs">
+                  <div key={c._id} className="flex gap-2 text-sm">
                     <Link href={`/profile/${encodeURIComponent(c.authorClerkId)}`} className="shrink-0">
                       <img
                         src={c.avatarUrl || "https://i.pravatar.cc/150?u=placeholder"}
@@ -500,7 +646,7 @@ function ArchivePost({
                         >
                           {c.fullName}
                         </Link>
-                        <span className="text-stone-300 text-xs ml-1">{formatCommentTime(c.createdAt)}</span>
+                        <span className="text-stone-300 text-sm ml-1">{formatCommentTime(c.createdAt)}</span>
                       </p>
                       <p className="text-stone-500 leading-snug break-words">{c.body}</p>
                     </div>
@@ -515,7 +661,7 @@ function ArchivePost({
                   onChange={(e) => setCommentText(e.target.value)}
                   placeholder="Add a comment…"
                   rows={2}
-                  className="flex-1 min-w-0 bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-700 placeholder:text-stone-300 outline-none focus:border-stone-400 resize-none"
+                  className="flex-1 min-w-0 bg-white border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-700 placeholder:text-stone-300 outline-none focus:border-stone-400 resize-none"
                 />
                 <Button
                   variant="primary"
@@ -529,7 +675,7 @@ function ArchivePost({
                 </Button>
               </div>
             ) : (
-              <p className="text-xs text-stone-400">Sign in to comment.</p>
+              <p className="text-sm text-stone-400">Sign in to comment.</p>
             )}
           </div>
         )}
@@ -538,7 +684,7 @@ function ArchivePost({
         <button
           type="button"
           onClick={toggleComments}
-          className="text-xs text-stone-300 mt-1 hover:text-stone-500 transition-colors"
+          className="text-sm text-stone-300 mt-1 hover:text-stone-500 transition-colors"
         >
           View {commentCount === 1 ? "1 comment" : `all ${commentCount} comments`}
         </button>

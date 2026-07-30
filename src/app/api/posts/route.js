@@ -11,6 +11,7 @@ import {
   filterPostsVisibleToViewer,
   getAcceptedFriendClerkIdsSet,
 } from "@lib/socialQueries";
+import { parsePostAspectRatio } from "@lib/postAspectRatio";
 
 function escapeRegex(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -48,10 +49,18 @@ export async function GET(req) {
     const followingParam =
       searchParams.get("following") === "true" ||
       searchParams.get("feed") === "following";
+    const suggestedParam =
+      searchParams.get("suggested") === "true" ||
+      searchParams.get("feed") === "suggested";
     const clerkId = searchParams.get("clerkId");
     const rawSearch =
       searchParams.get("search") || searchParams.get("q") || "";
     const search = rawSearch.trim();
+    const sinceDaysRaw = parseInt(searchParams.get("sinceDays") || "", 10);
+    const sinceDays =
+      Number.isFinite(sinceDaysRaw) && sinceDaysRaw > 0
+        ? Math.min(sinceDaysRaw, 90)
+        : 0;
 
     const limit = Math.min(parseInt(searchParams.get("limit") || "20", 10), 100);
     const page = Math.max(parseInt(searchParams.get("page") || "1", 10), 1);
@@ -128,6 +137,7 @@ export async function GET(req) {
       baseFilter = await buildPostsListFilter({
         authorClerkId,
         followingFeed: followingParam,
+        suggestedFeed: suggestedParam,
         viewerClerkId,
         collectionVisibility: collection,
       });
@@ -142,6 +152,10 @@ export async function GET(req) {
     }
 
     const parts = [baseFilter];
+    if (sinceDays > 0) {
+      const since = new Date(Date.now() - sinceDays * 24 * 60 * 60 * 1000);
+      parts.push({ createdAt: { $gte: since } });
+    }
     if (tag) parts.push({ tags: { $in: [tag] } });
     if (search) {
       const rx = new RegExp(escapeRegex(search), "i");
@@ -208,6 +222,10 @@ export async function POST(req) {
       tags = [],
       visibility: rawVisibility,
       location: rawLocation,
+      aspectRatio: rawAspectRatio,
+      hideLikeCount: rawHideLikeCount,
+      commentsDisabled: rawCommentsDisabled,
+      altText: rawAltText,
       pinned,
       status,
     } = body;
@@ -250,11 +268,20 @@ export async function POST(req) {
       media: mediaWithClerkId,
       tags,
       visibility,
+      hideLikeCount: Boolean(rawHideLikeCount),
+      commentsDisabled: Boolean(rawCommentsDisabled),
       pinned,
       status,
     };
+    const aspectRatio = parsePostAspectRatio(rawAspectRatio);
+    if (aspectRatio != null) {
+      createPayload.aspectRatio = aspectRatio;
+    }
     if (typeof title === "string" && title.trim()) {
       createPayload.title = title.trim();
+    }
+    if (typeof rawAltText === "string" && rawAltText.trim()) {
+      createPayload.altText = rawAltText.trim();
     }
 
     const newPost = await Posts.create(createPayload);

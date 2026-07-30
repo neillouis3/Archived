@@ -22,6 +22,8 @@ export type FeedPost = {
   createdAt?: string;
   visibility?: string;
   location?: string;
+  /** Stored frame ratio: 4/5, 1, 5/4, or 1.91 */
+  aspectRatio?: number;
   engagement?: PostEngagementSnapshot | null;
 };
 

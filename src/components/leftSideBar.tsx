@@ -1,53 +1,40 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
-import { useSidebar } from "./sidebarContext";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import Image from "next/image";
-import { useUser, SignOutButton, useClerk } from "@clerk/nextjs";
-import AddPostModal from "./addPostModal";
-import { ThemeSwitcher } from "./themeSwitch";
-import { Button, Dropdown, Header, Separator } from "@heroui/react";
+import { usePathname, useRouter } from "next/navigation";
+import { useUser, useClerk } from "@clerk/nextjs";
+import { Avatar } from "@heroui/react";
 import {
-  ArrowLeft01Icon,
-  ArrowRight01Icon,
-  ArrowDown01Icon,
-  Logout01Icon,
-  Menu01Icon,
-  Cancel01Icon,
-  Notification01Icon,
-  UserIcon,
+  Home01Icon,
+  Image01Icon,
+  Search01Icon,
+  FavouriteIcon,
+  AddSquareIcon,
   Settings02Icon,
-  Moon02Icon,
-  Sun02Icon,
+  Logout01Icon,
+  Cancel01Icon,
+  Menu01Icon,
+  Moon01Icon,
+  Sun01Icon,
+  UserIcon,
 } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { archiveNavItems } from "@/lib/archiveNav";
+import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
+import { useTheme } from "next-themes";
+import AddPostModal from "./addPostModal";
+import { useSidebar } from "./sidebarContext";
+import { archiveNavItems, isNavActive } from "@/lib/archiveNav";
+import { SIDEBAR_COLLAPSED_W, SIDEBAR_EXPANDED_W } from "@/lib/sidebarWidths";
 
-function SidebarLogo({
-  size = 32,
-  className,
-  onNavigate,
-}: {
-  size?: number;
-  className?: string;
-  onNavigate?: () => void;
-}) {
-  return (
-    <Link href="/home" className={className} onClick={onNavigate}>
-      <Image
-        src="/archive-logo.png"
-        alt="Archive"
-        width={size}
-        height={size}
-        className="object-contain"
-        priority={size >= 28}
-      />
-    </Link>
-  );
-}
+const NAV_ICONS: Record<string, IconSvgElement> = {
+  home: Home01Icon,
+  gallery: Image01Icon,
+  search: Search01Icon,
+  notifications: FavouriteIcon,
+  create: AddSquareIcon,
+};
 
 function useUnreadNotifCount(user: ReturnType<typeof useUser>["user"]) {
   const [unreadNotif, setUnreadNotif] = useState(0);
@@ -82,22 +69,464 @@ function useUnreadNotifCount(user: ReturnType<typeof useUser>["user"]) {
   return unreadNotif;
 }
 
-function MobileArchiveNav({
+function NavGlyph({ itemKey, active }: { itemKey: string; active: boolean }) {
+  const icon = NAV_ICONS[itemKey];
+  if (!icon) return null;
+  return (
+    <HugeiconsIcon
+      icon={icon}
+      size={24}
+      strokeWidth={1.6}
+      className={active ? "text-black" : "text-neutral-500"}
+    />
+  );
+}
+
+/** Icons live in a collapsed-width column so they stay centered when the rail clips. */
+function navItemClass(active: boolean, expanded: boolean) {
+  // Pill must fit inside the visible rail when collapsed (aside clips overflow),
+  // otherwise the right side looks square where it's cut off.
+  const pill = expanded
+    ? "before:left-2 before:right-2"
+    : "before:left-2 before:w-14"; // 8px inset + 56px = 72px collapsed rail
+
+  return [
+    "relative z-0 flex w-full items-center py-3 font-sans text-sm font-normal leading-none transition-colors",
+    "before:pointer-events-none before:absolute before:inset-y-0 before:-z-10 before:rounded-lg before:transition-[background-color,width,left,right]",
+    pill,
+    "hover:before:bg-neutral-100",
+    active ? "text-black before:bg-neutral-100" : "text-neutral-500",
+  ].join(" ");
+}
+
+function NavIconSlot({ children }: { children: React.ReactNode }) {
+  return (
+    <span
+      className="flex shrink-0 items-center justify-center"
+      style={{ width: SIDEBAR_COLLAPSED_W }}
+    >
+      {children}
+    </span>
+  );
+}
+
+function NavLabel({ expanded, children }: { expanded: boolean; children: React.ReactNode }) {
+  return (
+    <span
+      className={`pr-3 whitespace-nowrap transition-opacity duration-100 ease-out ${
+        expanded ? "opacity-100 delay-75" : "opacity-0 delay-0 pointer-events-none"
+      }`}
+      aria-hidden={!expanded}
+    >
+      {children}
+    </span>
+  );
+}
+
+function MoreMenu({
+  username,
+  displayName,
+  resolvedImage,
+  expanded,
+  onNavigate,
+}: {
+  username: string;
+  displayName: string;
+  resolvedImage: string;
+  expanded: boolean;
+  onNavigate?: () => void;
+}) {
+  const router = useRouter();
+  const { signOut } = useClerk();
+  const { resolvedTheme, setTheme } = useTheme();
+  const [themeMounted, setThemeMounted] = useState(false);
+  const cleanUsername = username.replace(/^@+/, "");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [pos, setPos] = useState<{ bottom: number; left: number } | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setThemeMounted(true);
+  }, []);
+
+  const isDark = themeMounted && resolvedTheme === "dark";
+
+  function closeMenu() {
+    setMenuOpen(false);
+  }
+
+  function updatePosition() {
+    const el = triggerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const gap = 8;
+    // Anchor menu bottom to the More row — opens upward beside the rail.
+    setPos({
+      bottom: Math.max(8, window.innerHeight - rect.bottom),
+      left: rect.right + gap,
+    });
+  }
+
+  useLayoutEffect(() => {
+    if (!menuOpen) {
+      setPos(null);
+      return;
+    }
+    updatePosition();
+  }, [menuOpen]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    function onPointerDown(e: MouseEvent | TouchEvent) {
+      const target = e.target as Node;
+      if (triggerRef.current?.contains(target)) return;
+      if (menuRef.current?.contains(target)) return;
+      closeMenu();
+    }
+
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") closeMenu();
+    }
+
+    function onReposition() {
+      updatePosition();
+    }
+
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("touchstart", onPointerDown);
+    document.addEventListener("keydown", onKey);
+    window.addEventListener("resize", onReposition);
+    window.addEventListener("scroll", onReposition, true);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("touchstart", onPointerDown);
+      document.removeEventListener("keydown", onKey);
+      window.removeEventListener("resize", onReposition);
+      window.removeEventListener("scroll", onReposition, true);
+    };
+  }, [menuOpen]);
+
+  function runAction(action: "profile" | "settings" | "logout") {
+    closeMenu();
+    if (action === "profile") {
+      onNavigate?.();
+      router.push("/accounts/profile");
+      return;
+    }
+    if (action === "settings") {
+      onNavigate?.();
+      router.push("/accounts/settings");
+      return;
+    }
+    void signOut({ redirectUrl: "/" });
+  }
+
+  const menu =
+    menuOpen && pos
+      ? createPortal(
+          <div
+            ref={menuRef}
+            role="menu"
+            aria-label="Account menu"
+            className="fixed z-[100] w-[260px] overflow-hidden rounded-2xl bg-white shadow-2xl"
+            style={{ bottom: pos.bottom, left: pos.left }}
+          >
+            <button
+              type="button"
+              className="flex w-full items-center gap-3 px-5 pb-3 pt-5 text-left transition-colors hover:bg-neutral-50"
+              onClick={() => runAction("profile")}
+            >
+              <Avatar
+                size="sm"
+                className="size-10 shrink-0 rounded-full shadow-none"
+              >
+                <Avatar.Image
+                  src={resolvedImage}
+                  alt={cleanUsername}
+                  className="rounded-full object-cover"
+                />
+                <Avatar.Fallback className="rounded-full text-xs font-sans">
+                  {(displayName || cleanUsername).slice(0, 2).toUpperCase()}
+                </Avatar.Fallback>
+              </Avatar>
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <p className="truncate text-sm font-medium text-neutral-900">
+                  {displayName}
+                </p>
+                <p className="truncate text-sm text-neutral-500">
+                  @{cleanUsername}
+                </p>
+              </div>
+            </button>
+
+            <div className="py-2">
+              <button
+                type="button"
+                role="menuitem"
+                className="mx-2 flex w-[calc(100%-1rem)] items-center justify-between gap-3 rounded-xl px-3 py-3 text-left text-sm text-neutral-900 transition-colors hover:bg-neutral-100"
+                onClick={() => runAction("profile")}
+              >
+                <span>Profile</span>
+                <HugeiconsIcon
+                  icon={UserIcon}
+                  size={18}
+                  strokeWidth={1.6}
+                  className="shrink-0 text-neutral-800"
+                />
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                className="mx-2 flex w-[calc(100%-1rem)] items-center justify-between gap-3 rounded-xl px-3 py-3 text-left text-sm text-neutral-900 transition-colors hover:bg-neutral-100"
+                onClick={() => runAction("settings")}
+              >
+                <span>Settings</span>
+                <HugeiconsIcon
+                  icon={Settings02Icon}
+                  size={18}
+                  strokeWidth={1.6}
+                  className="shrink-0 text-neutral-800"
+                />
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                disabled={!themeMounted}
+                className="mx-2 flex w-[calc(100%-1rem)] items-center justify-between gap-3 rounded-xl px-3 py-3 text-left text-sm text-neutral-900 transition-colors hover:bg-neutral-100 disabled:opacity-50"
+                onClick={() => {
+                  setTheme(resolvedTheme === "dark" ? "light" : "dark");
+                }}
+              >
+                <span>
+                  {!themeMounted
+                    ? "Theme"
+                    : isDark
+                      ? "Light mode"
+                      : "Dark mode"}
+                </span>
+                <HugeiconsIcon
+                  icon={isDark ? Sun01Icon : Moon01Icon}
+                  size={18}
+                  strokeWidth={1.6}
+                  className="shrink-0 text-neutral-800"
+                />
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                className="mx-2 flex w-[calc(100%-1rem)] items-center justify-between gap-3 rounded-xl px-3 py-3 text-left text-sm text-red-600 transition-colors hover:bg-neutral-100"
+                onClick={() => runAction("logout")}
+              >
+                <span>Log out</span>
+                <HugeiconsIcon
+                  icon={Logout01Icon}
+                  size={18}
+                  strokeWidth={1.6}
+                  className="shrink-0 text-red-600"
+                />
+              </button>
+            </div>
+          </div>,
+          document.body
+        )
+      : null;
+
+  return (
+    <div className="relative">
+      <button
+        ref={triggerRef}
+        type="button"
+        aria-label="More"
+        aria-haspopup="menu"
+        aria-expanded={menuOpen}
+        onClick={() => setMenuOpen((open) => !open)}
+        className={[
+          navItemClass(menuOpen, expanded),
+          "cursor-pointer",
+        ].join(" ")}
+      >
+        <NavIconSlot>
+          <HugeiconsIcon
+            icon={Menu01Icon}
+            size={24}
+            strokeWidth={1.6}
+            className={menuOpen ? "text-black" : "text-neutral-500"}
+          />
+        </NavIconSlot>
+        <NavLabel expanded={expanded}>More</NavLabel>
+      </button>
+      {menu}
+    </div>
+  );
+}
+
+function SidebarNav({
   pathname,
   unreadNotif,
   username,
   displayName,
   resolvedImage,
-  user,
+  expanded,
+  onNavigate,
 }: {
   pathname: string;
   unreadNotif: number;
   username: string;
   displayName: string;
   resolvedImage: string;
-  user: NonNullable<ReturnType<typeof useUser>["user"]> | null | undefined;
+  expanded: boolean;
+  onNavigate?: () => void;
 }) {
-  const router = useRouter();
+  const profileActive = isNavActive(pathname, "profile");
+
+  return (
+    /* Fixed expanded inner width — parent clips; icons never re-center on shrink. */
+    <div
+      className="flex h-full flex-col py-4"
+      style={{ width: SIDEBAR_EXPANDED_W }}
+    >
+      <Link
+        href="/home"
+        onClick={onNavigate}
+        className="mb-6 inline-flex items-center py-0"
+        aria-label="Archive home"
+      >
+        <NavIconSlot>
+          <Image
+            src="/archive-logo.png"
+            alt="Archive"
+            width={28}
+            height={28}
+            className="h-7 w-7 object-contain"
+            priority
+          />
+        </NavIconSlot>
+      </Link>
+
+      <nav className="flex min-h-0 flex-1 flex-col justify-center gap-1 overflow-y-auto overflow-x-hidden">
+        {archiveNavItems.map((item) => {
+          const active = isNavActive(pathname, item.key);
+          const badge =
+            item.key === "notifications" && unreadNotif > 0
+              ? unreadNotif > 99
+                ? "99+"
+                : String(unreadNotif)
+              : null;
+
+          const content = (
+            <>
+              <NavIconSlot>
+                <span className="relative size-6">
+                  <NavGlyph itemKey={item.key} active={active} />
+                  {badge ? (
+                    <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-0.5 text-[10px] font-semibold leading-none text-white">
+                      {Number(badge) > 9 && !badge.includes("+") ? "9+" : badge}
+                    </span>
+                  ) : null}
+                </span>
+              </NavIconSlot>
+              <NavLabel expanded={expanded}>{item.label}</NavLabel>
+            </>
+          );
+
+          if (!item.href) {
+            return (
+              <button
+                key={item.key}
+                type="button"
+                className={`${navItemClass(false, expanded)} text-left opacity-50`}
+                disabled
+                title="Coming soon"
+                aria-label={item.label}
+              >
+                {content}
+              </button>
+            );
+          }
+
+          return (
+            <Link
+              key={item.key}
+              href={item.href}
+              onClick={onNavigate}
+              className={navItemClass(active, expanded)}
+              aria-label={item.label}
+              title={!expanded ? item.label : undefined}
+            >
+              {content}
+            </Link>
+          );
+        })}
+
+        <AddPostModal username={username} fullName={displayName} imageUrl={resolvedImage}>
+          <button
+            type="button"
+            onClick={onNavigate}
+            className={navItemClass(false, expanded)}
+            aria-label="Create"
+            title={!expanded ? "Create" : undefined}
+          >
+            <NavIconSlot>
+              <NavGlyph itemKey="create" active={false} />
+            </NavIconSlot>
+            <NavLabel expanded={expanded}>Create</NavLabel>
+          </button>
+        </AddPostModal>
+
+        <Link
+          href="/accounts/profile"
+          onClick={onNavigate}
+          className={navItemClass(profileActive, expanded)}
+          aria-label="Profile"
+          title={!expanded ? "Profile" : undefined}
+        >
+          <NavIconSlot>
+            <Avatar
+              size="sm"
+              className="size-6 shrink-0 rounded-full shadow-none"
+            >
+              <Avatar.Image
+                src={resolvedImage}
+                alt={username.replace(/^@+/, "")}
+                className="rounded-full object-cover"
+              />
+              <Avatar.Fallback className="rounded-full text-xs font-sans">
+                {username.replace(/^@+/, "").slice(0, 2).toUpperCase()}
+              </Avatar.Fallback>
+            </Avatar>
+          </NavIconSlot>
+          <NavLabel expanded={expanded}>Profile</NavLabel>
+        </Link>
+      </nav>
+
+      <div className="flex shrink-0 flex-col gap-1 pt-4">
+        <MoreMenu
+          username={username}
+          displayName={displayName}
+          resolvedImage={resolvedImage}
+          expanded={expanded}
+          onNavigate={onNavigate}
+        />
+      </div>
+    </div>
+  );
+}
+
+function MobileChrome({
+  pathname,
+  unreadNotif,
+  username,
+  displayName,
+  resolvedImage,
+}: {
+  pathname: string;
+  unreadNotif: number;
+  username: string;
+  displayName: string;
+  resolvedImage: string;
+}) {
   const { mobileNavOpen, setMobileNavOpen, closeMobileNav } = useSidebar();
 
   useEffect(() => {
@@ -105,11 +534,7 @@ function MobileArchiveNav({
   }, [pathname, closeMobileNav]);
 
   useEffect(() => {
-    if (mobileNavOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    document.body.style.overflow = mobileNavOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
@@ -126,25 +551,34 @@ function MobileArchiveNav({
 
   return (
     <>
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-[55] flex min-h-[calc(3.5rem+env(safe-area-inset-top,0px))] items-center gap-3 border-b border-stone-200/80 bg-background/95 px-3 pt-[env(safe-area-inset-top,0px)] backdrop-blur-md supports-[backdrop-filter]:bg-background/90">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-[55] flex min-h-[calc(3.5rem+env(safe-area-inset-top,0px))] items-center gap-3 border-b border-neutral-200 bg-white px-3 pt-[env(safe-area-inset-top,0px)]">
         <button
           type="button"
           onClick={() => setMobileNavOpen(true)}
-          className="flex h-10 w-10 items-center justify-center rounded-lg text-stone-600 hover:bg-stone-100/90"
+          className="flex h-10 w-10 items-center justify-center text-neutral-600"
           aria-label="Open menu"
         >
           <HugeiconsIcon icon={Menu01Icon} size={24} />
         </button>
-        <SidebarLogo size={28} className="shrink-0" />
+        <Link href="/home" aria-label="Archive home">
+          <Image
+            src="/archive-logo.png"
+            alt="Archive"
+            width={28}
+            height={28}
+            className="h-7 w-7 object-contain"
+            priority
+          />
+        </Link>
         <div className="flex-1" />
         <Link
           href="/notifications"
-          className="relative flex h-10 w-10 items-center justify-center rounded-lg text-stone-500 hover:bg-stone-100/90"
+          className="relative flex h-10 w-10 items-center justify-center text-neutral-500"
           aria-label="Notifications"
         >
-          <HugeiconsIcon icon={Notification01Icon} size={20} />
+          <HugeiconsIcon icon={FavouriteIcon} size={24} strokeWidth={1.6} />
           {unreadNotif > 0 ? (
-            <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-stone-800 px-0.5 text-[10px] font-medium leading-none text-white ring-2 ring-white tabular-nums">
+            <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-0.5 text-[10px] font-semibold text-white">
               {unreadNotif > 9 ? "9+" : unreadNotif}
             </span>
           ) : null}
@@ -155,122 +589,33 @@ function MobileArchiveNav({
         <div className="lg:hidden fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-label="Navigation">
           <button
             type="button"
-            className="absolute inset-0 bg-stone-900/40 backdrop-blur-[2px]"
+            className="absolute inset-0 bg-black/40"
             aria-label="Close menu"
             onClick={closeMobileNav}
           />
-          <aside className="absolute left-0 top-0 flex h-full w-[min(20rem,88vw)] flex-col border-r border-stone-200/80 bg-background shadow-2xl pt-[env(safe-area-inset-top)]">
-            <div className="flex items-center justify-between border-b border-stone-200/60 px-3 py-3">
-              <SidebarLogo size={28} className="pl-1" onNavigate={closeMobileNav} />
+          <aside
+            className="absolute left-0 top-0 flex h-full max-w-[88vw] flex-col bg-white shadow-2xl pt-[env(safe-area-inset-top)]"
+            style={{ width: SIDEBAR_EXPANDED_W }}
+          >
+            <div className="absolute right-2 top-[calc(0.75rem+env(safe-area-inset-top))] z-10">
               <button
                 type="button"
                 onClick={closeMobileNav}
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-stone-500 hover:bg-stone-100"
+                className="flex h-9 w-9 items-center justify-center text-neutral-500"
                 aria-label="Close menu"
               >
                 <HugeiconsIcon icon={Cancel01Icon} size={20} />
               </button>
             </div>
-
-            <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 py-3">
-              {archiveNavItems.map((item) => {
-                const icon = item.icon;
-                const isActive =
-                  pathname === item.href ||
-                  (item.href !== "/home" && pathname.startsWith(item.href)) ||
-                  (item.href === "/notifications" && pathname.startsWith("/notifications"));
-                const notifBadge =
-                  item.key === "notifications" && unreadNotif > 0
-                    ? unreadNotif > 99
-                      ? "99+"
-                      : String(unreadNotif)
-                    : null;
-                return (
-                  <Link
-                    key={item.key}
-                    href={item.href}
-                    onClick={closeMobileNav}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-3 transition-colors ${
-                      isActive
-                        ? "bg-background ring-1 ring-inset ring-stone-200 text-stone-800"
-                        : "text-stone-600 hover:bg-stone-50/80 hover:text-stone-800"
-                    }`}
-                  >
-                    <HugeiconsIcon
-                      icon={icon}
-                      size={18}
-                      className={`shrink-0 ${isActive ? "text-stone-700" : "text-stone-400"}`}
-                    />
-                    <span className={`text-sm ${isActive ? "font-medium" : ""}`}>{item.label}</span>
-                    {notifBadge ? (
-                      <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-stone-800 px-1 text-xs text-white">
-                        {notifBadge}
-                      </span>
-                    ) : null}
-                  </Link>
-                );
-              })}
-
-              {user ? (
-                <div className="mt-2 border-t border-stone-200/60 pt-3">
-                  <AddPostModal
-                    username={username}
-                    fullName={displayName}
-                    imageUrl={user.imageUrl ?? undefined}
-                    fullWidth
-                  />
-                </div>
-              ) : null}
-            </nav>
-
-            <div className="border-t border-stone-200/60 px-2 py-4">
-              {user ? (
-                <>
-                  <div className="mb-3 flex items-center gap-3 rounded-lg px-2 py-2">
-                    <img src={resolvedImage} alt="" className="h-9 w-9 rounded-full object-cover ring-1 ring-stone-200/60" />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-medium text-stone-800">{displayName}</p>
-                      <p className="truncate text-xs text-stone-400">@{username}</p>
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-0.5">
-                    {[
-                      { icon: UserIcon, label: "Your profile", href: "/accounts/profile" },
-                      { icon: Settings02Icon, label: "Settings", href: "/accounts/settings" },
-                      { icon: Notification01Icon, label: "Notifications", href: "/notifications" },
-                    ].map(({ icon, label, href }) => (
-                      <Button
-                        key={href}
-                        variant="ghost"
-                        size="sm"
-                        onPress={() => {
-                          closeMobileNav();
-                          router.push(href);
-                        }}
-                        className="h-9 w-full justify-start gap-2.5 rounded-lg px-2.5 text-xs font-normal text-stone-600 hover:bg-stone-100/90"
-                      >
-                        <HugeiconsIcon icon={icon} size={17} className="shrink-0 text-stone-400" />
-                        {label}
-                      </Button>
-                    ))}
-                    <ThemeSwitcher menuRow />
-                  </div>
-                  <div className="my-2 border-t border-stone-200/60" />
-                  <SignOutButton redirectUrl="/">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-9 w-full justify-start gap-2 rounded-lg px-2.5 text-xs font-normal text-red-700/90 hover:bg-red-50/90"
-                    >
-                      <HugeiconsIcon icon={Logout01Icon} size={17} className="shrink-0" />
-                      Log out
-                    </Button>
-                  </SignOutButton>
-                </>
-              ) : (
-                <p className="px-2 text-xs text-stone-400">Sign in to post and sync.</p>
-              )}
-            </div>
+            <SidebarNav
+              pathname={pathname}
+              unreadNotif={unreadNotif}
+              username={username}
+              displayName={displayName}
+              resolvedImage={resolvedImage}
+              expanded
+              onNavigate={closeMobileNav}
+            />
           </aside>
         </div>
       ) : null}
@@ -278,287 +623,74 @@ function MobileArchiveNav({
   );
 }
 
-function ProfileMenuDropdown({
-  displayName,
-  username,
-  resolvedImage,
-  isCollapsed,
-}: {
-  displayName: string;
-  username: string;
-  resolvedImage: string;
-  isCollapsed: boolean;
-}) {
-  const router = useRouter();
-  const { signOut } = useClerk();
-  const { resolvedTheme, setTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-
-  function handleAction(key: React.Key) {
-    switch (key) {
-      case "profile":
-        router.push("/accounts/profile");
-        break;
-      case "settings":
-        router.push("/accounts/settings");
-        break;
-      case "notifications":
-        router.push("/notifications");
-        break;
-      case "theme":
-        setTheme(isDark ? "light" : "dark");
-        break;
-      case "logout":
-        void signOut({ redirectUrl: "/" });
-        break;
-    }
-  }
-
-  const menuItemClass = "min-h-6 gap-1.5 rounded-lg px-2 py-0.5 text-stone-500";
-  const menuIconClass = "shrink-0 text-stone-500";
-  const menuLabelClass = "text-xs font-normal leading-none text-stone-500";
-
-  return (
-    <Dropdown>
-      <Dropdown.Trigger
-        aria-label="Account menu"
-        className={`flex w-full cursor-pointer items-center gap-3 rounded-lg text-left transition-colors
-          hover:bg-stone-100/80
-          data-[pressed]:scale-100 data-[pressed]:bg-transparent active:scale-100
-          data-[focus-visible]:ring-1 data-[focus-visible]:ring-stone-300
-          ${isCollapsed ? "justify-center px-1 py-1.5" : "h-auto min-h-0 justify-start px-2 py-2"}`}
-      >
-        <span className="h-7 w-7 flex-shrink-0 overflow-hidden rounded-full ring-1 ring-stone-200/60">
-          <img src={resolvedImage} alt="" className="h-full w-full object-cover" />
-        </span>
-        {!isCollapsed ? (
-          <>
-            <div className="flex min-w-0 flex-1 flex-col overflow-hidden text-left">
-              <span className="truncate whitespace-nowrap text-xs font-medium text-stone-700">
-                {displayName}
-              </span>
-              <span className="truncate whitespace-nowrap text-xs text-stone-400">@{username}</span>
-            </div>
-            <HugeiconsIcon
-              icon={ArrowDown01Icon}
-              size={16}
-              className="flex-shrink-0 text-stone-400"
-              aria-hidden
-            />
-          </>
-        ) : null}
-      </Dropdown.Trigger>
-
-      <Dropdown.Popover
-        placement="top start"
-        offset={8}
-        className="min-w-[188px] z-[100]"
-      >
-        <Dropdown.Menu
-          onAction={handleAction}
-          className="p-1 [&_[data-slot=menu-item]]:min-h-6 [&_[data-slot=menu-item]]:gap-1.5 [&_[data-slot=menu-item]]:rounded-lg [&_[data-slot=menu-item]]:py-0.5"
-        >
-          <Dropdown.Section>
-            <Header className="px-2 pb-1">
-              <p className="truncate text-xs font-medium text-stone-800">{displayName}</p>
-              <p className="truncate text-xs text-stone-400">@{username}</p>
-            </Header>
-          </Dropdown.Section>
-          <Dropdown.Item id="profile" textValue="Your profile" className={menuItemClass}>
-            <HugeiconsIcon icon={UserIcon} size={14} className={menuIconClass} />
-            <span className={menuLabelClass}>Your profile</span>
-          </Dropdown.Item>
-          <Dropdown.Item id="settings" textValue="Settings" className={menuItemClass}>
-            <HugeiconsIcon icon={Settings02Icon} size={14} className={menuIconClass} />
-            <span className={menuLabelClass}>Settings</span>
-          </Dropdown.Item>
-          <Dropdown.Item id="notifications" textValue="Notifications" className={menuItemClass}>
-            <HugeiconsIcon icon={Notification01Icon} size={14} className={menuIconClass} />
-            <span className={menuLabelClass}>Notifications</span>
-          </Dropdown.Item>
-          <Dropdown.Item
-            id="theme"
-            textValue={isDark ? "Light mode" : "Dark mode"}
-            className={menuItemClass}
-          >
-            <HugeiconsIcon
-              icon={isDark ? Sun02Icon : Moon02Icon}
-              size={14}
-              className={menuIconClass}
-            />
-            <span className={menuLabelClass}>{isDark ? "Light mode" : "Dark mode"}</span>
-          </Dropdown.Item>
-          <Separator />
-          <Dropdown.Item
-            id="logout"
-            textValue="Log out"
-            variant="danger"
-            className={`${menuItemClass} text-danger`}
-          >
-            <HugeiconsIcon icon={Logout01Icon} size={14} className="shrink-0 text-danger" />
-            <span className="text-xs font-normal leading-none text-danger">Log out</span>
-          </Dropdown.Item>
-        </Dropdown.Menu>
-      </Dropdown.Popover>
-    </Dropdown>
-  );
-}
-
 export default function ArchiveLeftSidebar() {
   const pathname = usePathname();
   const { user } = useUser();
-  const { state, toggleSidebar } = useSidebar();
-  const isCollapsed = state === "collapsed";
   const unreadNotif = useUnreadNotifCount(user);
+  const [hovered, setHovered] = useState(false);
+  const leaveTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const username = user?.username ?? "user";
   const displayName = user?.fullName ?? user?.firstName ?? "Account";
   const resolvedImage = user?.imageUrl ?? "https://i.pravatar.cc/150?u=placeholder";
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "b") {
-        e.preventDefault();
-        toggleSidebar();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [toggleSidebar]);
+  /** Labels show on hover only — menu open no longer expands the rail. */
+  const expanded = hovered;
+
+  function clearLeaveTimer() {
+    if (leaveTimer.current) {
+      clearTimeout(leaveTimer.current);
+      leaveTimer.current = null;
+    }
+  }
+
+  function handleEnter() {
+    clearLeaveTimer();
+    setHovered(true);
+  }
+
+  function handleLeave() {
+    clearLeaveTimer();
+    // Short delay avoids flicker when the cursor crosses gaps between items.
+    leaveTimer.current = setTimeout(() => setHovered(false), 80);
+  }
+
+  useEffect(
+    () => () => {
+      clearLeaveTimer();
+    },
+    []
+  );
 
   return (
     <>
-      <MobileArchiveNav
+      <MobileChrome
         pathname={pathname}
         unreadNotif={unreadNotif}
         username={username}
         displayName={displayName}
         resolvedImage={resolvedImage}
-        user={user}
       />
 
-      <div
-        className={`fixed left-0 top-0 z-40 hidden h-screen shrink-0 border-r border-stone-200/80 bg-background transition-[width] duration-200 ease-out lg:flex lg:flex-col ${
-          isCollapsed ? "w-[4.5rem]" : "w-[16.25rem]"
-        }`}
+      <aside
+        onMouseEnter={handleEnter}
+        onMouseLeave={handleLeave}
+        className="fixed left-0 top-0 z-40 hidden h-screen overflow-hidden bg-white lg:block"
+        style={{
+          width: expanded ? SIDEBAR_EXPANDED_W : SIDEBAR_COLLAPSED_W,
+          transition: "width 200ms cubic-bezier(0.32, 0.72, 0, 1)",
+          willChange: "width",
+        }}
       >
-        <div className="flex h-full flex-col px-2 pb-4 pt-6">
-          <div
-            className={`mb-4 flex px-1 ${
-              isCollapsed ? "flex-col items-center gap-2" : "items-center justify-between"
-            }`}
-          >
-            <SidebarLogo size={isCollapsed ? 32 : 72} className={isCollapsed ? "" : "pl-1"} />
-            <button
-              type="button"
-              onClick={toggleSidebar}
-              aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-              className={`rounded-lg p-1.5 text-stone-400 transition-colors hover:bg-stone-100/80 hover:text-stone-600 ${
-                isCollapsed ? "" : "ml-auto"
-              }`}
-            >
-              {isCollapsed ? (
-                <HugeiconsIcon icon={ArrowRight01Icon} size={16} />
-              ) : (
-                <HugeiconsIcon icon={ArrowLeft01Icon} size={16} />
-              )}
-            </button>
-          </div>
-
-          <nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-1">
-            {archiveNavItems.map((item) => {
-              const icon = item.icon;
-              const isActive =
-                pathname === item.href ||
-                (item.href !== "/home" && pathname.startsWith(item.href)) ||
-                (item.href === "/notifications" && pathname.startsWith("/notifications"));
-              const notifBadge =
-                item.key === "notifications" && unreadNotif > 0
-                  ? unreadNotif > 99
-                    ? "99+"
-                    : String(unreadNotif)
-                  : null;
-              const hasBadge = notifBadge != null;
-
-              return (
-                <Link
-                  key={item.key}
-                  href={item.href}
-                  title={isCollapsed ? item.label : undefined}
-                  className={`
-                  group relative flex items-center gap-3 rounded-lg transition-colors
-                  ${isCollapsed ? "justify-center px-1 py-2.5" : "px-2.5 py-2.5"}
-                  ${isActive ? "bg-background ring-1 ring-inset ring-stone-200 text-stone-800" : "text-stone-500 hover:bg-stone-50/80 hover:text-stone-700"}
-                `}
-                >
-                  <HugeiconsIcon
-                    icon={icon}
-                    size={18}
-                    className={`flex-shrink-0 ${isActive ? "text-stone-700" : "text-stone-400"}`}
-                  />
-                  {!isCollapsed ? (
-                    <span
-                      className={`min-w-0 flex-1 overflow-hidden whitespace-nowrap text-xs ${
-                        isActive ? "font-medium text-stone-800" : ""
-                      }`}
-                    >
-                      {item.label}
-                    </span>
-                  ) : null}
-                  {hasBadge && isCollapsed ? (
-                    <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-stone-800 px-0.5 text-[10px] font-medium leading-none text-white ring-2 ring-white tabular-nums">
-                      {Number(notifBadge) > 9 ? "9+" : notifBadge}
-                    </span>
-                  ) : null}
-                  {hasBadge && !isCollapsed ? (
-                    <span className="ml-auto flex h-5 min-w-5 flex-shrink-0 items-center justify-center rounded-full bg-stone-800 px-1.5 text-xs font-medium text-white tabular-nums">
-                      {notifBadge}
-                    </span>
-                  ) : null}
-                </Link>
-              );
-            })}
-
-            {!isCollapsed ? (
-              <div className="px-1 pt-2">
-                <AddPostModal
-                  username={username}
-                  fullName={displayName}
-                  imageUrl={user?.imageUrl ?? undefined}
-                  fullWidth
-                />
-              </div>
-            ) : null}
-          </nav>
-
-          <div className="mt-auto border-t border-stone-200/60 px-1 pt-5">
-            {user ? (
-              <ProfileMenuDropdown
-                displayName={displayName}
-                username={username}
-                resolvedImage={resolvedImage}
-                isCollapsed={isCollapsed}
-              />
-            ) : (
-              <div
-                className={`flex w-full items-center gap-3 rounded-lg opacity-60 ${
-                  isCollapsed ? "justify-center px-1 py-1.5" : "px-2 py-2"
-                }`}
-              >
-                <span className="h-7 w-7 flex-shrink-0 overflow-hidden rounded-full ring-1 ring-stone-200/60">
-                  <img src={resolvedImage} alt="" className="h-full w-full object-cover" />
-                </span>
-                {!isCollapsed ? (
-                  <div className="min-w-0 flex-1 flex-col overflow-hidden">
-                    <span className="truncate whitespace-nowrap text-xs font-medium text-stone-700">{displayName}</span>
-                    <span className="truncate whitespace-nowrap text-xs text-stone-400">@{username}</span>
-                  </div>
-                ) : null}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+        <SidebarNav
+          pathname={pathname}
+          unreadNotif={unreadNotif}
+          username={username}
+          displayName={displayName}
+          resolvedImage={resolvedImage}
+          expanded={expanded}
+        />
+      </aside>
     </>
   );
 }

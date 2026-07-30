@@ -21,6 +21,11 @@ const postsSchema = new mongoose.Schema({
     enum: ["public", "friends", "private"],
     default: "public",
   },
+  /** Display frame: 4/5, 1, 5/4, or 16/9 */
+  aspectRatio: { type: Number },
+  hideLikeCount: { type: Boolean, default: false },
+  commentsDisabled: { type: Boolean, default: false },
+  altText: { type: String },
   pinned: { type: Boolean, default: false },
   status: { type: String, default: "active" },
 }, { timestamps: true });

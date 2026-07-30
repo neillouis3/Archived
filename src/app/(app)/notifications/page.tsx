@@ -2,9 +2,17 @@
 
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
-import { Button, Skeleton, Tag, TagGroup } from "@heroui/react";
+import { useCallback, useEffect, useState, type ComponentType } from "react";
+import { Button, Chip, Skeleton } from "@heroui/react";
+import {
+  Heart,
+  LayoutGrid,
+  MessageCircle,
+  UserPlus,
+  Users,
+} from "lucide-react";
 import FollowButton from "@/components/FollowButton";
+import { usePostViewerOptional } from "@/components/postViewerContext";
 
 type NotifRowData = {
   _id: string;
@@ -22,12 +30,16 @@ type NotifRowData = {
 
 type FilterKey = "all" | "follow" | "comment" | "like" | "friend";
 
-const FILTERS: { key: FilterKey; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "follow", label: "Follows" },
-  { key: "like", label: "Likes" },
-  { key: "comment", label: "Comments" },
-  { key: "friend", label: "Friend requests" },
+const FILTERS: {
+  key: FilterKey;
+  label: string;
+  icon: ComponentType<{ className?: string; strokeWidth?: number; absoluteStrokeWidth?: boolean }>;
+}[] = [
+  { key: "all", label: "All", icon: LayoutGrid },
+  { key: "follow", label: "Follows", icon: UserPlus },
+  { key: "like", label: "Likes", icon: Heart },
+  { key: "comment", label: "Comments", icon: MessageCircle },
+  { key: "friend", label: "Friend requests", icon: Users },
 ];
 
 function passesFilter(n: NotifRowData, filter: FilterKey): boolean {
@@ -97,14 +109,14 @@ function labelFor(n: NotifRowData): string {
 function ActorAvatar({ n }: { n: NotifRowData }) {
   const [broken, setBroken] = useState(false);
   const avatarClass =
-    "w-11 h-11 rounded-full object-cover ring-1 ring-stone-200/60 hover:opacity-90 transition-opacity";
+    "size-8 rounded-full object-cover ring-1 ring-stone-200/60 hover:opacity-90 transition-opacity";
 
   const initial = (n.actorFullName || "?").trim().charAt(0).toUpperCase() || "?";
 
   if (!n.actorImageUrl || broken) {
     return (
       <div
-        className={`${avatarClass} flex items-center justify-center bg-stone-200 text-sm font-medium text-stone-600`}
+        className={`${avatarClass} flex items-center justify-center bg-stone-200 text-xs font-medium text-stone-600`}
         aria-hidden
       >
         {initial}
@@ -176,7 +188,7 @@ export default function NotificationsPage() {
   const groups = groupByDate(filtered);
 
   return (
-    <div className="flex-1 min-w-0 flex flex-col items-center border-x-0 sm:border-x sm:border-stone-200/80">
+    <div className="flex-1 min-w-0 flex flex-col items-center">
       <div className="w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
         {!user ? (
           <div className="flex flex-col items-center justify-center h-96 text-center">
@@ -184,25 +196,43 @@ export default function NotificationsPage() {
           </div>
         ) : (
           <>
-            <TagGroup
-              selectionMode="single"
-              selectedKeys={new Set([filter])}
-              onSelectionChange={(keys) => {
-                if (keys === "all") return;
-                const next = Array.from(keys)[0];
-                if (next) setFilter(String(next) as FilterKey);
-              }}
-              size="sm"
-              className="mb-6"
+            <div
+              className="mb-6 flex flex-wrap gap-2"
+              role="tablist"
+              aria-label="Filter notifications"
             >
-              <TagGroup.List aria-label="Filter notifications" className="gap-2">
-                {FILTERS.map(({ key, label }) => (
-                  <Tag key={key} id={key} textValue={label} className="font-normal">
-                    {label}
-                  </Tag>
-                ))}
-              </TagGroup.List>
-            </TagGroup>
+              {FILTERS.map(({ key, label, icon: Icon }) => {
+                const selected = filter === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    role="tab"
+                    aria-selected={selected}
+                    onClick={() => setFilter(key)}
+                    className="rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
+                  >
+                    <Chip
+                      size="sm"
+                      variant="tertiary"
+                      color="default"
+                      className={`cursor-pointer border bg-transparent text-xs font-normal transition-colors [&_.chip__label]:text-xs ${
+                        selected
+                          ? "border-stone-800 text-stone-900"
+                          : "border-stone-200 text-stone-600 hover:border-stone-400 hover:text-stone-800"
+                      }`}
+                    >
+                      <Icon
+                        absoluteStrokeWidth
+                        className="size-2.5 shrink-0"
+                        strokeWidth={1.75}
+                      />
+                      <Chip.Label className="text-xs">{label}</Chip.Label>
+                    </Chip>
+                  </button>
+                );
+              })}
+            </div>
 
             {loading ? (
               <div className="flex flex-col gap-3">
@@ -220,7 +250,7 @@ export default function NotificationsPage() {
                 {groups.map(({ label, items }) => (
                   <section key={label}>
                     <p className="text-sm font-medium text-stone-800 mb-1">{label}</p>
-                    <ul className="flex flex-col divide-y divide-stone-100">
+                    <ul className="flex flex-col">
                       {items.map((n) => (
                         <NotificationRow
                           key={n._id}
@@ -247,11 +277,12 @@ function NotificationRow({
   n: NotifRowData;
   onFriendRespond: (n: NotifRowData, accept: boolean) => void;
 }) {
+  const { openPost } = usePostViewerOptional();
   const hasPostThumb = n.postId && (n.type === "like" || n.type === "comment");
 
   return (
     <li>
-      <div className="flex items-center gap-3 py-3 transition-colors hover:bg-stone-50/80">
+      <div className="flex items-center gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-stone-50/80 sm:px-4">
         <Link
           href={`/profile/${encodeURIComponent(n.actorClerkId)}`}
           className="flex-shrink-0"
@@ -265,7 +296,7 @@ function NotificationRow({
               href={`/profile/${encodeURIComponent(n.actorClerkId)}`}
               className="font-medium text-stone-800 hover:underline underline-offset-2"
             >
-              {n.actorFullName}
+              {(n.actorUsername || n.actorFullName || "user").replace(/^@+/, "")}
             </Link>{" "}
             <span className="text-stone-500">{labelFor(n)}</span>{" "}
             <span className="text-stone-400 text-xs">{formatTime(n.createdAt)}</span>
@@ -274,14 +305,18 @@ function NotificationRow({
 
         <div className="flex-shrink-0 flex items-center gap-2">
           {hasPostThumb && n.postImageUrl ? (
-            <Link href={`/post/${encodeURIComponent(n.postId!)}`}>
+            <button
+              type="button"
+              onClick={() => openPost(n.postId!)}
+              className="rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
+            >
               <img
                 src={n.postImageUrl}
                 alt=""
                 referrerPolicy="no-referrer"
-                className="w-12 h-12 rounded-lg object-cover hover:opacity-90 transition-opacity"
+                className="size-9 rounded-lg object-cover transition-opacity hover:opacity-90"
               />
-            </Link>
+            </button>
           ) : null}
 
           {n.type === "follow" ? (

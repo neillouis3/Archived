@@ -8,6 +8,6 @@ export default function SettingsLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div className="bg-midground flex flex-col w-full min-h-screen">{children}</div>
+    <div className="bg-white flex flex-col w-full min-h-screen">{children}</div>
   );
 }

@@ -3,10 +3,13 @@
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "@heroui/react";
+import { Add01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import FollowButton from "./FollowButton";
 import { ExploreSearchBar } from "@/components/exploreSearchBar";
+import { usePostViewerOptional } from "@/components/postViewerContext";
 import type { UserSearchHit } from "@/components/UserSearch";
 import { subscribeArchiveFeedRefresh } from "@/lib/feedRefresh";
 import {
@@ -17,30 +20,54 @@ import {
   type SidebarTile,
 } from "@/lib/rightSidebarCache";
 
-const PlusIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-  </svg>
-);
-
 function SectionTitle({
   children,
   action,
 }: {
-  children: React.ReactNode;
-  action?: React.ReactNode;
+  children: ReactNode;
+  action?: ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-2 mb-3">
-      <h2 className="text-xs text-stone-500 font-medium">
+    <div className="mb-3 flex h-5 items-center justify-between gap-2">
+      <h2 className="text-[13px] font-medium leading-none text-black">
         {children}
       </h2>
-      {action}
+      {action ? (
+        <div className="flex h-full shrink-0 items-center">{action}</div>
+      ) : null}
     </div>
   );
 }
 
 type SidebarPostThumb = { url: string; postId: string };
+
+function FeedThumb({
+  postId,
+  src,
+  title,
+}: {
+  postId: string;
+  src: string;
+  title?: string;
+}) {
+  const { openPost } = usePostViewerOptional();
+  return (
+    <button
+      type="button"
+      onClick={() => openPost(postId)}
+      title={title}
+      className="group relative aspect-square overflow-hidden rounded-md bg-neutral-100 ring-1 ring-neutral-200/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400"
+    >
+      <img
+        src={src}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        className="h-full w-full object-cover will-change-transform [transform:translateZ(0)] transition-transform duration-200 ease-out group-hover:scale-105 group-focus-visible:scale-105"
+      />
+    </button>
+  );
+}
 
 export default function ArchiveRightSidebar() {
   const router = useRouter();
@@ -211,11 +238,8 @@ export default function ArchiveRightSidebar() {
     : "/explore";
 
   return (
-    <aside className="fixed right-0 top-0 h-screen w-64 xl:w-72 flex flex-col bg-background overflow-y-auto border-l border-stone-200/80">
-      <div className="px-5 pt-8 pb-5 border-b border-stone-200/70">
-        <h2 className="text-xs text-stone-500 font-medium mb-3">
-          Search
-        </h2>
+    <aside className="fixed right-0 top-0 flex h-screen w-[300px] flex-col overflow-y-auto bg-white">
+      <div className="px-5 pt-4 pb-5">
         <ExploreSearchBar
           variant="sidebar"
           inputId="sidebar-explore-search"
@@ -224,51 +248,55 @@ export default function ArchiveRightSidebar() {
           onSubmit={applySidebarSearch}
           showReset={!!searchInput.trim()}
           onReset={clearSidebarSearch}
+          placeholder="Search Archive"
         />
         {debouncedQ ? (
           <div className="mt-4 space-y-3">
             {sidebarSearchLoading ? (
               <>
                 {showSidebarPeopleSearch ? (
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     {[1, 2].map((i) => (
-                      <div key={i} className="flex items-center gap-2 animate-pulse">
-                        <div className="w-7 h-7 rounded-full bg-stone-200/80" />
-                        <div className="flex-1 h-3 bg-stone-100 rounded" />
+                      <div key={i} className="flex items-center gap-2.5 animate-pulse">
+                        <div className="size-8 rounded-full bg-neutral-200/80" />
+                        <div className="h-3 flex-1 rounded bg-neutral-100" />
                       </div>
                     ))}
                   </div>
                 ) : null}
-                <div className="grid grid-cols-3 gap-0.5">
+                <div className="grid grid-cols-3 gap-1">
                   {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <div key={i} className="aspect-square bg-stone-100/90 animate-pulse rounded-sm" />
+                    <div
+                      key={i}
+                      className="aspect-square animate-pulse rounded-md bg-neutral-100"
+                    />
                   ))}
                 </div>
               </>
             ) : sidebarNoResults ? (
-              <p className="text-xs text-stone-400 leading-snug">
-                No results matched &ldquo;{debouncedQ}&rdquo;.
+              <p className="text-sm leading-snug text-neutral-500">
+                No results for &ldquo;{debouncedQ}&rdquo;.
               </p>
             ) : (
               <>
                 {hasSidebarPeople ? (
-                  <ul className="flex flex-col gap-0.5 rounded-lg border border-stone-200/60 bg-background/80 overflow-hidden divide-y divide-stone-100/80">
+                  <ul className="flex flex-col gap-0.5 overflow-hidden rounded-lg">
                     {sidebarPeople.map((u) => (
                       <li key={u.id}>
                         <Link
                           href={`/profile/${encodeURIComponent(u.id)}`}
-                          className="flex items-center gap-2 px-2 py-2 hover:bg-stone-50/90 transition-colors"
+                          className="flex items-center gap-2.5 rounded-lg px-1.5 py-2 transition-colors hover:bg-neutral-50"
                         >
                           <img
                             src={u.imageUrl}
                             alt=""
-                            className="w-7 h-7 rounded-full object-cover ring-1 ring-stone-200/50 shrink-0"
+                            className="size-8 shrink-0 rounded-full object-cover"
                           />
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs font-medium text-stone-800 truncate">
+                            <p className="truncate text-sm font-medium leading-tight text-black">
                               {u.fullName}
                             </p>
-                            <p className="text-xs text-stone-400 truncate">
+                            <p className="truncate text-xs leading-tight text-neutral-500">
                               {u.username ? `@${u.username}` : "Member"}
                             </p>
                           </div>
@@ -279,20 +307,13 @@ export default function ArchiveRightSidebar() {
                 ) : null}
 
                 {hasSidebarPosts ? (
-                  <div className="grid grid-cols-3 gap-0.5">
+                  <div className="grid grid-cols-3 gap-1">
                     {sidebarPosts.map((t, i) => (
-                      <Link
+                      <FeedThumb
                         key={`${t.postId}-${i}`}
-                        href={`/post/${encodeURIComponent(t.postId)}`}
-                        className="aspect-square overflow-hidden bg-background border border-stone-200/60 rounded-sm group focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
-                      >
-                        <img
-                          src={t.url}
-                          alt=""
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                          style={{ filter: "brightness(0.96) saturate(0.85)" }}
-                        />
-                      </Link>
+                        postId={t.postId}
+                        src={t.url}
+                      />
                     ))}
                   </div>
                 ) : null}
@@ -301,20 +322,20 @@ export default function ArchiveRightSidebar() {
 
             <Link
               href={exploreHref}
-              className="inline-block text-xs text-stone-500 hover:text-stone-700 transition-colors"
+              className="inline-flex text-sm font-medium text-black transition-colors hover:text-neutral-600"
             >
-              Open full explore →
+              Open explore
             </Link>
           </div>
         ) : null}
       </div>
 
-      <div className="px-5 py-6 border-b border-stone-200/70">
+      <div className="px-5 py-5">
         <SectionTitle
           action={
             <Link
               href="/explore"
-              className="text-xs text-stone-400 hover:text-stone-600 transition-colors shrink-0"
+              className="text-[13px] leading-none text-neutral-500 transition-colors hover:text-black"
             >
               See all
             </Link>
@@ -322,51 +343,50 @@ export default function ArchiveRightSidebar() {
         >
           From the feed
         </SectionTitle>
-        <div className="grid grid-cols-3 gap-0.5">
+        <div className="grid grid-cols-3 gap-1">
           {placeholderTiles > 0
             ? [...Array(placeholderTiles)].map((_, i) => (
-                <div key={i} className="aspect-square bg-stone-100/90 animate-pulse rounded-sm" />
+                <div
+                  key={i}
+                  className="aspect-square animate-pulse rounded-md bg-neutral-100"
+                />
               ))
             : tiles.length === 0
               ? (
-                  <div className="col-span-3 py-6 text-center border border-dashed border-stone-200 rounded-lg bg-background/40">
-                    <p className="text-xs text-stone-400">No public posts yet</p>
-                    <Link href="/explore" className="text-xs text-stone-500 underline mt-1 inline-block">
-                      Open explore
+                  <div className="col-span-3 rounded-lg border border-dashed border-neutral-200 px-3 py-8 text-center">
+                    <p className="text-sm text-neutral-500">No public posts yet</p>
+                    <Link
+                      href="/explore"
+                      className="mt-2 inline-block text-sm font-medium text-black hover:underline"
+                    >
+                      Explore
                     </Link>
                   </div>
                 )
               : tiles.map((t, i) => (
-                  <Link
+                  <FeedThumb
                     key={`${t.postId}-${i}`}
-                    href={`/post/${encodeURIComponent(t.postId)}`}
-                    className="aspect-square overflow-hidden bg-background border border-stone-200/60 group focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 rounded-sm"
+                    postId={t.postId}
+                    src={t.url}
                     title="Open post"
-                  >
-                    <img
-                      src={t.url}
-                      alt=""
-                      className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105 group-hover:brightness-90"
-                      style={{ filter: "brightness(0.96) saturate(0.85)" }}
-                    />
-                  </Link>
+                  />
                 ))}
         </div>
       </div>
 
-      <div className="px-5 py-6 border-b border-stone-200/70">
+      <div className="px-5 py-5">
         <SectionTitle>People to follow</SectionTitle>
         {!isLoaded || loading ? (
           <div className="flex flex-col gap-3">
             {[1, 2, 3].map((i) => (
               <div key={i} className="flex items-center gap-2.5 animate-pulse">
-                <div className="w-7 h-7 rounded-full bg-stone-200/80" />
-                <div className="flex-1 h-3 bg-stone-100 rounded" />
+                <div className="size-8 rounded-full bg-neutral-200/80" />
+                <div className="h-3 flex-1 rounded bg-neutral-100" />
               </div>
             ))}
           </div>
         ) : suggestions.length === 0 ? (
-          <p className="text-xs text-stone-400 leading-relaxed">
+          <p className="text-sm leading-relaxed text-neutral-500">
             {user
               ? "You follow everyone we found here, or there aren’t enough authors yet."
               : "Sign in to follow people from your community."}
@@ -375,22 +395,25 @@ export default function ArchiveRightSidebar() {
           <div className="flex flex-col gap-3">
             {suggestions.map((s) => (
               <div key={s.authorClerkId} className="flex items-center gap-2.5">
-                <Link href={`/profile/${encodeURIComponent(s.authorClerkId)}`} className="shrink-0">
+                <Link
+                  href={`/profile/${encodeURIComponent(s.authorClerkId)}`}
+                  className="shrink-0"
+                >
                   <img
                     src={s.avatarUrl || "https://i.pravatar.cc/150?u=placeholder"}
                     alt=""
-                    className="w-7 h-7 rounded-full object-cover ring-1 ring-stone-200/50"
+                    className="size-8 rounded-full object-cover"
                   />
                 </Link>
-                <div className="flex flex-col min-w-0 flex-1">
+                <div className="flex min-w-0 flex-1 flex-col">
                   <Link
                     href={`/profile/${encodeURIComponent(s.authorClerkId)}`}
-                    className="text-xs text-stone-700 font-medium truncate hover:text-stone-900"
+                    className="truncate text-sm font-medium leading-tight text-black hover:text-neutral-600"
                   >
                     {s.fullName}
                   </Link>
-                  <span className="text-xs text-stone-400 truncate">
-                    {s.username || "Member"}
+                  <span className="truncate text-xs leading-tight text-neutral-500">
+                    {s.username ? `@${s.username}` : "Member"}
                   </span>
                 </div>
                 {user && user.id !== s.authorClerkId ? (
@@ -398,7 +421,7 @@ export default function ArchiveRightSidebar() {
                     targetUserId={s.authorClerkId}
                     initialFollowing={false}
                     onChange={() => void load({ force: true })}
-                    className="text-xs px-2 py-1 rounded-md border border-stone-200 text-stone-600 hover:bg-stone-100 transition-colors disabled:opacity-50 shrink-0"
+                    className="shrink-0 rounded-md border border-neutral-200 px-2.5 py-1 text-xs text-black transition-colors hover:bg-neutral-100 disabled:opacity-50"
                   />
                 ) : (
                   <Button
@@ -406,10 +429,10 @@ export default function ArchiveRightSidebar() {
                     variant="ghost"
                     size="sm"
                     aria-label="Sign in to follow"
-                    className="text-stone-300 w-6 h-6 min-w-0 rounded-md"
+                    className="size-6 min-w-0 rounded-md text-neutral-400"
                     isDisabled
                   >
-                    <PlusIcon />
+                    <HugeiconsIcon icon={Add01Icon} size={14} />
                   </Button>
                 )}
               </div>
@@ -418,37 +441,41 @@ export default function ArchiveRightSidebar() {
         )}
       </div>
 
-      <div className="px-5 py-6 flex-1">
+      <div className="flex-1 px-5 py-5">
         <SectionTitle>Trending tags</SectionTitle>
         {loading && tags.length === 0 ? (
           <div className="flex flex-wrap gap-1.5">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-6 w-14 bg-stone-100 rounded-full animate-pulse" />
+              <div key={i} className="h-7 w-16 animate-pulse rounded-full bg-neutral-100" />
             ))}
           </div>
         ) : tags.length === 0 ? (
-          <p className="text-xs text-stone-400">Add tags to posts to see trends here.</p>
+          <p className="text-sm text-neutral-500">
+            Add tags to posts to see trends here.
+          </p>
         ) : (
           <div className="flex flex-wrap gap-1.5">
             {tags.map(({ tag, count }) => (
               <Link
                 key={tag}
                 href={`/explore?q=${encodeURIComponent(tag)}`}
-                className="inline-flex items-center rounded-full border border-stone-200 bg-transparent px-2.5 py-1 text-xs text-stone-500 hover:border-stone-400 hover:text-stone-700 transition-colors"
+                className="inline-flex items-center rounded-full bg-neutral-100 px-2.5 py-1 text-xs text-black transition-colors hover:bg-neutral-200 hover:text-black"
               >
                 #{tag}
-                <span className="text-stone-300 ml-1 tabular-nums">{count}</span>
+                <span className="ml-1 tabular-nums text-neutral-500">{count}</span>
               </Link>
             ))}
           </div>
         )}
       </div>
 
-      <div className="px-5 py-5 mt-auto border-t border-stone-200/70 bg-background/95">
-        <p className="text-xs text-stone-300 leading-relaxed">
+      <div className="mt-auto px-5 pb-4 pt-5">
+        <p className="text-xs leading-relaxed text-neutral-400">
           About · Privacy · Terms · Accessibility
         </p>
-        <p className="text-xs text-stone-200 mt-1">Archive © 2026</p>
+        <p className="mt-2 text-[11px] uppercase tracking-[0.08em] text-[#737373]">
+          © 2026 Archive
+        </p>
       </div>
     </aside>
   );

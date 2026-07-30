@@ -104,6 +104,7 @@ export function buildAuthorPostsFilter(viewerClerkId, authorClerkId, isFriend) {
  * @param {{
  *   authorClerkId: string | null,
  *   followingFeed: boolean,
+ *   suggestedFeed?: boolean,
  *   viewerClerkId: string | null | undefined,
  *   collectionVisibility: string | null,
  * }} opts
@@ -112,6 +113,7 @@ export async function buildPostsListFilter(opts) {
   const {
     authorClerkId,
     followingFeed,
+    suggestedFeed,
     viewerClerkId,
     collectionVisibility,
   } = opts;
@@ -152,6 +154,18 @@ export async function buildPostsListFilter(opts) {
       getAcceptedFriendClerkIdsSet(viewerClerkId),
     ]);
     return buildFollowingFeedFilter(viewerClerkId, followingIds, friendSet);
+  }
+
+  // Suggested: public posts from people you don't follow.
+  if (suggestedFeed) {
+    if (!viewerClerkId) {
+      return { visibility: "public" };
+    }
+    const followingIds = await getFollowingClerkIds(viewerClerkId);
+    return {
+      visibility: "public",
+      authorClerkId: { $nin: [...followingIds, viewerClerkId] },
+    };
   }
 
   // Discover feed (public): do not show the viewer their own posts.

@@ -33,8 +33,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const shell = (
-    <html lang="en" suppressHydrationWarning className={inter.className}>
-      <body className="antialiased">
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.className} bg-background text-foreground antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 export default function ProfileLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  return <div className="bg-midground flex flex-col w-full">{children}</div>;
+  return <div className="bg-white flex flex-col w-full">{children}</div>;
 }

@@ -16,7 +16,13 @@ export function Providers({children}: ProvidersProps) {
   return (
     <RouterProvider navigate={router.push}>
       <I18nProvider locale="en-US">
-        <NextThemesProvider attribute="class" defaultTheme="light" enableSystem={false} storageKey="archived-theme" disableTransitionOnChange>
+        <NextThemesProvider
+          attribute={["class", "data-theme"]}
+          defaultTheme="light"
+          enableSystem={false}
+          storageKey="archived-theme"
+          disableTransitionOnChange
+        >
           {children}
         </NextThemesProvider>
       </I18nProvider>

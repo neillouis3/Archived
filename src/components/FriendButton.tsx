@@ -15,6 +15,9 @@ type Props = {
   className?: string;
 };
 
+const pillBase =
+  "inline-flex items-center justify-center gap-1 rounded-lg px-4 py-1.5 text-sm font-normal transition-colors disabled:opacity-50";
+
 export default function FriendButton({ targetUserId, className = "" }: Props) {
   const { user, isLoaded } = useUser();
   const [status, setStatus] = useState<Status | null>(null);
@@ -80,17 +83,16 @@ export default function FriendButton({ targetUserId, className = "" }: Props) {
     }
   }
 
-  const base =
-    className ||
-    "text-xs px-4 py-2 rounded-lg border transition-colors disabled:opacity-50";
-
   if (status.isFriend) {
     return (
       <button
         type="button"
         disabled={loading}
         onClick={removeFriend}
-        className={`${base} border-stone-300 text-stone-600 hover:bg-stone-100`}
+        className={
+          className ||
+          `${pillBase} bg-neutral-100 text-black hover:bg-neutral-200`
+        }
       >
         {loading ? "…" : "Unfriend"}
       </button>
@@ -100,7 +102,10 @@ export default function FriendButton({ targetUserId, className = "" }: Props) {
   if (status.outgoingPending) {
     return (
       <span
-        className={`${base} border-stone-200 text-stone-400 cursor-default inline-flex items-center`}
+        className={
+          className ||
+          `${pillBase} cursor-default bg-neutral-100 text-neutral-400`
+        }
       >
         Request sent
       </span>
@@ -129,7 +134,7 @@ export default function FriendButton({ targetUserId, className = "" }: Props) {
           type="button"
           disabled={loading}
           onClick={() => void respond(true)}
-          className="text-xs px-3 py-1.5 rounded-lg bg-stone-800 text-white hover:bg-stone-700 transition-colors disabled:opacity-50"
+          className={`${pillBase} bg-black text-white hover:bg-neutral-800`}
         >
           {loading ? "…" : "Accept"}
         </button>
@@ -137,7 +142,7 @@ export default function FriendButton({ targetUserId, className = "" }: Props) {
           type="button"
           disabled={loading}
           onClick={() => void respond(false)}
-          className="text-xs px-3 py-1.5 rounded-lg border border-stone-300 text-stone-600 hover:bg-stone-100 transition-colors disabled:opacity-50"
+          className={`${pillBase} bg-neutral-100 text-black hover:bg-neutral-200`}
         >
           Delete
         </button>
@@ -150,7 +155,9 @@ export default function FriendButton({ targetUserId, className = "" }: Props) {
       type="button"
       disabled={loading}
       onClick={sendRequest}
-      className={`${base} border-stone-600 text-stone-800 hover:bg-stone-100`}
+      className={
+        className || `${pillBase} bg-black text-white hover:bg-neutral-800`
+      }
     >
       {loading ? "…" : "Add friend"}
     </button>

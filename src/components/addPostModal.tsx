@@ -1,10 +1,11 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Modal,
   Button,
   Label,
-  Separator,
+  Select,
+  ListBox,
   useOverlayState,
 } from "@heroui/react";
 import Dropzone from "@components/dropbox";
@@ -14,13 +15,170 @@ import {
   pickUploadThingPublicUrl,
   uploadFilesToUploadThing,
 } from "@/lib/uploadthingReact";
-import { PlusIcon } from "./icons";
+import {
+  POST_ASPECT_OPTIONS,
+  POST_ASPECT_SQUARE,
+  type PostAspectOptionId,
+} from "@/lib/postAspectRatio";
+import {
+  Add01Icon,
+  ArrowDown01Icon,
+  ArrowLeft01Icon,
+  ArrowUp01Icon,
+  AspectRatioIcon,
+  Cancel01Icon,
+  Copy01Icon,
+  Location01Icon,
+  SmileIcon,
+  UserAdd01Icon,
+  ZoomInAreaIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+
+type Step = "select" | "crop" | "share";
+
+const CAPTION_MAX = 2200;
+
+function ShareRow({
+  label,
+  icon,
+  onClick,
+  children,
+}: {
+  label: string;
+  icon: typeof Location01Icon;
+  onClick?: () => void;
+  children?: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-stone-50"
+    >
+      <span className="text-sm text-stone-900">{label}</span>
+      {children ?? (
+        <HugeiconsIcon
+          icon={icon}
+          size={18}
+          strokeWidth={1.75}
+          className="shrink-0 text-stone-400"
+        />
+      )}
+    </button>
+  );
+}
+
+function ShareDisclosure({
+  title,
+  open,
+  onToggle,
+  children,
+}: {
+  title: string;
+  open: boolean;
+  onToggle: () => void;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-stone-50"
+      >
+        <span className="text-sm text-stone-900">{title}</span>
+        <HugeiconsIcon
+          icon={open ? ArrowUp01Icon : ArrowDown01Icon}
+          size={16}
+          strokeWidth={2}
+          className="shrink-0 text-stone-400"
+        />
+      </button>
+      {open ? <div className="px-4 pb-4">{children}</div> : null}
+    </div>
+  );
+}
+
+function ShareToggle({
+  label,
+  hint,
+  checked,
+  onChange,
+}: {
+  label: string;
+  hint?: string;
+  checked: boolean;
+  onChange: (next: boolean) => void;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-3 py-3">
+      <div className="min-w-0 flex-1">
+        <p className="text-sm text-stone-900">{label}</p>
+        {hint ? (
+          <p className="mt-1 text-xs leading-relaxed text-stone-400">{hint}</p>
+        ) : null}
+      </div>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        onClick={() => onChange(!checked)}
+        className={`relative mt-0.5 h-6 w-10 shrink-0 rounded-full transition-colors ${
+          checked ? "bg-stone-900" : "bg-stone-300"
+        }`}
+      >
+        <span
+          className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+            checked ? "translate-x-4" : "translate-x-0"
+          }`}
+        />
+      </button>
+    </div>
+  );
+}
+
+/** Outline icon matching each crop frame (Instagram-style). */
+function AspectFrameIcon({
+  id,
+  active,
+}: {
+  id: PostAspectOptionId;
+  active: boolean;
+}) {
+  const opacity = active ? "opacity-100" : "opacity-50";
+  if (id === "square") {
+    return (
+      <span className={`flex h-6 w-6 items-center justify-center ${opacity}`} aria-hidden>
+        <span className="block h-4 w-4 rounded-[2px] border-2 border-current" />
+      </span>
+    );
+  }
+  if (id === "portrait") {
+    return (
+      <span className={`flex h-6 w-6 items-center justify-center ${opacity}`} aria-hidden>
+        <span className="block h-[18px] w-3.5 rounded-[2px] border-2 border-current" />
+      </span>
+    );
+  }
+  if (id === "fiveFour") {
+    return (
+      <span className={`flex h-6 w-6 items-center justify-center ${opacity}`} aria-hidden>
+        <span className="block h-3.5 w-[18px] rounded-[2px] border-2 border-current" />
+      </span>
+    );
+  }
+  return (
+    <span className={`flex h-6 w-6 items-center justify-center ${opacity}`} aria-hidden>
+      <span className="block h-2.5 w-5 rounded-[2px] border-2 border-current" />
+    </span>
+  );
+}
 
 function getReadableErrorMessage(err: unknown): string {
   if (err instanceof Error) {
     const msg = err.message?.trim();
     if (msg) return msg;
-    // UploadThing and fetch wrappers sometimes nest details in `cause`.
     const cause = (err as { cause?: unknown }).cause;
     if (cause instanceof Error && cause.message?.trim()) return cause.message.trim();
     if (typeof cause === "string" && cause.trim()) return cause.trim();
@@ -29,18 +187,26 @@ function getReadableErrorMessage(err: unknown): string {
   return "Upload failed. Please try again in a moment.";
 }
 
+const STEP_TITLE: Record<Step, string> = {
+  select: "Create new post",
+  crop: "Crop",
+  share: "Share",
+};
+
 export default function AddPostModal({
   imageUrl,
   username,
   fullName,
   triggerStyle = "button",
   fullWidth = false,
+  children,
 }: {
   imageUrl?: string;
   username?: string;
   fullName?: string;
   triggerStyle?: "button" | "input";
   fullWidth?: boolean;
+  children?: React.ReactElement;
 } = {}) {
   const state = useOverlayState({ defaultOpen: false });
   const { user } = useUser();
@@ -49,13 +215,233 @@ export default function AddPostModal({
   const resolvedUsername = username?.replace(/^@+/, "") || "username";
   const resolvedFullName = fullName ?? "Your Name";
 
+  const [step, setStep] = useState<Step>("select");
   const [files, setFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [rejected, setRejected] = useState([]);
   const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("");
+  const [collaborators, setCollaborators] = useState("");
+  const [altText, setAltText] = useState("");
+  const [hideLikeCount, setHideLikeCount] = useState(false);
+  const [commentsDisabled, setCommentsDisabled] = useState(false);
+  const [accessibilityOpen, setAccessibilityOpen] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [locationOpen, setLocationOpen] = useState(false);
+  const [collaboratorsOpen, setCollaboratorsOpen] = useState(false);
   const [visibility, setVisibility] = useState<"public" | "friends" | "private">(
     "public"
   );
+  const [aspectId, setAspectId] = useState<PostAspectOptionId>("square");
+  const [previewIndex, setPreviewIndex] = useState(0);
+  const [aspectMenuOpen, setAspectMenuOpen] = useState(false);
+  const [thumbsOpen, setThumbsOpen] = useState(false);
+  const [zoomOpen, setZoomOpen] = useState(false);
+  const [cropZoom, setCropZoom] = useState(1);
+  const addPhotosInputRef = useRef<HTMLInputElement>(null);
+  const previewUrlsRef = useRef<string[]>([]);
+
+  const aspectOption =
+    POST_ASPECT_OPTIONS.find((o) => o.id === aspectId) ?? POST_ASPECT_OPTIONS[1];
+  const aspectRatio = aspectOption?.ratio ?? POST_ASPECT_SQUARE;
+
+  const SHARE_SIDEBAR_W = 340;
+  const CREATE_HEADER_H = 44;
+  const [cropFrame, setCropFrame] = useState({ width: 560, height: 560 });
+  const [shareFrame, setShareFrame] = useState({ width: 420, height: 420 });
+
+  useEffect(() => {
+    const update = () => {
+      const pad = 64;
+      const maxDialogH = Math.min(
+        Math.floor(window.innerHeight * 0.9),
+        window.innerHeight - pad
+      );
+      const maxDialogW = Math.min(
+        Math.floor(window.innerWidth * 0.92),
+        window.innerWidth - pad
+      );
+      const maxMediaH = Math.max(240, maxDialogH - CREATE_HEADER_H);
+
+      // Crop canvas must be a true square (IG 1:1 stage).
+      const cropSize = Math.min(680, maxDialogW, maxMediaH);
+      setCropFrame({ width: cropSize, height: cropSize });
+
+      // Share keeps the same square media pane + fixed sidebar.
+      const shareSize = Math.min(
+        680,
+        Math.max(280, maxDialogW - SHARE_SIDEBAR_W),
+        maxMediaH
+      );
+      setShareFrame({ width: shareSize, height: shareSize });
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  const aspectBox =
+    aspectRatio >= 1
+      ? {
+          width: cropFrame.width,
+          height: cropFrame.width / aspectRatio,
+        }
+      : {
+          width: cropFrame.height * aspectRatio,
+          height: cropFrame.height,
+        };
+
+  const letterboxH = Math.max(0, (cropFrame.height - aspectBox.height) / 2);
+  const pillarboxW = Math.max(0, (cropFrame.width - aspectBox.width) / 2);
+
+  /** Gray bars outside the active crop frame (IG-style). */
+  function AspectMask() {
+    if (letterboxH <= 0.5 && pillarboxW <= 0.5) return null;
+    return (
+      <div aria-hidden className="pointer-events-none absolute inset-0 z-[5]">
+        {letterboxH > 0.5 ? (
+          <>
+            <div
+              className="absolute inset-x-0 top-0 bg-[#efefef]"
+              style={{ height: letterboxH }}
+            />
+            <div
+              className="absolute inset-x-0 bottom-0 bg-[#efefef]"
+              style={{ height: letterboxH }}
+            />
+          </>
+        ) : null}
+        {pillarboxW > 0.5 ? (
+          <>
+            <div
+              className="absolute inset-y-0 left-0 bg-[#efefef]"
+              style={{ width: pillarboxW }}
+            />
+            <div
+              className="absolute inset-y-0 right-0 bg-[#efefef]"
+              style={{ width: pillarboxW }}
+            />
+          </>
+        ) : null}
+      </div>
+    );
+  }
+
+  const activePreview =
+    previewUrls[Math.min(previewIndex, Math.max(previewUrls.length - 1, 0))] ??
+    null;
+
+  function revokeAllPreviews() {
+    previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    previewUrlsRef.current = [];
+    setPreviewUrls([]);
+  }
+
+  function appendFiles(incoming: File[]) {
+    if (!incoming.length) return;
+    const urls = incoming.map((file) => URL.createObjectURL(file));
+    previewUrlsRef.current = [...previewUrlsRef.current, ...urls];
+    setPreviewUrls([...previewUrlsRef.current]);
+    setFiles((prev) => [...prev, ...incoming]);
+  }
+
+  /** Dropzone-compatible setter that syncs previewUrls for the create flow. */
+  function setFilesFromDropzone(
+    updater: File[] | ((prev: File[]) => File[])
+  ) {
+    setFiles((prev) => {
+      const next = typeof updater === "function" ? updater(prev) : updater;
+      if (next.length > prev.length) {
+        const added = next.slice(prev.length) as (File & { preview?: string })[];
+        const urls = added.map(
+          (file) => file.preview ?? URL.createObjectURL(file)
+        );
+        previewUrlsRef.current = [...previewUrlsRef.current, ...urls];
+        setPreviewUrls([...previewUrlsRef.current]);
+      }
+      return next;
+    });
+  }
+
+  useEffect(() => {
+    if (!state.isOpen) {
+      revokeAllPreviews();
+      setFiles([]);
+      setStep("select");
+      setDescription("");
+      setLocation("");
+      setCollaborators("");
+      setAltText("");
+      setHideLikeCount(false);
+      setCommentsDisabled(false);
+      setAccessibilityOpen(false);
+      setAdvancedOpen(false);
+      setLocationOpen(false);
+      setCollaboratorsOpen(false);
+      setVisibility("public");
+      setAspectId("square");
+      setPreviewIndex(0);
+      setAspectMenuOpen(false);
+      setThumbsOpen(false);
+      setZoomOpen(false);
+      setCropZoom(1);
+      setRejected([]);
+      setLoading(false);
+    }
+  }, [state.isOpen]);
+
+  useEffect(() => {
+    if (previewIndex >= files.length) {
+      setPreviewIndex(Math.max(0, files.length - 1));
+    }
+  }, [files.length, previewIndex]);
+
+  useEffect(() => {
+    if (step === "select" && files.length > 0) {
+      setStep("crop");
+    }
+  }, [files.length, step]);
+
+  function goBack() {
+    if (step === "crop") {
+      revokeAllPreviews();
+      setFiles([]);
+      setPreviewIndex(0);
+      setAspectMenuOpen(false);
+      setThumbsOpen(false);
+      setZoomOpen(false);
+      setCropZoom(1);
+      setStep("select");
+    } else if (step === "share") {
+      setStep("crop");
+    }
+  }
+
+  function goNext() {
+    if (step === "crop") setStep("share");
+  }
+
+  function removeCropPhoto(index: number) {
+    const url = previewUrlsRef.current[index];
+    if (url) URL.revokeObjectURL(url);
+    previewUrlsRef.current = previewUrlsRef.current.filter((_, i) => i !== index);
+    setPreviewUrls([...previewUrlsRef.current]);
+    const next = files.filter((_, i) => i !== index);
+    setFiles(next);
+    if (next.length === 0) {
+      setThumbsOpen(false);
+      setAspectMenuOpen(false);
+      setStep("select");
+    }
+  }
+
+  function handleAddCropPhotos(e: React.ChangeEvent<HTMLInputElement>) {
+    const list = e.target.files;
+    if (!list?.length) return;
+    appendFiles(Array.from(list));
+    e.target.value = "";
+  }
 
   const handlePost = async () => {
     if (!user?.id) {
@@ -68,7 +454,6 @@ export default function AddPostModal({
     }
     setLoading(true);
     try {
-      /** Use imperative helper so failures throw; `useUploadThing().startUpload` swallows errors and returns `undefined`. */
       const uploaded = await uploadFilesToUploadThing("postMedia", { files });
       const mediaUrls = uploaded
         .map((item) => pickUploadThingPublicUrl(item))
@@ -86,17 +471,23 @@ export default function AddPostModal({
           fullName: resolvedFullName,
           username: resolvedUsername,
           avatarUrl: resolvedImageUrl,
-          body: description,
+          body: description.slice(0, CAPTION_MAX),
           media: mediaUrls,
+          location: location.trim() || undefined,
+          altText: altText.trim() || undefined,
+          hideLikeCount,
+          commentsDisabled,
+          tags: collaborators
+            .split(/[\s,]+/)
+            .map((t) => t.replace(/^@+/, "").trim())
+            .filter(Boolean),
           visibility,
+          aspectRatio,
         }),
       });
 
       if (!res.ok) throw new Error(`Failed to create post: ${res.status}`);
 
-      setFiles([]);
-      setDescription("");
-      setVisibility("public");
       state.close();
       dispatchArchiveFeedRefresh();
     } catch (err: unknown) {
@@ -108,140 +499,585 @@ export default function AddPostModal({
     }
   };
 
+  const defaultTrigger =
+    triggerStyle === "input" ? (
+      <Button
+        variant="tertiary"
+        size="sm"
+        fullWidth={fullWidth}
+        className="justify-start font-normal text-stone-400"
+        onPress={() => state.open()}
+      >
+        Share a milestone...
+      </Button>
+    ) : (
+      <Button
+        variant="primary"
+        size="sm"
+        fullWidth={fullWidth}
+        className="gap-2"
+        onPress={() => state.open()}
+      >
+        <HugeiconsIcon icon={Add01Icon} size={16} />
+        Post
+      </Button>
+    );
+
+  const trigger = children ? (
+    React.isValidElement(children) ? (
+      React.cloneElement(
+        children as React.ReactElement<{ onClick?: (e: React.MouseEvent) => void }>,
+        {
+          onClick: (e: React.MouseEvent) => {
+            (
+              children as React.ReactElement<{
+                onClick?: (e: React.MouseEvent) => void;
+              }>
+            ).props.onClick?.(e);
+            state.open();
+          },
+        }
+      )
+    ) : (
+      children
+    )
+  ) : (
+    defaultTrigger
+  );
+
   return (
-    <Modal state={state}>
-      {triggerStyle === "input" ? (
-        <Button
-          variant="tertiary"
-          size="sm"
-          fullWidth={fullWidth}
-          className="justify-start font-normal text-stone-400"
-        >
-          Share a milestone...
-        </Button>
-      ) : (
-        <Button variant="primary" size="sm" fullWidth={fullWidth} className="gap-2">
-          <PlusIcon />
-          Post
-        </Button>
-      )}
+    <>
+      {trigger}
 
-      <Modal.Backdrop>
-        <Modal.Container className="w-full max-w-full p-4 sm:p-6">
-          <Modal.Dialog className="bg-white rounded-2xl shadow-2xl overflow-hidden w-full max-w-[min(70vw,56rem)] min-w-0 mx-auto">
-            {({ close }) => (
-              <>
-                <Modal.Header className="px-6 py-4 border-b border-stone-200 flex items-center justify-between gap-3">
-                  <Modal.Heading
-                    className="text-xl font-normal text-stone-800"
-                   
+      <Modal state={state}>
+        <Modal.Backdrop className="!z-[70] bg-black/65">
+          <Modal.Container
+            placement="center"
+            className="relative flex w-full max-w-full items-center justify-center p-4 sm:p-6"
+          >
+            <button
+              type="button"
+              aria-label="Close"
+              onClick={() => state.close()}
+              className="absolute right-4 top-4 z-[90] rounded-full p-2 text-white transition-colors hover:bg-white/10 sm:right-6 sm:top-6"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <Modal.Dialog
+              className="flex min-w-0 flex-col overflow-hidden rounded-xl bg-white !p-0 shadow-2xl transition-[width] duration-200 !h-auto !max-h-none !min-h-0 !max-w-none"
+              style={
+                step === "share"
+                  ? {
+                      width: shareFrame.width + SHARE_SIDEBAR_W,
+                      minWidth: shareFrame.width + SHARE_SIDEBAR_W,
+                      padding: 0,
+                    }
+                  : {
+                      // select + crop share the same square stage size
+                      width: cropFrame.width,
+                      minWidth: cropFrame.width,
+                      padding: 0,
+                    }
+              }
+            >
+              {({ close }) => (
+                <>
+                  <header
+                    className="relative flex shrink-0 items-center justify-center px-4"
+                    style={{ height: CREATE_HEADER_H }}
                   >
-                    Post milestones
-                  </Modal.Heading>
-                  <Modal.CloseTrigger className="text-stone-400 hover:text-stone-700 transition-colors shrink-0 p-1 min-w-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                    </svg>
-                  </Modal.CloseTrigger>
-                </Modal.Header>
+                    {step !== "select" ? (
+                      <button
+                        type="button"
+                        onClick={goBack}
+                        disabled={loading}
+                        className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-stone-800 transition-colors hover:bg-stone-100 disabled:opacity-40"
+                        aria-label="Back"
+                      >
+                        <HugeiconsIcon icon={ArrowLeft01Icon} size={20} strokeWidth={2} />
+                      </button>
+                    ) : null}
 
-                <Modal.Body className="p-6 overflow-y-auto max-h-[70vh]">
-                  <div className="flex flex-col lg:flex-row gap-6">
-                    <div className="flex-1 min-h-80 min-w-0">
-                      <Dropzone
-                        className=""
-                        files={files}
-                        setFiles={setFiles}
-                        rejected={rejected}
-                        setRejected={setRejected}
-                      />
-                    </div>
+                    <Modal.Heading className="text-sm font-semibold text-stone-900">
+                      {STEP_TITLE[step]}
+                    </Modal.Heading>
 
-                    <div className="flex-1 flex flex-col gap-4 min-w-0">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={resolvedImageUrl}
-                          alt={resolvedFullName}
-                          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                    {step === "crop" ? (
+                      <button
+                        type="button"
+                        onClick={goNext}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-[#0095f6] transition-colors hover:text-[#1877f2]"
+                      >
+                        Next
+                      </button>
+                    ) : null}
+
+                    {step === "share" ? (
+                      <button
+                        type="button"
+                        onClick={() => void handlePost()}
+                        disabled={loading || files.length === 0}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-[#0095f6] transition-colors hover:text-[#1877f2] disabled:cursor-not-allowed disabled:text-sky-300"
+                      >
+                        {loading ? "Sharing…" : "Share"}
+                      </button>
+                    ) : null}
+                  </header>
+
+                  <div
+                    className={
+                      step === "select" || step === "crop" || step === "share"
+                        ? "overflow-hidden"
+                        : "flex min-h-0 flex-1 flex-col overflow-y-auto"
+                    }
+                  >
+                    {step === "select" ? (
+                      <div
+                        className="flex w-full flex-col"
+                        style={{ height: cropFrame.width }}
+                      >
+                        <Dropzone
+                          className="min-h-0 flex-1"
+                          files={files}
+                          setFiles={setFilesFromDropzone}
+                          rejected={rejected}
+                          setRejected={setRejected}
+                          variant="create"
                         />
-                        <div className="flex flex-col min-w-0">
-                          <span className="text-sm font-semibold text-stone-700 truncate">{resolvedFullName}</span>
-                          <span className="text-xs text-stone-400 truncate">{resolvedUsername}</span>
-                        </div>
                       </div>
+                    ) : null}
 
-                      <Separator />
+                    {step === "crop" ? (
+                      <div
+                        className="relative aspect-square w-full shrink-0 overflow-hidden bg-black"
+                        style={{ width: cropFrame.width }}
+                      >
+                        {activePreview ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={activePreview}
+                            alt=""
+                            className="absolute inset-0 h-full w-full object-cover transition-transform duration-75"
+                            style={{ transform: `scale(${cropZoom})` }}
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center bg-stone-200 text-sm text-stone-400">
+                            No photo
+                          </div>
+                        )}
 
-                      <div className="flex flex-col gap-1.5">
-                        <Label className="text-xs font-medium text-stone-600">
-                          Description <span className="font-normal text-stone-400">(optional)</span>
-                        </Label>
-                        <textarea
-                          placeholder="Add a caption (optional)"
-                          value={description}
-                          onChange={(e) => setDescription(e.target.value)}
-                          rows={7}
-                          className="bg-white border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-700 placeholder:text-stone-300 outline-none resize-none focus:border-stone-400 transition-colors"
-                        />
-                      </div>
+                        {/* IG-style mask: gray bars outside the selected aspect */}
+                        <AspectMask />
 
-                      <div className="flex flex-col gap-2">
-                        <Label className="text-xs font-medium text-stone-600">Who can see this</Label>
-                        <div className="flex flex-col gap-2">
-                          {(
-                            [
-                              { value: "public" as const, label: "Public", hint: "Anyone" },
-                              { value: "friends" as const, label: "Friends", hint: "Accepted friends only" },
-                              { value: "private" as const, label: "Private", hint: "Only you" },
-                            ] as const
-                          ).map(({ value, label, hint }) => (
-                            <label
-                              key={value}
-                              className={`flex items-start gap-3 rounded-xl border px-3 py-2.5 cursor-pointer transition-colors ${
-                                visibility === value
-                                  ? "border-stone-500 bg-white"
-                                  : "border-stone-200 hover:border-stone-300"
+                          {aspectMenuOpen ? (
+                            <div className="absolute bottom-16 left-3 z-20 min-w-[148px] overflow-hidden rounded-xl bg-black/70 py-1 text-white backdrop-blur-sm">
+                              {POST_ASPECT_OPTIONS.map((opt) => {
+                                const selected = aspectId === opt.id;
+                                return (
+                                  <button
+                                    key={opt.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setAspectId(opt.id);
+                                      setAspectMenuOpen(false);
+                                    }}
+                                    className={`flex w-full items-center justify-between gap-6 px-4 py-3 text-left text-sm transition-colors hover:bg-white/10 ${
+                                      selected ? "text-white" : "text-white/55"
+                                    }`}
+                                  >
+                                    <span className="font-medium">
+                                      {opt.shortLabel}
+                                    </span>
+                                    <AspectFrameIcon
+                                      id={opt.id}
+                                      active={selected}
+                                    />
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          ) : null}
+
+                          {thumbsOpen ? (
+                            <div className="absolute bottom-16 right-3 z-20 flex max-w-[min(100%,320px)] items-center gap-3 overflow-x-auto rounded-2xl bg-[#1a1a1a]/90 px-3.5 py-3 backdrop-blur-sm">
+                              {previewUrls.map((url, i) => (
+                                <div
+                                  key={`${url}-${i}`}
+                                  className="relative shrink-0 pt-1 pr-1"
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() => setPreviewIndex(i)}
+                                    className={`relative block h-[72px] w-[72px] overflow-hidden rounded-lg ring-1 ring-white/40 ${
+                                      i === previewIndex
+                                        ? "opacity-100"
+                                        : "opacity-70 hover:opacity-100"
+                                    }`}
+                                  >
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                      src={url}
+                                      alt=""
+                                      className="h-full w-full object-cover"
+                                    />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    aria-label="Remove photo"
+                                    onClick={() => removeCropPhoto(i)}
+                                    className="absolute right-0 top-0 flex h-5 w-5 items-center justify-center rounded-full bg-[#cfcfcf] text-stone-900 shadow-sm hover:bg-white"
+                                  >
+                                    <HugeiconsIcon
+                                      icon={Cancel01Icon}
+                                      size={11}
+                                      strokeWidth={2.5}
+                                    />
+                                  </button>
+                                </div>
+                              ))}
+                              <button
+                                type="button"
+                                aria-label="Add photos"
+                                onClick={() => addPhotosInputRef.current?.click()}
+                                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-white/55 text-white transition-colors hover:border-white hover:bg-white/10"
+                              >
+                                <HugeiconsIcon
+                                  icon={Add01Icon}
+                                  size={26}
+                                  strokeWidth={1.5}
+                                />
+                              </button>
+                            </div>
+                          ) : null}
+
+                          <input
+                            ref={addPhotosInputRef}
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            onChange={handleAddCropPhotos}
+                          />
+
+                          <div className="absolute inset-x-0 bottom-0 z-10 flex items-end justify-between p-3">
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                aria-label="Aspect ratio"
+                                aria-expanded={aspectMenuOpen}
+                                onClick={() => {
+                                  setAspectMenuOpen((v) => !v);
+                                  setThumbsOpen(false);
+                                  setZoomOpen(false);
+                                }}
+                                className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+                                  aspectMenuOpen
+                                    ? "bg-white text-stone-900"
+                                    : "bg-black/60 text-white hover:bg-black/75"
+                                }`}
+                              >
+                                <HugeiconsIcon
+                                  icon={AspectRatioIcon}
+                                  size={18}
+                                  strokeWidth={1.75}
+                                />
+                              </button>
+
+                              {zoomOpen ? (
+                                <div className="flex h-8 items-center gap-2 rounded-full bg-black/60 px-3 text-white backdrop-blur-sm">
+                                  <button
+                                    type="button"
+                                    aria-label="Close zoom"
+                                    onClick={() => setZoomOpen(false)}
+                                    className="flex items-center justify-center"
+                                  >
+                                    <HugeiconsIcon
+                                      icon={ZoomInAreaIcon}
+                                      size={16}
+                                      strokeWidth={1.75}
+                                    />
+                                  </button>
+                                  <input
+                                    type="range"
+                                    min={1}
+                                    max={3}
+                                    step={0.01}
+                                    value={cropZoom}
+                                    aria-label="Zoom"
+                                    onChange={(e) =>
+                                      setCropZoom(Number(e.target.value))
+                                    }
+                                    className="h-1 w-28 cursor-pointer appearance-none rounded-full bg-white/35 accent-white [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+                                  />
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  aria-label="Zoom"
+                                  aria-expanded={zoomOpen}
+                                  onClick={() => {
+                                    setZoomOpen(true);
+                                    setAspectMenuOpen(false);
+                                    setThumbsOpen(false);
+                                  }}
+                                  className="flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/75"
+                                >
+                                  <HugeiconsIcon
+                                    icon={ZoomInAreaIcon}
+                                    size={18}
+                                    strokeWidth={1.75}
+                                  />
+                                </button>
+                              )}
+                            </div>
+
+                            <button
+                              type="button"
+                              aria-label="Select photos"
+                              aria-expanded={thumbsOpen}
+                              onClick={() => {
+                                setThumbsOpen((v) => !v);
+                                setAspectMenuOpen(false);
+                                setZoomOpen(false);
+                              }}
+                              className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+                                thumbsOpen
+                                  ? "bg-white text-stone-900"
+                                  : "bg-black/60 text-white hover:bg-black/75"
                               }`}
                             >
-                              <input
-                                type="radio"
-                                name="post-visibility"
-                                value={value}
-                                checked={visibility === value}
-                                onChange={() => setVisibility(value)}
-                                className="mt-1"
+                              <HugeiconsIcon
+                                icon={Copy01Icon}
+                                size={18}
+                                strokeWidth={1.75}
                               />
-                              <span className="flex flex-col min-w-0">
-                                <span className="text-sm text-stone-800">{label}</span>
-                                <span className="text-xs text-stone-400">{hint}</span>
+                            </button>
+                          </div>
+                      </div>
+                    ) : null}
+
+                    {step === "share" ? (
+                      <div className="flex flex-row overflow-hidden">
+                        <div
+                          className="relative aspect-square shrink-0 overflow-hidden bg-black"
+                          style={{ width: shareFrame.width }}
+                        >
+                          {activePreview ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={activePreview}
+                              alt=""
+                              className="absolute inset-0 h-full w-full object-cover"
+                              style={{ transform: `scale(${cropZoom})` }}
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-stone-200 text-sm text-stone-400">
+                              No photo
+                            </div>
+                          )}
+                          <AspectMask />
+                        </div>
+
+                        <div
+                          className="flex min-h-0 min-w-0 flex-col overflow-y-auto"
+                          style={{
+                            width: SHARE_SIDEBAR_W,
+                            height: shareFrame.width,
+                          }}
+                        >
+                          <div className="flex items-center gap-3 px-4 pt-4 pb-2">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={resolvedImageUrl}
+                              alt={resolvedFullName}
+                              className="h-7 w-7 shrink-0 rounded-full object-cover"
+                            />
+                            <span className="truncate text-sm font-semibold text-stone-900">
+                              {resolvedUsername}
+                            </span>
+                          </div>
+
+                          <div className="flex min-h-[120px] flex-1 flex-col px-4 pb-2">
+                            <textarea
+                              placeholder="Write a caption…"
+                              value={description}
+                              onChange={(e) =>
+                                setDescription(
+                                  e.target.value.slice(0, CAPTION_MAX)
+                                )
+                              }
+                              rows={5}
+                              className="min-h-[100px] w-full flex-1 resize-none border-0 bg-transparent text-sm text-stone-800 outline-none placeholder:text-stone-400"
+                            />
+                            <div className="mt-2 flex items-center justify-between">
+                              <span className="text-stone-300" aria-hidden>
+                                <HugeiconsIcon
+                                  icon={SmileIcon}
+                                  size={18}
+                                  strokeWidth={1.5}
+                                />
                               </span>
-                            </label>
-                          ))}
+                              <span className="text-xs text-stone-400">
+                                {description.length}/{CAPTION_MAX.toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="mt-auto divide-y divide-stone-100 border-t border-stone-100">
+                            <div>
+                              <ShareRow
+                                label={
+                                  location.trim()
+                                    ? location.trim()
+                                    : "Add location"
+                                }
+                                icon={Location01Icon}
+                                onClick={() => setLocationOpen((v) => !v)}
+                              />
+                              {locationOpen ? (
+                                <div className="px-4 pb-3">
+                                  <input
+                                    type="text"
+                                    value={location}
+                                    onChange={(e) =>
+                                      setLocation(e.target.value)
+                                    }
+                                    placeholder="City, venue, or place"
+                                    autoFocus
+                                    className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-stone-400"
+                                  />
+                                </div>
+                              ) : null}
+                            </div>
+
+                            <div>
+                              <ShareRow
+                                label={
+                                  collaborators.trim()
+                                    ? collaborators.trim()
+                                    : "Add collaborators"
+                                }
+                                icon={UserAdd01Icon}
+                                onClick={() =>
+                                  setCollaboratorsOpen((v) => !v)
+                                }
+                              />
+                              {collaboratorsOpen ? (
+                                <div className="px-4 pb-3">
+                                  <input
+                                    type="text"
+                                    value={collaborators}
+                                    onChange={(e) =>
+                                      setCollaborators(e.target.value)
+                                    }
+                                    placeholder="Usernames, separated by spaces"
+                                    autoFocus
+                                    className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-stone-400"
+                                  />
+                                </div>
+                              ) : null}
+                            </div>
+
+                            <ShareDisclosure
+                              title="Accessibility"
+                              open={accessibilityOpen}
+                              onToggle={() =>
+                                setAccessibilityOpen((v) => !v)
+                              }
+                            >
+                              <Label className="text-xs font-medium text-stone-500">
+                                Alt text
+                              </Label>
+                              <textarea
+                                value={altText}
+                                onChange={(e) => setAltText(e.target.value)}
+                                placeholder="Write alt text…"
+                                rows={3}
+                                className="mt-2 w-full resize-none rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-stone-400"
+                              />
+                            </ShareDisclosure>
+
+                            <ShareDisclosure
+                              title="Advanced settings"
+                              open={advancedOpen}
+                              onToggle={() => setAdvancedOpen((v) => !v)}
+                            >
+                              <ShareToggle
+                                label="Hide like and view counts on this post"
+                                hint="Only you will see the total number of likes and views on this post. You can change this later by editing the post."
+                                checked={hideLikeCount}
+                                onChange={setHideLikeCount}
+                              />
+                              <ShareToggle
+                                label="Turn off commenting"
+                                hint="You can change this later by editing your post."
+                                checked={commentsDisabled}
+                                onChange={setCommentsDisabled}
+                              />
+                              <div className="pt-2">
+                                <Label className="text-xs font-medium text-stone-500">
+                                  Who can see this
+                                </Label>
+                                <Select
+                                  aria-label="Who can see this"
+                                  selectedKey={visibility}
+                                  onSelectionChange={(key) => {
+                                    if (
+                                      key === "public" ||
+                                      key === "friends" ||
+                                      key === "private"
+                                    ) {
+                                      setVisibility(key);
+                                    }
+                                  }}
+                                  className="mt-1 w-full"
+                                >
+                                  <Select.Trigger className="w-full justify-between rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm text-stone-800">
+                                    <Select.Value />
+                                    <Select.Indicator />
+                                  </Select.Trigger>
+                                  <Select.Popover className="z-[100]">
+                                    <ListBox>
+                                      <ListBox.Item
+                                        id="public"
+                                        textValue="Public"
+                                        className="rounded-lg px-3 py-2 text-sm"
+                                      >
+                                        Public
+                                      </ListBox.Item>
+                                      <ListBox.Item
+                                        id="friends"
+                                        textValue="Friends"
+                                        className="rounded-lg px-3 py-2 text-sm"
+                                      >
+                                        Friends
+                                      </ListBox.Item>
+                                      <ListBox.Item
+                                        id="private"
+                                        textValue="Private"
+                                        className="rounded-lg px-3 py-2 text-sm"
+                                      >
+                                        Private
+                                      </ListBox.Item>
+                                    </ListBox>
+                                  </Select.Popover>
+                                </Select>
+                              </div>
+                            </ShareDisclosure>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    ) : null}
                   </div>
-                </Modal.Body>
-
-                <Modal.Footer className="px-6 py-4 border-t border-stone-200 flex items-center justify-end gap-3">
-                  <Button variant="ghost" size="sm" onPress={close}>
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onPress={handlePost}
-                    isPending={loading}
-                    isDisabled={loading || files.length === 0}
-                  >
-                    {loading ? "Working…" : "Post"}
-                  </Button>
-                </Modal.Footer>
-              </>
-            )}
-          </Modal.Dialog>
-        </Modal.Container>
-      </Modal.Backdrop>
-    </Modal>
+                </>
+              )}
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
+    </>
   );
 }
