@@ -2,17 +2,20 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
+import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { clampPostAspectRatio } from "@/lib/postAspectRatio";
-import { usePostViewerOptional } from "@/components/postViewerContext";
 
 /**
- * VSCO-style 2-column masonry: keep image ratios, pack into the shortest
- * column so there are no vertical holes. Ordered by post date (newest first).
+ * VSCO-style 2-column masonry with Framer shared-layout lightbox.
+ * Clicking an image expands it in place — does not open the post viewer.
  *
  * @param {{ authorClerkId?: string, collection?: 'public' | 'friends' | 'private' | null, refreshNonce?: number }} props
  */
-export default function ImageGrid({ authorClerkId, collection = null, refreshNonce = 0 }) {
-  const { openPost } = usePostViewerOptional();
+export default function ImageGrid({
+  authorClerkId,
+  collection = null,
+  refreshNonce = 0,
+}) {
   const [mediaItems, setMediaItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [index, setIndex] = useState(null);
@@ -72,12 +75,25 @@ export default function ImageGrid({ authorClerkId, collection = null, refreshNon
 
   useEffect(() => {
     if (index == null) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     const onKey = (e) => {
       if (e.key === "Escape") setIndex(null);
+      if (e.key === "ArrowRight") {
+        setIndex((i) =>
+          i == null ? i : Math.min(mediaItems.length - 1, i + 1)
+        );
+      }
+      if (e.key === "ArrowLeft") {
+        setIndex((i) => (i == null ? i : Math.max(0, i - 1)));
+      }
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [index]);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [index, mediaItems.length]);
 
   function ratioFor(card) {
     if (typeof card.aspectRatio === "number" && card.aspectRatio > 0) {
@@ -95,7 +111,6 @@ export default function ImageGrid({ authorClerkId, collection = null, refreshNon
     );
   }
 
-  // Pack into 2 columns (shortest column wins) — VSCO / Pinterest style.
   const columns = useMemo(() => {
     const cols = [[], []];
     const heights = [0, 0];
@@ -107,7 +122,6 @@ export default function ImageGrid({ authorClerkId, collection = null, refreshNon
       heights[col] += h;
     });
     return cols;
-    // naturalRatios intentionally included so packing updates as images load
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mediaItems, naturalRatios]);
 
@@ -115,73 +129,74 @@ export default function ImageGrid({ authorClerkId, collection = null, refreshNon
     return (
       <div className="flex w-full gap-0.5">
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <div className="animate-pulse rounded-tl-md bg-stone-100" style={{ aspectRatio: "4/5" }} />
+          <div
+            className="animate-pulse rounded-tl-md bg-stone-100"
+            style={{ aspectRatio: "4/5" }}
+          />
           <div className="animate-pulse bg-stone-100" style={{ aspectRatio: "1" }} />
         </div>
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <div className="animate-pulse rounded-tr-md bg-stone-100" style={{ aspectRatio: "1" }} />
-          <div className="animate-pulse bg-stone-100" style={{ aspectRatio: "5/4" }} />
+          <div
+            className="animate-pulse rounded-tr-md bg-stone-100"
+            style={{ aspectRatio: "1" }}
+          />
+          <div
+            className="animate-pulse bg-stone-100"
+            style={{ aspectRatio: "5/4" }}
+          />
         </div>
       </div>
     );
   }
 
   if (!mediaItems.length) {
-    return <p className="py-16 text-center text-sm text-stone-400">No media yet.</p>;
+    return (
+      <p className="py-16 text-center text-sm text-stone-400">No media yet.</p>
+    );
   }
 
   const active = index != null ? mediaItems[index] : null;
 
   function renderTile(card, flatIndex, cornerClass) {
     const ratio = ratioFor(card);
-    const tile = (
-      <img
-        src={card.url}
-        alt=""
-        loading="lazy"
-        decoding="async"
-        className="h-full w-full object-cover"
-        onLoad={(e) => {
-          if (!(typeof card.aspectRatio === "number" && card.aspectRatio > 0)) {
-            onImgLoad(card.id, e);
-          }
-        }}
-      />
-    );
-
-    const frameClass = `relative block w-full overflow-hidden bg-stone-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 ${cornerClass}`;
-    const frameStyle = { aspectRatio: String(ratio) };
-
-    if (card.postId) {
-      return (
-        <button
-          key={card.id}
-          type="button"
-          onClick={() => openPost(String(card.postId))}
-          className={frameClass}
-          style={frameStyle}
-          aria-label="View post"
-        >
-          {tile}
-        </button>
-      );
-    }
+    const isOpen = index === flatIndex;
 
     return (
       <button
         key={card.id}
         type="button"
         onClick={() => setIndex(flatIndex)}
-        className={frameClass}
-        style={frameStyle}
+        className={`relative block w-full overflow-hidden bg-stone-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 ${cornerClass}`}
+        style={{ aspectRatio: String(ratio) }}
+        aria-label="View image"
       >
-        {tile}
+        {/* Placeholder keeps masonry height while the open tile is in the lightbox */}
+        {isOpen ? (
+          <div className="h-full w-full bg-stone-200/80" aria-hidden />
+        ) : (
+          <motion.img
+            layoutId={`gallery-${card.id}`}
+            src={card.url}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="h-full w-full object-cover"
+            transition={{ type: "spring", stiffness: 320, damping: 32 }}
+            onLoad={(e) => {
+              if (
+                !(typeof card.aspectRatio === "number" && card.aspectRatio > 0)
+              ) {
+                onImgLoad(card.id, e);
+              }
+            }}
+          />
+        )}
       </button>
     );
   }
 
   return (
-    <>
+    <LayoutGroup>
       <div className="flex w-full items-start gap-0.5">
         {columns.map((col, colIndex) => (
           <div
@@ -202,23 +217,39 @@ export default function ImageGrid({ authorClerkId, collection = null, refreshNon
       </div>
 
       {mounted &&
-        active &&
         createPortal(
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4"
-            onClick={() => setIndex(null)}
-            role="dialog"
-            aria-modal="true"
-          >
-            <img
-              src={active.url}
-              alt=""
-              className="max-h-[85vh] max-w-full object-contain"
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>,
+          <AnimatePresence>
+            {active ? (
+              <motion.div
+                key="gallery-lightbox"
+                className="fixed inset-0 z-[80] flex items-center justify-center p-4"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Image viewer"
+              >
+                <motion.button
+                  type="button"
+                  aria-label="Close"
+                  className="absolute inset-0 bg-black/55"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  onClick={() => setIndex(null)}
+                />
+                <motion.img
+                  layoutId={`gallery-${active.id}`}
+                  src={active.url}
+                  alt=""
+                  className="relative z-[81] max-h-[85vh] max-w-full rounded-md object-contain shadow-2xl"
+                  transition={{ type: "spring", stiffness: 320, damping: 32 }}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </motion.div>
+            ) : null}
+          </AnimatePresence>,
           document.body
         )}
-    </>
+    </LayoutGroup>
   );
 }

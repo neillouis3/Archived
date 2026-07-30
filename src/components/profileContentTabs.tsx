@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  DashboardSquare02Icon,
+  BorderAll02Icon,
   LayoutGridIcon,
   RepostIcon,
   UserSquareIcon,
@@ -15,7 +15,7 @@ const TABS: {
   label: string;
   icon: IconSvgElement;
 }[] = [
-  { id: "posts", label: "Posts", icon: DashboardSquare02Icon },
+  { id: "posts", label: "Posts", icon: BorderAll02Icon },
   { id: "pictures", label: "Pictures", icon: LayoutGridIcon },
   { id: "reposts", label: "Reposts", icon: RepostIcon },
   { id: "tagged", label: "Tagged", icon: UserSquareIcon },
