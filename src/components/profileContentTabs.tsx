@@ -15,8 +15,8 @@ const TABS: {
   label: string;
   icon: IconSvgElement;
 }[] = [
-  { id: "posts", label: "Posts", icon: LayoutGridIcon },
-  { id: "pictures", label: "Pictures", icon: DashboardSquare02Icon },
+  { id: "posts", label: "Posts", icon: DashboardSquare02Icon },
+  { id: "pictures", label: "Pictures", icon: LayoutGridIcon },
   { id: "reposts", label: "Reposts", icon: RepostIcon },
   { id: "tagged", label: "Tagged", icon: UserSquareIcon },
 ];

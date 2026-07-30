@@ -10,9 +10,10 @@ import {
   FavouriteIcon,
   MoreHorizontalIcon,
   Location01Icon,
+  RepostIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { MessageCircleIcon, BookmarkIcon as LucideBookmarkIcon, Repeat2 } from "lucide-react";
+import { MessageCircleIcon, BookmarkIcon as LucideBookmarkIcon } from "lucide-react";
 import type { EditPostVisibility } from "@/components/editPostModal";
 import { PostMediaCarousel } from "@/components/postMediaCarousel";
 import FollowButton from "@/components/FollowButton";
@@ -32,14 +33,19 @@ const HeartIcon = ({ filled }: { filled?: boolean }) => (
 );
 
 const ChatIcon = () => (
-  <MessageCircleIcon absoluteStrokeWidth className="block size-6 shrink-0" strokeWidth={1.75} />
+  <MessageCircleIcon
+    absoluteStrokeWidth
+    className="block size-6 shrink-0"
+    strokeWidth={1.75}
+  />
 );
 
 const RepostActionIcon = ({ active }: { active?: boolean }) => (
-  <Repeat2
-    absoluteStrokeWidth
-    className={`block size-6 shrink-0 ${active ? "text-emerald-600" : ""}`}
+  <HugeiconsIcon
+    icon={RepostIcon}
+    size={24}
     strokeWidth={1.75}
+    className={`block size-6 shrink-0 ${active ? "text-emerald-600" : ""}`}
   />
 );
 
@@ -594,8 +600,8 @@ function ArchivePost({
         />
       </div>
 
-      <div className="mt-3 flex w-full items-center gap-3">
-        <div className="flex h-6 items-center gap-1.5">
+      <div className="mt-3 flex w-full items-center gap-5">
+        <div className="flex h-6 min-w-[2.75rem] items-center gap-1">
           <button
             type="button"
             disabled={!isLoaded || !signedIn}
@@ -609,13 +615,13 @@ function ArchivePost({
             <HeartIcon filled={liked} />
           </button>
           {!engagementLoading && likeCount > 0 ? (
-            <span className="select-none text-sm font-medium leading-none text-stone-500 tabular-nums -translate-y-px">
+            <span className="select-none text-sm font-medium leading-none text-stone-500 tabular-nums">
               {likeCount}
             </span>
           ) : null}
         </div>
 
-        <div className="flex h-6 items-center gap-1.5">
+        <div className="flex h-6 min-w-[2.75rem] items-center gap-1">
           <button
             type="button"
             disabled={!isLoaded || !signedIn}
@@ -629,14 +635,14 @@ function ArchivePost({
             <ChatIcon />
           </button>
           {!engagementLoading && commentCount > 0 ? (
-            <span className="select-none text-sm font-medium leading-none text-stone-500 tabular-nums -translate-y-px">
+            <span className="select-none text-sm font-medium leading-none text-stone-500 tabular-nums">
               {commentCount}
             </span>
           ) : null}
         </div>
 
         {!isOwner ? (
-          <div className="flex h-6 items-center gap-1.5">
+          <div className="flex h-6 min-w-[2.75rem] items-center gap-1">
             <button
               type="button"
               disabled={!isLoaded || !signedIn || repostPending}
@@ -664,7 +670,7 @@ function ArchivePost({
               <RepostActionIcon active={reposted} />
             </button>
             {!engagementLoading && repostCount > 0 ? (
-              <span className="select-none text-sm font-medium leading-none text-stone-500 tabular-nums -translate-y-px">
+              <span className="select-none text-sm font-medium leading-none text-stone-500 tabular-nums">
                 {repostCount}
               </span>
             ) : null}

@@ -36,6 +36,7 @@ import {
   type SocialMediaFields,
 } from "@/lib/socialLinks";
 import { useClerkAuthAppearance } from "@/hooks/useClerkAuthAppearance";
+import ImageCropModal from "@/components/imageCropModal";
 
 // ── icons ──────────────────────────────────────────────────────────────────
 const UserIcon = () => (
@@ -97,6 +98,10 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [coverUploading, setCoverUploading] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [cropSession, setCropSession] = useState<{
+    kind: "avatar" | "banner";
+    file: File;
+  } | null>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const identityPhotoModal = useOverlayState();
@@ -136,27 +141,11 @@ export default function SettingsPage() {
       ? user.publicMetadata.coverImageUrl.trim()
       : "";
 
-  const handleCoverFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCoverFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file || !user) return;
-    setCoverUploading(true);
-    try {
-      const uploaded = await uploadFilesToUploadThing("postMedia", { files: [file] });
-      const url = pickUploadThingPublicUrl(uploaded[0]);
-      if (!url) throw new Error("Upload failed");
-      const res = await fetch("/api/updateUser", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ coverImageUrl: url }),
-      });
-      if (!res.ok) throw new Error("Failed");
-      await user.reload();
-    } catch {
-      // keep silent; could add toast
-    } finally {
-      setCoverUploading(false);
-    }
+    setCropSession({ kind: "banner", file });
   };
 
   const handleRemoveCover = async () => {
@@ -177,11 +166,17 @@ export default function SettingsPage() {
     }
   };
 
-  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file || !user) return;
+    setCropSession({ kind: "avatar", file });
+  };
+
+  const uploadCroppedAvatar = async (file: File) => {
+    if (!user) return;
     setAvatarUploading(true);
+    setCropSession(null);
     try {
       await user.setProfileImage({ file });
       await user.reload();
@@ -198,6 +193,30 @@ export default function SettingsPage() {
       // silent
     } finally {
       setAvatarUploading(false);
+    }
+  };
+
+  const uploadCroppedBanner = async (file: File) => {
+    if (!user) return;
+    setCoverUploading(true);
+    setCropSession(null);
+    try {
+      const uploaded = await uploadFilesToUploadThing("postMedia", {
+        files: [file],
+      });
+      const url = pickUploadThingPublicUrl(uploaded[0]);
+      if (!url) throw new Error("Upload failed");
+      const res = await fetch("/api/updateUser", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ coverImageUrl: url }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      await user.reload();
+    } catch {
+      // silent
+    } finally {
+      setCoverUploading(false);
     }
   };
 
@@ -708,6 +727,23 @@ export default function SettingsPage() {
         )}
 
       </div>
+
+      <ImageCropModal
+        open={!!cropSession}
+        file={cropSession?.file ?? null}
+        aspectRatio={cropSession?.kind === "banner" ? 3 : 1}
+        title={
+          cropSession?.kind === "banner" ? "Crop banner" : "Crop photo"
+        }
+        circularMask={cropSession?.kind === "avatar"}
+        onCancel={() => setCropSession(null)}
+        onConfirm={(cropped) => {
+          if (cropSession?.kind === "banner") {
+            return uploadCroppedBanner(cropped);
+          }
+          return uploadCroppedAvatar(cropped);
+        }}
+      />
     </div>
   );
 }

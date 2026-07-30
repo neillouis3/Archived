@@ -22,7 +22,7 @@ import {
   ViewOffSlashIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
-import { MessageCircleIcon, BookmarkIcon as LucideBookmarkIcon, Repeat2 } from "lucide-react";
+import { MessageCircleIcon, BookmarkIcon as LucideBookmarkIcon } from "lucide-react";
 import type { EditPostVisibility } from "@/components/editPostModal";
 import { PostMediaCarousel } from "@/components/postMediaCarousel";
 import {
@@ -99,10 +99,11 @@ const BookmarkIcon = ({ filled }: { filled?: boolean }) => (
 );
 
 const RepostActionIcon = ({ active }: { active?: boolean }) => (
-  <Repeat2
-    absoluteStrokeWidth
-    className={`block size-6 shrink-0 ${active ? "text-emerald-600" : ""}`}
+  <HugeiconsIcon
+    icon={RepostIcon}
+    size={24}
     strokeWidth={1.75}
+    className={`block size-6 shrink-0 ${active ? "text-emerald-600" : ""}`}
   />
 );
 
@@ -919,7 +920,7 @@ export default function PostDetailModal({
               </div>
 
               <div className="shrink-0 border-t border-stone-200 px-4 py-3">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-5">
                   <button
                     type="button"
                     disabled={!isLoaded || !signedIn}
