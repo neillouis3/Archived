@@ -22,6 +22,10 @@ import {
   type PostAspectOptionId,
 } from "@/lib/postAspectRatio";
 import {
+  bakeCroppedImageFile,
+  type CropMode,
+} from "@/lib/cropImageFile";
+import {
   Add01Icon,
   ArrowDown01Icon,
   ArrowLeft01Icon,
@@ -39,9 +43,28 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 
 type Step = "select" | "crop" | "share";
-type CropMode = "fill" | "fit";
+
+type PhotoCrop = {
+  zoom: number;
+  mode: CropMode;
+  pan: { x: number; y: number };
+  natural: { w: number; h: number };
+  frameWidth: number;
+  frameHeight: number;
+};
 
 const CAPTION_MAX = 2200;
+
+function defaultPhotoCrop(): PhotoCrop {
+  return {
+    zoom: 1,
+    mode: "fill",
+    pan: { x: 0, y: 0 },
+    natural: { w: 0, h: 0 },
+    frameWidth: 0,
+    frameHeight: 0,
+  };
+}
 
 function aspectIdForPixels(width: number, height: number): PostAspectOptionId {
   const ratio = clampPostAspectRatio(width, height);
@@ -250,10 +273,7 @@ export default function AddPostModal({
   const [aspectMenuOpen, setAspectMenuOpen] = useState(false);
   const [thumbsOpen, setThumbsOpen] = useState(false);
   const [zoomOpen, setZoomOpen] = useState(false);
-  const [cropZoom, setCropZoom] = useState(1);
-  const [cropMode, setCropMode] = useState<CropMode>("fill");
-  const [cropPan, setCropPan] = useState({ x: 0, y: 0 });
-  const [imgNatural, setImgNatural] = useState({ w: 0, h: 0 });
+  const [photoCrops, setPhotoCrops] = useState<PhotoCrop[]>([]);
   const [isDraggingCrop, setIsDraggingCrop] = useState(false);
   const addPhotosInputRef = useRef<HTMLInputElement>(null);
   const previewUrlsRef = useRef<string[]>([]);
@@ -315,6 +335,30 @@ export default function AddPostModal({
           width: cropFrame.height * aspectRatio,
           height: cropFrame.height,
         };
+
+  const activeCrop = photoCrops[previewIndex] ?? defaultPhotoCrop();
+  const cropZoom = activeCrop.zoom;
+  const cropMode = activeCrop.mode;
+  const cropPan = activeCrop.pan;
+  const imgNatural = activeCrop.natural;
+
+  function patchActiveCrop(patch: Partial<PhotoCrop>) {
+    setPhotoCrops((prev) => {
+      const next = prev.length
+        ? [...prev]
+        : files.map(() => defaultPhotoCrop());
+      while (next.length < files.length) next.push(defaultPhotoCrop());
+      const i = Math.min(previewIndex, Math.max(0, next.length - 1));
+      next[i] = {
+        ...defaultPhotoCrop(),
+        ...next[i],
+        ...patch,
+        frameWidth: aspectBox.width,
+        frameHeight: aspectBox.height,
+      };
+      return next;
+    });
+  }
 
   const letterboxH = Math.max(0, (cropFrame.height - aspectBox.height) / 2);
   const pillarboxW = Math.max(0, (cropFrame.width - aspectBox.width) / 2);
@@ -480,12 +524,12 @@ export default function AddPostModal({
                   box.width > 0 && aspectBox.width > 0
                     ? aspectBox.width / box.width
                     : 1;
-                setCropPan(
-                  clampCropPan(
+                patchActiveCrop({
+                  pan: clampCropPan(
                     drag.originX + (e.clientX - drag.startX) * panScale,
                     drag.originY + (e.clientY - drag.startY) * panScale
-                  )
-                );
+                  ),
+                });
               }
             : undefined
         }
@@ -525,7 +569,7 @@ export default function AddPostModal({
             const w = el.naturalWidth;
             const h = el.naturalHeight;
             if (!w || !h) return;
-            setImgNatural({ w, h });
+            patchActiveCrop({ natural: { w, h } });
             if (!didAutoAspectRef.current) {
               didAutoAspectRef.current = true;
               setAspectId(aspectIdForPixels(w, h));
@@ -589,10 +633,7 @@ export default function AddPostModal({
       setAspectMenuOpen(false);
       setThumbsOpen(false);
       setZoomOpen(false);
-      setCropZoom(1);
-      setCropMode("fill");
-      setCropPan({ x: 0, y: 0 });
-      setImgNatural({ w: 0, h: 0 });
+      setPhotoCrops([]);
       setIsDraggingCrop(false);
       didAutoAspectRef.current = false;
       dragRef.current = null;
@@ -602,15 +643,19 @@ export default function AddPostModal({
   }, [state.isOpen]);
 
   useEffect(() => {
-    setCropPan({ x: 0, y: 0 });
-    setCropZoom(1);
-    setImgNatural({ w: 0, h: 0 });
-  }, [previewIndex]);
-
-  useEffect(() => {
-    setCropPan((prev) => clampCropPan(prev.x, prev.y));
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- clamp when geometry/zoom/mode changes
-  }, [cropZoom, cropMode, aspectId, aspectBox.width, aspectBox.height, imgNatural.w, imgNatural.h]);
+    setPhotoCrops((prev) => {
+      if (prev.length === files.length) return prev;
+      if (files.length > prev.length) {
+        return [
+          ...prev,
+          ...Array.from({ length: files.length - prev.length }, () =>
+            defaultPhotoCrop()
+          ),
+        ];
+      }
+      return prev.slice(0, files.length);
+    });
+  }, [files.length]);
 
   useEffect(() => {
     if (previewIndex >= files.length) {
@@ -632,11 +677,7 @@ export default function AddPostModal({
       setAspectMenuOpen(false);
       setThumbsOpen(false);
       setZoomOpen(false);
-      setCropZoom(1);
-      setCropMode("fill");
-      setCropPan({ x: 0, y: 0 });
-      setImgNatural({ w: 0, h: 0 });
-      didAutoAspectRef.current = false;
+      setPhotoCrops([]);
       setStep("select");
     } else if (step === "share") {
       setStep("crop");
@@ -679,7 +720,26 @@ export default function AddPostModal({
     }
     setLoading(true);
     try {
-      const uploaded = await uploadFilesToUploadThing("postMedia", { files });
+      const croppedFiles = await Promise.all(
+        files.map((file, i) => {
+          const crop = photoCrops[i] ?? defaultPhotoCrop();
+          const frameWidth =
+            crop.frameWidth > 0 ? crop.frameWidth : aspectBox.width;
+          const frameHeight =
+            crop.frameHeight > 0 ? crop.frameHeight : aspectBox.height;
+          return bakeCroppedImageFile(file, aspectRatio, {
+            mode: crop.mode,
+            zoom: crop.zoom,
+            pan: crop.pan,
+            frameWidth,
+            frameHeight,
+          });
+        })
+      );
+
+      const uploaded = await uploadFilesToUploadThing("postMedia", {
+        files: croppedFiles,
+      });
       const mediaUrls = uploaded
         .map((item) => pickUploadThingPublicUrl(item))
         .filter(Boolean);
@@ -895,7 +955,7 @@ export default function AddPostModal({
                                     type="button"
                                     onClick={() => {
                                       setAspectId(opt.id);
-                                      setCropPan({ x: 0, y: 0 });
+                                      patchActiveCrop({ pan: { x: 0, y: 0 } });
                                       setAspectMenuOpen(false);
                                     }}
                                     className={`flex w-full items-center justify-between gap-6 px-4 py-3 text-left text-sm transition-colors hover:bg-white/10 ${
@@ -1022,7 +1082,9 @@ export default function AddPostModal({
                                     value={cropZoom}
                                     aria-label="Zoom"
                                     onChange={(e) =>
-                                      setCropZoom(Number(e.target.value))
+                                      patchActiveCrop({
+                                        zoom: Number(e.target.value),
+                                      })
                                     }
                                     className="h-1 w-28 cursor-pointer appearance-none rounded-full bg-white/35 accent-white [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
                                   />
@@ -1056,10 +1118,10 @@ export default function AddPostModal({
                                 }
                                 title={cropMode === "fill" ? "Fit" : "Fill"}
                                 onClick={() => {
-                                  setCropMode((m) =>
-                                    m === "fill" ? "fit" : "fill"
-                                  );
-                                  setCropPan({ x: 0, y: 0 });
+                                  patchActiveCrop({
+                                    mode: cropMode === "fill" ? "fit" : "fill",
+                                    pan: { x: 0, y: 0 },
+                                  });
                                   setAspectMenuOpen(false);
                                   setThumbsOpen(false);
                                   setZoomOpen(false);
