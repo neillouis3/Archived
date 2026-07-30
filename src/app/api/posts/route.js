@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import Posts from "@lib/models/posts";
 import PostLikes from "@lib/models/postLikes";
 import PostSaves from "@lib/models/postSaves";
+import PostReposts from "@lib/models/postReposts";
 import connection from "../../../lib/mongo";
 import { embedEngagementInPosts } from "@lib/postEngagementBatch";
 import { enrichPostsAuthorAvatars } from "@lib/clerkActor";
@@ -71,19 +72,45 @@ export async function GET(req) {
 
     const engagementRaw = searchParams.get("engagement");
     const engagementType =
-      engagementRaw === "saved" || engagementRaw === "liked" ? engagementRaw : null;
+      engagementRaw === "saved" ||
+      engagementRaw === "liked" ||
+      engagementRaw === "reposted"
+        ? engagementRaw
+        : null;
     const skipEngagement =
       searchParams.get("skipEngagement") === "1" ||
       searchParams.get("skipEngagement") === "true" ||
       engagementRaw === "0";
 
     if (engagementType) {
-      if (!viewerClerkId) {
+      const reposterClerkId =
+        searchParams.get("reposterClerkId") || viewerClerkId;
+      if (!reposterClerkId) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
-      const Model = engagementType === "saved" ? PostSaves : PostLikes;
+      if (
+        engagementType !== "reposted" &&
+        (!viewerClerkId || viewerClerkId !== reposterClerkId)
+      ) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      if (!viewerClerkId && engagementType === "reposted") {
+        // Public profiles can list another user's reposts while signed out —
+        // still require a target id via reposterClerkId (already set).
+      } else if (engagementType !== "reposted" && !viewerClerkId) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+
+      const Model =
+        engagementType === "saved"
+          ? PostSaves
+          : engagementType === "liked"
+            ? PostLikes
+            : PostReposts;
+      const ownerClerkId =
+        engagementType === "reposted" ? reposterClerkId : viewerClerkId;
       const fetchRows = Math.min(Math.max(limit * 20, limit), 500);
-      const rows = await Model.find({ clerkId: viewerClerkId })
+      const rows = await Model.find({ clerkId: ownerClerkId })
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(fetchRows)
@@ -100,13 +127,13 @@ export async function GET(req) {
       const uniqueIds = [...new Set(rows.map((r) => r.postId).filter(Boolean))];
       const [postsRaw, friendSet] = await Promise.all([
         Posts.find({ _id: { $in: uniqueIds } }).lean(),
-        getAcceptedFriendClerkIdsSet(viewerClerkId),
+        viewerClerkId
+          ? getAcceptedFriendClerkIdsSet(viewerClerkId)
+          : Promise.resolve(new Set()),
       ]);
-      const visiblePosts = filterPostsVisibleToViewer(
-        postsRaw,
-        viewerClerkId,
-        friendSet
-      );
+      const visiblePosts = viewerClerkId
+        ? filterPostsVisibleToViewer(postsRaw, viewerClerkId, friendSet)
+        : postsRaw.filter((p) => p.visibility === "public");
       const visibleById = new Map(
         visiblePosts.map((p) => [String(p._id), p])
       );

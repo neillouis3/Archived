@@ -12,7 +12,7 @@ import {
   Location01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { MessageCircleIcon, BookmarkIcon as LucideBookmarkIcon } from "lucide-react";
+import { MessageCircleIcon, BookmarkIcon as LucideBookmarkIcon, Repeat2 } from "lucide-react";
 import type { EditPostVisibility } from "@/components/editPostModal";
 import { PostMediaCarousel } from "@/components/postMediaCarousel";
 import FollowButton from "@/components/FollowButton";
@@ -33,6 +33,14 @@ const HeartIcon = ({ filled }: { filled?: boolean }) => (
 
 const ChatIcon = () => (
   <MessageCircleIcon absoluteStrokeWidth className="block size-6 shrink-0" strokeWidth={1.75} />
+);
+
+const RepostActionIcon = ({ active }: { active?: boolean }) => (
+  <Repeat2
+    absoluteStrokeWidth
+    className={`block size-6 shrink-0 ${active ? "text-emerald-600" : ""}`}
+    strokeWidth={1.75}
+  />
 );
 
 const BookmarkIcon = ({ filled }: { filled?: boolean }) => (
@@ -213,8 +221,10 @@ type CommentRow = {
 export type PostEngagementSnapshot = {
   likeCount: number;
   commentCount: number;
+  repostCount?: number;
   likedByMe: boolean;
   savedByMe: boolean;
+  repostedByMe?: boolean;
 };
 
 interface ArchivePostProps {
@@ -264,8 +274,14 @@ function ArchivePost({
   const [commentCount, setCommentCount] = useState(
     () => initialEngagement?.commentCount ?? 0
   );
+  const [repostCount, setRepostCount] = useState(
+    () => initialEngagement?.repostCount ?? 0
+  );
   const [liked, setLiked] = useState(() => Boolean(initialEngagement?.likedByMe));
   const [saved, setSaved] = useState(() => Boolean(initialEngagement?.savedByMe));
+  const [reposted, setReposted] = useState(() =>
+    Boolean(initialEngagement?.repostedByMe)
+  );
   const [comments, setComments] = useState<CommentRow[]>([]);
   const [engagementLoading, setEngagementLoading] = useState(!initialEngagement);
   const [commentsOpen, setCommentsOpen] = useState(false);
@@ -273,6 +289,7 @@ function ArchivePost({
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [likePending, setLikePending] = useState(false);
   const [savePending, setSavePending] = useState(false);
+  const [repostPending, setRepostPending] = useState(false);
   const commentsLoadedRef = useRef(false);
 
   useEffect(() => {
@@ -283,8 +300,10 @@ function ArchivePost({
     if (initialEngagement != null) {
       setLikeCount(initialEngagement.likeCount);
       setCommentCount(initialEngagement.commentCount);
+      setRepostCount(initialEngagement.repostCount ?? 0);
       setLiked(Boolean(initialEngagement.likedByMe));
       setSaved(Boolean(initialEngagement.savedByMe));
+      setReposted(Boolean(initialEngagement.repostedByMe));
       setEngagementLoading(false);
       return;
     }
@@ -303,8 +322,10 @@ function ArchivePost({
         if (ac.signal.aborted) return;
         setLikeCount(data.likeCount ?? 0);
         setCommentCount(data.commentCount ?? 0);
+        setRepostCount(data.repostCount ?? 0);
         setLiked(Boolean(data.likedByMe));
         setSaved(Boolean(data.savedByMe));
+        setReposted(Boolean(data.repostedByMe));
       } catch (e) {
         if ((e as Error).name === "AbortError") return;
       } finally {
@@ -317,8 +338,10 @@ function ArchivePost({
     Boolean(initialEngagement),
     initialEngagement?.likeCount,
     initialEngagement?.commentCount,
+    initialEngagement?.repostCount,
     initialEngagement?.likedByMe,
     initialEngagement?.savedByMe,
+    initialEngagement?.repostedByMe,
   ]);
 
   useEffect(() => {
@@ -388,6 +411,35 @@ function ArchivePost({
       setSaved(prevSaved);
     } finally {
       setSavePending(false);
+    }
+  }
+
+  async function toggleRepost() {
+    if (!signedIn || !postId || repostPending || isOwner) return;
+    const prevReposted = reposted;
+    const prevCount = repostCount;
+    const next = !prevReposted;
+    setReposted(next);
+    setRepostCount((c) => Math.max(0, c + (next ? 1 : -1)));
+    setRepostPending(true);
+    try {
+      const res = await fetch(`/api/posts/${encodeURIComponent(postId)}/repost`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        setReposted(prevReposted);
+        setRepostCount(prevCount);
+        return;
+      }
+      const data = await res.json();
+      setReposted(Boolean(data.reposted));
+      if (typeof data.repostCount === "number") setRepostCount(data.repostCount);
+    } catch {
+      setReposted(prevReposted);
+      setRepostCount(prevCount);
+    } finally {
+      setRepostPending(false);
     }
   }
 
@@ -582,6 +634,42 @@ function ArchivePost({
             </span>
           ) : null}
         </div>
+
+        {!isOwner ? (
+          <div className="flex h-6 items-center gap-1.5">
+            <button
+              type="button"
+              disabled={!isLoaded || !signedIn || repostPending}
+              onClick={() => void toggleRepost()}
+              title={
+                !signedIn
+                  ? "Sign in to repost"
+                  : reposted
+                    ? "Remove repost"
+                    : "Repost"
+              }
+              aria-label={
+                !signedIn
+                  ? "Sign in to repost"
+                  : reposted
+                    ? "Remove repost"
+                    : "Repost"
+              }
+              className={`grid size-6 shrink-0 place-items-center transition-colors disabled:opacity-40 ${
+                reposted
+                  ? "text-emerald-600"
+                  : "text-stone-500 hover:text-stone-800"
+              }`}
+            >
+              <RepostActionIcon active={reposted} />
+            </button>
+            {!engagementLoading && repostCount > 0 ? (
+              <span className="select-none text-sm font-medium leading-none text-stone-500 tabular-nums -translate-y-px">
+                {repostCount}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
 
         <span className="min-w-2 flex-1" aria-hidden />
 

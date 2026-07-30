@@ -90,6 +90,8 @@ function labelFor(n: NotifRowData): string {
   switch (n.type) {
     case "like":
       return "liked your post.";
+    case "repost":
+      return "reposted your post.";
     case "comment": {
       if (!n.snippet) return "commented on your post.";
       const s = n.snippet.length > 80 ? `${n.snippet.slice(0, 77)}…` : n.snippet;
@@ -278,7 +280,7 @@ function NotificationRow({
   onFriendRespond: (n: NotifRowData, accept: boolean) => void;
 }) {
   const { openPost } = usePostViewerOptional();
-  const hasPostThumb = n.postId && (n.type === "like" || n.type === "comment");
+  const hasPostThumb = n.postId && (n.type === "like" || n.type === "comment" || n.type === "repost");
 
   return (
     <li>

@@ -11,6 +11,7 @@ const notificationsSchema = new mongoose.Schema(
         "follow",
         "friend_request",
         "friend_accepted",
+        "repost",
       ],
       required: true,
     },

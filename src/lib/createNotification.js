@@ -3,7 +3,7 @@ import Notifications from "./models/notifications";
 /**
  * @param {{
  *   recipientClerkId: string,
- *   type: 'like'|'comment'|'follow'|'friend_request'|'friend_accepted',
+ *   type: 'like'|'comment'|'follow'|'friend_request'|'friend_accepted'|'repost',
  *   actorClerkId: string,
  *   actorFullName: string,
  *   actorUsername?: string,

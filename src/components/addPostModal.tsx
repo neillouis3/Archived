@@ -18,6 +18,7 @@ import {
 import {
   POST_ASPECT_OPTIONS,
   POST_ASPECT_SQUARE,
+  clampPostAspectRatio,
   type PostAspectOptionId,
 } from "@/lib/postAspectRatio";
 import {
@@ -28,7 +29,9 @@ import {
   AspectRatioIcon,
   Cancel01Icon,
   Copy01Icon,
+  FitToScreenIcon,
   Location01Icon,
+  MaximizeScreenIcon,
   SmileIcon,
   UserAdd01Icon,
   ZoomInAreaIcon,
@@ -36,8 +39,17 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 
 type Step = "select" | "crop" | "share";
+type CropMode = "fill" | "fit";
 
 const CAPTION_MAX = 2200;
+
+function aspectIdForPixels(width: number, height: number): PostAspectOptionId {
+  const ratio = clampPostAspectRatio(width, height);
+  return (
+    POST_ASPECT_OPTIONS.find((o) => Math.abs(o.ratio - ratio) < 0.001)?.id ??
+    "square"
+  );
+}
 
 function ShareRow({
   label,
@@ -239,8 +251,20 @@ export default function AddPostModal({
   const [thumbsOpen, setThumbsOpen] = useState(false);
   const [zoomOpen, setZoomOpen] = useState(false);
   const [cropZoom, setCropZoom] = useState(1);
+  const [cropMode, setCropMode] = useState<CropMode>("fill");
+  const [cropPan, setCropPan] = useState({ x: 0, y: 0 });
+  const [imgNatural, setImgNatural] = useState({ w: 0, h: 0 });
+  const [isDraggingCrop, setIsDraggingCrop] = useState(false);
   const addPhotosInputRef = useRef<HTMLInputElement>(null);
   const previewUrlsRef = useRef<string[]>([]);
+  const didAutoAspectRef = useRef(false);
+  const dragRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    originX: number;
+    originY: number;
+  } | null>(null);
 
   const aspectOption =
     POST_ASPECT_OPTIONS.find((o) => o.id === aspectId) ?? POST_ASPECT_OPTIONS[1];
@@ -295,32 +319,102 @@ export default function AddPostModal({
   const letterboxH = Math.max(0, (cropFrame.height - aspectBox.height) / 2);
   const pillarboxW = Math.max(0, (cropFrame.width - aspectBox.width) / 2);
 
+  const activePreview =
+    previewUrls[Math.min(previewIndex, Math.max(previewUrls.length - 1, 0))] ??
+    null;
+
+  const cropBaseScale = (() => {
+    if (!imgNatural.w || !imgNatural.h || !aspectBox.width || !aspectBox.height) {
+      return 1;
+    }
+    const sx = aspectBox.width / imgNatural.w;
+    const sy = aspectBox.height / imgNatural.h;
+    return cropMode === "fill" ? Math.max(sx, sy) : Math.min(sx, sy);
+  })();
+  const cropScale = cropBaseScale * cropZoom;
+  const cropDisplayW = imgNatural.w * cropScale;
+  const cropDisplayH = imgNatural.h * cropScale;
+
+  function clampCropPan(x: number, y: number) {
+    const maxX = Math.max(0, (cropDisplayW - aspectBox.width) / 2);
+    const maxY = Math.max(0, (cropDisplayH - aspectBox.height) / 2);
+    return {
+      x: Math.min(maxX, Math.max(-maxX, x)),
+      y: Math.min(maxY, Math.max(-maxY, y)),
+    };
+  }
+
+  const canPanCrop =
+    cropDisplayW > aspectBox.width + 0.5 ||
+    cropDisplayH > aspectBox.height + 0.5;
+
+  function cropLayoutForStage(stage: { width: number; height: number }) {
+    const box =
+      aspectRatio >= 1
+        ? { width: stage.width, height: stage.width / aspectRatio }
+        : { width: stage.height * aspectRatio, height: stage.height };
+    const lb = Math.max(0, (stage.height - box.height) / 2);
+    const pb = Math.max(0, (stage.width - box.width) / 2);
+    let base = 1;
+    if (imgNatural.w && imgNatural.h && box.width && box.height) {
+      const sx = box.width / imgNatural.w;
+      const sy = box.height / imgNatural.h;
+      base = cropMode === "fill" ? Math.max(sx, sy) : Math.min(sx, sy);
+    }
+    const scale = base * cropZoom;
+    const displayW = imgNatural.w * scale;
+    const displayH = imgNatural.h * scale;
+    const maxX = Math.max(0, (displayW - box.width) / 2);
+    const maxY = Math.max(0, (displayH - box.height) / 2);
+    const panScale =
+      aspectBox.width > 0 ? box.width / aspectBox.width : 1;
+    const stagePan = {
+      x: Math.min(maxX, Math.max(-maxX, cropPan.x * panScale)),
+      y: Math.min(maxY, Math.max(-maxY, cropPan.y * panScale)),
+    };
+    return {
+      box,
+      lb,
+      pb,
+      displayW,
+      displayH,
+      pan: stagePan,
+      canPan:
+        displayW > box.width + 0.5 || displayH > box.height + 0.5,
+    };
+  }
+
   /** Gray bars outside the active crop frame (IG-style). */
-  function AspectMask() {
-    if (letterboxH <= 0.5 && pillarboxW <= 0.5) return null;
+  function AspectMask({
+    stage,
+  }: {
+    stage: { width: number; height: number };
+  }) {
+    const { lb, pb } = cropLayoutForStage(stage);
+    if (lb <= 0.5 && pb <= 0.5) return null;
     return (
       <div aria-hidden className="pointer-events-none absolute inset-0 z-[5]">
-        {letterboxH > 0.5 ? (
+        {lb > 0.5 ? (
           <>
             <div
               className="absolute inset-x-0 top-0 bg-[#efefef]"
-              style={{ height: letterboxH }}
+              style={{ height: lb }}
             />
             <div
               className="absolute inset-x-0 bottom-0 bg-[#efefef]"
-              style={{ height: letterboxH }}
+              style={{ height: lb }}
             />
           </>
         ) : null}
-        {pillarboxW > 0.5 ? (
+        {pb > 0.5 ? (
           <>
             <div
               className="absolute inset-y-0 left-0 bg-[#efefef]"
-              style={{ width: pillarboxW }}
+              style={{ width: pb }}
             />
             <div
               className="absolute inset-y-0 right-0 bg-[#efefef]"
-              style={{ width: pillarboxW }}
+              style={{ width: pb }}
             />
           </>
         ) : null}
@@ -328,9 +422,119 @@ export default function AddPostModal({
     );
   }
 
-  const activePreview =
-    previewUrls[Math.min(previewIndex, Math.max(previewUrls.length - 1, 0))] ??
-    null;
+  function CropImage({
+    interactive,
+    stage,
+  }: {
+    interactive: boolean;
+    stage: { width: number; height: number };
+  }) {
+    if (!activePreview) {
+      return (
+        <div className="flex h-full items-center justify-center bg-stone-200 text-sm text-stone-400">
+          No photo
+        </div>
+      );
+    }
+
+    const layout = cropLayoutForStage(stage);
+    const { box, lb, pb, displayW, displayH, pan } = layout;
+
+    return (
+      <div
+        className="absolute overflow-hidden bg-black"
+        style={{
+          left: pb,
+          top: lb,
+          width: box.width,
+          height: box.height,
+          cursor: interactive && layout.canPan
+            ? isDraggingCrop
+              ? "grabbing"
+              : "grab"
+            : "default",
+          touchAction: interactive ? "none" : undefined,
+        }}
+        onPointerDown={
+          interactive
+            ? (e) => {
+                if (e.button !== 0) return;
+                e.currentTarget.setPointerCapture(e.pointerId);
+                dragRef.current = {
+                  pointerId: e.pointerId,
+                  startX: e.clientX,
+                  startY: e.clientY,
+                  originX: cropPan.x,
+                  originY: cropPan.y,
+                };
+                setIsDraggingCrop(true);
+              }
+            : undefined
+        }
+        onPointerMove={
+          interactive
+            ? (e) => {
+                const drag = dragRef.current;
+                if (!drag || drag.pointerId !== e.pointerId) return;
+                const panScale =
+                  box.width > 0 && aspectBox.width > 0
+                    ? aspectBox.width / box.width
+                    : 1;
+                setCropPan(
+                  clampCropPan(
+                    drag.originX + (e.clientX - drag.startX) * panScale,
+                    drag.originY + (e.clientY - drag.startY) * panScale
+                  )
+                );
+              }
+            : undefined
+        }
+        onPointerUp={
+          interactive
+            ? (e) => {
+                if (dragRef.current?.pointerId === e.pointerId) {
+                  dragRef.current = null;
+                  setIsDraggingCrop(false);
+                }
+              }
+            : undefined
+        }
+        onPointerCancel={
+          interactive
+            ? () => {
+                dragRef.current = null;
+                setIsDraggingCrop(false);
+              }
+            : undefined
+        }
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={activePreview}
+          alt=""
+          draggable={false}
+          className="absolute max-w-none select-none"
+          style={{
+            width: displayW || "100%",
+            height: displayH || "100%",
+            left: (box.width - (displayW || box.width)) / 2 + pan.x,
+            top: (box.height - (displayH || box.height)) / 2 + pan.y,
+          }}
+          onLoad={(e) => {
+            const el = e.currentTarget;
+            const w = el.naturalWidth;
+            const h = el.naturalHeight;
+            if (!w || !h) return;
+            setImgNatural({ w, h });
+            if (!didAutoAspectRef.current) {
+              didAutoAspectRef.current = true;
+              setAspectId(aspectIdForPixels(w, h));
+            }
+          }}
+        />
+      </div>
+    );
+  }
 
   function revokeAllPreviews() {
     previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
@@ -386,10 +590,27 @@ export default function AddPostModal({
       setThumbsOpen(false);
       setZoomOpen(false);
       setCropZoom(1);
+      setCropMode("fill");
+      setCropPan({ x: 0, y: 0 });
+      setImgNatural({ w: 0, h: 0 });
+      setIsDraggingCrop(false);
+      didAutoAspectRef.current = false;
+      dragRef.current = null;
       setRejected([]);
       setLoading(false);
     }
   }, [state.isOpen]);
+
+  useEffect(() => {
+    setCropPan({ x: 0, y: 0 });
+    setCropZoom(1);
+    setImgNatural({ w: 0, h: 0 });
+  }, [previewIndex]);
+
+  useEffect(() => {
+    setCropPan((prev) => clampCropPan(prev.x, prev.y));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- clamp when geometry/zoom/mode changes
+  }, [cropZoom, cropMode, aspectId, aspectBox.width, aspectBox.height, imgNatural.w, imgNatural.h]);
 
   useEffect(() => {
     if (previewIndex >= files.length) {
@@ -412,6 +633,10 @@ export default function AddPostModal({
       setThumbsOpen(false);
       setZoomOpen(false);
       setCropZoom(1);
+      setCropMode("fill");
+      setCropPan({ x: 0, y: 0 });
+      setImgNatural({ w: 0, h: 0 });
+      didAutoAspectRef.current = false;
       setStep("select");
     } else if (step === "share") {
       setStep("crop");
@@ -652,25 +877,13 @@ export default function AddPostModal({
 
                     {step === "crop" ? (
                       <div
-                        className="relative aspect-square w-full shrink-0 overflow-hidden bg-black"
+                        className="relative aspect-square w-full shrink-0 overflow-hidden bg-[#efefef]"
                         style={{ width: cropFrame.width }}
                       >
-                        {activePreview ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={activePreview}
-                            alt=""
-                            className="absolute inset-0 h-full w-full object-cover transition-transform duration-75"
-                            style={{ transform: `scale(${cropZoom})` }}
-                          />
-                        ) : (
-                          <div className="flex h-full items-center justify-center bg-stone-200 text-sm text-stone-400">
-                            No photo
-                          </div>
-                        )}
+                        <CropImage interactive stage={cropFrame} />
 
                         {/* IG-style mask: gray bars outside the selected aspect */}
-                        <AspectMask />
+                        <AspectMask stage={cropFrame} />
 
                           {aspectMenuOpen ? (
                             <div className="absolute bottom-16 left-3 z-20 min-w-[148px] overflow-hidden rounded-xl bg-black/70 py-1 text-white backdrop-blur-sm">
@@ -682,6 +895,7 @@ export default function AddPostModal({
                                     type="button"
                                     onClick={() => {
                                       setAspectId(opt.id);
+                                      setCropPan({ x: 0, y: 0 });
                                       setAspectMenuOpen(false);
                                     }}
                                     className={`flex w-full items-center justify-between gap-6 px-4 py-3 text-left text-sm transition-colors hover:bg-white/10 ${
@@ -832,6 +1046,40 @@ export default function AddPostModal({
                                   />
                                 </button>
                               )}
+
+                              <button
+                                type="button"
+                                aria-label={
+                                  cropMode === "fill"
+                                    ? "Fit image in frame"
+                                    : "Fill frame with image"
+                                }
+                                title={cropMode === "fill" ? "Fit" : "Fill"}
+                                onClick={() => {
+                                  setCropMode((m) =>
+                                    m === "fill" ? "fit" : "fill"
+                                  );
+                                  setCropPan({ x: 0, y: 0 });
+                                  setAspectMenuOpen(false);
+                                  setThumbsOpen(false);
+                                  setZoomOpen(false);
+                                }}
+                                className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+                                  cropMode === "fit"
+                                    ? "bg-white text-stone-900"
+                                    : "bg-black/60 text-white hover:bg-black/75"
+                                }`}
+                              >
+                                <HugeiconsIcon
+                                  icon={
+                                    cropMode === "fill"
+                                      ? FitToScreenIcon
+                                      : MaximizeScreenIcon
+                                  }
+                                  size={18}
+                                  strokeWidth={1.75}
+                                />
+                              </button>
                             </div>
 
                             <button
@@ -862,23 +1110,11 @@ export default function AddPostModal({
                     {step === "share" ? (
                       <div className="flex flex-row overflow-hidden">
                         <div
-                          className="relative aspect-square shrink-0 overflow-hidden bg-black"
+                          className="relative aspect-square shrink-0 overflow-hidden bg-[#efefef]"
                           style={{ width: shareFrame.width }}
                         >
-                          {activePreview ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={activePreview}
-                              alt=""
-                              className="absolute inset-0 h-full w-full object-cover"
-                              style={{ transform: `scale(${cropZoom})` }}
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-stone-200 text-sm text-stone-400">
-                              No photo
-                            </div>
-                          )}
-                          <AspectMask />
+                          <CropImage interactive={false} stage={shareFrame} />
+                          <AspectMask stage={shareFrame} />
                         </div>
 
                         <div

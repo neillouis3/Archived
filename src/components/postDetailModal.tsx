@@ -16,12 +16,13 @@ import {
   Flag01Icon,
   LinkSquare02Icon,
   MoreHorizontalIcon,
+  RepostIcon,
   UserIcon,
   ViewIcon,
   ViewOffSlashIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
-import { MessageCircleIcon, BookmarkIcon as LucideBookmarkIcon } from "lucide-react";
+import { MessageCircleIcon, BookmarkIcon as LucideBookmarkIcon, Repeat2 } from "lucide-react";
 import type { EditPostVisibility } from "@/components/editPostModal";
 import { PostMediaCarousel } from "@/components/postMediaCarousel";
 import {
@@ -97,6 +98,14 @@ const BookmarkIcon = ({ filled }: { filled?: boolean }) => (
   />
 );
 
+const RepostActionIcon = ({ active }: { active?: boolean }) => (
+  <Repeat2
+    absoluteStrokeWidth
+    className={`block size-6 shrink-0 ${active ? "text-emerald-600" : ""}`}
+    strokeWidth={1.75}
+  />
+);
+
 function ActionRow({
   label,
   icon,
@@ -136,12 +145,16 @@ function MoreMenu({
   authorClerkId,
   onEdit,
   onDeleted,
+  onRepost,
+  reposted,
 }: {
   postId: string;
   isOwner: boolean;
   authorClerkId?: string;
   onEdit?: () => void;
   onDeleted?: () => void;
+  onRepost?: () => void;
+  reposted?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -276,6 +289,14 @@ function MoreMenu({
               ) : (
                 <>
                   <ActionRow
+                    label={reposted ? "Remove repost" : "Repost"}
+                    icon={RepostIcon}
+                    onClick={() => {
+                      setOpen(false);
+                      onRepost?.();
+                    }}
+                  />
+                  <ActionRow
                     label="Report"
                     icon={Flag01Icon}
                     danger
@@ -352,6 +373,8 @@ export default function PostDetailModal({
   const [commentCount, setCommentCount] = useState(0);
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [reposted, setReposted] = useState(false);
+  const [repostCount, setRepostCount] = useState(0);
   const [recentLikers, setRecentLikers] = useState<
     { clerkId: string; username: string; imageUrl: string }[]
   >([]);
@@ -360,6 +383,7 @@ export default function PostDetailModal({
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [likePending, setLikePending] = useState(false);
   const [savePending, setSavePending] = useState(false);
+  const [repostPending, setRepostPending] = useState(false);
   const [frameRatio, setFrameRatio] = useState(POST_ASPECT_SQUARE);
   const [viewport, setViewport] = useState({ w: 1200, h: 800 });
   const commentInputRef = useRef<HTMLInputElement>(null);
@@ -431,8 +455,10 @@ export default function PostDetailModal({
         if (data.engagement) {
           setLikeCount(data.engagement.likeCount ?? 0);
           setCommentCount(data.engagement.commentCount ?? 0);
+          setRepostCount(data.engagement.repostCount ?? 0);
           setLiked(Boolean(data.engagement.likedByMe));
           setSaved(Boolean(data.engagement.savedByMe));
+          setReposted(Boolean(data.engagement.repostedByMe));
         }
         setError(null);
       } catch {
@@ -474,8 +500,10 @@ export default function PostDetailModal({
           if (ac.signal.aborted) return;
           setLikeCount(data.likeCount ?? 0);
           setCommentCount(data.commentCount ?? 0);
+          setRepostCount(data.repostCount ?? 0);
           setLiked(Boolean(data.likedByMe));
           setSaved(Boolean(data.savedByMe));
+          setReposted(Boolean(data.repostedByMe));
           setRecentLikers(
             Array.isArray(data.recentLikers) ? data.recentLikers.slice(0, 3) : []
           );
@@ -586,6 +614,35 @@ export default function PostDetailModal({
       setSaved(prevSaved);
     } finally {
       setSavePending(false);
+    }
+  }
+
+  async function toggleRepost() {
+    if (!signedIn || !postId || repostPending || isOwner) return;
+    const prevReposted = reposted;
+    const prevCount = repostCount;
+    const next = !prevReposted;
+    setReposted(next);
+    setRepostCount((c) => Math.max(0, c + (next ? 1 : -1)));
+    setRepostPending(true);
+    try {
+      const res = await fetch(
+        `/api/posts/${encodeURIComponent(postId)}/repost`,
+        { method: "POST", credentials: "include" }
+      );
+      if (!res.ok) {
+        setReposted(prevReposted);
+        setRepostCount(prevCount);
+        return;
+      }
+      const data = await res.json();
+      setReposted(Boolean(data.reposted));
+      if (typeof data.repostCount === "number") setRepostCount(data.repostCount);
+    } catch {
+      setReposted(prevReposted);
+      setRepostCount(prevCount);
+    } finally {
+      setRepostPending(false);
     }
   }
 
@@ -770,6 +827,8 @@ export default function PostDetailModal({
                   authorClerkId={post.authorClerkId}
                   onEdit={() => editModalState.open()}
                   onDeleted={close}
+                  onRepost={() => void toggleRepost()}
+                  reposted={reposted}
                 />
               </header>
 
@@ -881,6 +940,21 @@ export default function PostDetailModal({
                   >
                     <ChatIcon />
                   </button>
+                  {!isOwner ? (
+                    <button
+                      type="button"
+                      disabled={!isLoaded || !signedIn || repostPending}
+                      onClick={() => void toggleRepost()}
+                      aria-label={reposted ? "Remove repost" : "Repost"}
+                      className={`grid size-6 place-items-center transition-colors disabled:opacity-40 ${
+                        reposted
+                          ? "text-emerald-600"
+                          : "text-stone-800 hover:text-stone-500"
+                      }`}
+                    >
+                      <RepostActionIcon active={reposted} />
+                    </button>
+                  ) : null}
                   <span className="flex-1" aria-hidden />
                   <button
                     type="button"

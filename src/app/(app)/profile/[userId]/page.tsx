@@ -41,6 +41,8 @@ export default function PublicProfilePage() {
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [postsLoading, setPostsLoading] = useState(true);
+  const [repostPosts, setRepostPosts] = useState<FeedPost[]>([]);
+  const [repostsLoading, setRepostsLoading] = useState(false);
   const [contentTab, setContentTab] = useState<ProfileContentTab>("posts");
   const [followStats, setFollowStats] = useState<{
     followerCount: number;
@@ -150,6 +152,40 @@ export default function PublicProfilePage() {
       cancelled = true;
     };
   }, [userId]);
+
+  useEffect(() => {
+    if (!userId || contentTab !== "reposts") return;
+    let cancelled = false;
+    setRepostsLoading(true);
+
+    (async () => {
+      try {
+        const qs = new URLSearchParams({
+          engagement: "reposted",
+          reposterClerkId: userId,
+          skipTotal: "1",
+        });
+        const res = await fetch(`/api/posts?${qs.toString()}`, {
+          credentials: "include",
+        });
+        if (cancelled) return;
+        if (res.ok) {
+          const data = (await res.json()) as PostsListResponse;
+          setRepostPosts(Array.isArray(data.results) ? data.results : []);
+        } else {
+          setRepostPosts([]);
+        }
+      } catch {
+        if (!cancelled) setRepostPosts([]);
+      } finally {
+        if (!cancelled) setRepostsLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, contentTab]);
 
   if (!userId) {
     return (
@@ -309,7 +345,7 @@ export default function PublicProfilePage() {
           />
 
           {profile.bio ? (
-            <p className="mt-3 max-w-[75%] text-sm leading-relaxed text-neutral-700">
+            <p className="mt-3 max-w-[75%] whitespace-pre-line text-sm leading-relaxed text-neutral-700">
               {profile.bio}
             </p>
           ) : null}
@@ -358,11 +394,52 @@ export default function PublicProfilePage() {
             ) : null
           ) : contentTab === "pictures" ? (
             <ImageGrid authorClerkId={userId} />
+          ) : contentTab === "reposts" ? (
+            repostsLoading ? (
+              <PostGridSkeleton />
+            ) : repostPosts.length > 0 ? (
+              <div className={postGridClassName}>
+                {repostPosts
+                  .map((post) => {
+                    const urls = feedPostMediaUrls(post.media);
+                    const src = urls[0];
+                    if (!src) return null;
+                    return { post, urls, src };
+                  })
+                  .filter(
+                    (row): row is { post: (typeof repostPosts)[number]; urls: string[]; src: string } =>
+                      row != null
+                  )
+                  .map(({ post, urls, src }, index) => (
+                    <PostGridCard
+                      key={String(post._id)}
+                      postId={String(post._id)}
+                      src={src}
+                      alt={
+                        (post.body && String(post.body).trim().slice(0, 60)) ||
+                        `Repost by ${post.username || "author"}`
+                      }
+                      hasMultiple={urls.length > 1}
+                      likeCount={post.engagement?.likeCount ?? 0}
+                      commentCount={post.engagement?.commentCount ?? 0}
+                      className={
+                        index === 0
+                          ? "rounded-tl-md"
+                          : index === 2
+                            ? "rounded-tr-md"
+                            : ""
+                      }
+                    />
+                  ))}
+              </div>
+            ) : (
+              <p className="py-16 text-center text-sm text-stone-300">
+                No reposts yet.
+              </p>
+            )
           ) : (
             <p className="py-16 text-center text-sm text-stone-300">
-              {contentTab === "reposts"
-                ? "No reposts yet."
-                : "No tagged posts yet."}
+              No tagged posts yet.
             </p>
           )}
         </div>
