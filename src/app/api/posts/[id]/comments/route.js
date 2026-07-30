@@ -80,7 +80,9 @@ export async function POST(req, context) {
       [u.firstName, u.lastName].filter(Boolean).join(" ") ||
       u.username ||
       "User";
-    const username = u.username ? `@${u.username}` : "";
+    const username = u.username
+      ? `@${String(u.username).replace(/^@+/, "")}`
+      : "";
 
     const postOid = new mongoose.Types.ObjectId(id);
     const doc = await PostComments.create({

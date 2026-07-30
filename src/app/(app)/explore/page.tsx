@@ -180,7 +180,9 @@ function ExplorePageInner() {
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium text-stone-800 truncate">{u.fullName}</p>
                         <p className="text-xs text-stone-400 truncate">
-                          {u.username ? `@${u.username}` : "Member"}
+                          {u.username
+                            ? `@${u.username.replace(/^@+/, "")}`
+                            : "Member"}
                         </p>
                       </div>
                       <span className="text-xs text-stone-400">Profile</span>

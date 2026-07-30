@@ -69,7 +69,7 @@ export async function GET() {
       suggestions.push({
         authorClerkId: aid,
         fullName: post.fullName || "Member",
-        username: post.username || "",
+        username: String(post.username || "").replace(/^@+/, ""),
         avatarUrl: post.avatarUrl || "",
         isFollowing: false,
       });

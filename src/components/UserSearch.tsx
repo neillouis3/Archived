@@ -132,7 +132,9 @@ export default function UserSearch({
                         {u.fullName}
                       </p>
                       <p className="truncate text-xs text-stone-400">
-                        {u.username ? `@${u.username}` : u.id.slice(0, 12) + "…"}
+                        {u.username
+                          ? `@${u.username.replace(/^@+/, "")}`
+                          : u.id.slice(0, 12) + "…"}
                       </p>
                     </div>
                   </Link>

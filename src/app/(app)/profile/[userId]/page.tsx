@@ -198,7 +198,9 @@ export default function PublicProfilePage() {
     );
   }
 
-  const handle = profile.username ? `@${profile.username}` : profile.id.slice(0, 10) + "…";
+  const handle = profile.username
+    ? `@${profile.username.replace(/^@+/, "")}`
+    : profile.id.slice(0, 10) + "…";
   const AVATAR_SIZE = 96;
 
   return (

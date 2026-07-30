@@ -298,7 +298,9 @@ export default function ArchiveRightSidebar() {
                               {u.fullName}
                             </p>
                             <p className="truncate text-xs leading-tight text-neutral-500">
-                              {u.username ? `@${u.username}` : "Member"}
+                              {u.username
+                                ? `@${u.username.replace(/^@+/, "")}`
+                                : "Member"}
                             </p>
                           </div>
                         </Link>
@@ -422,7 +424,9 @@ export default function ArchiveRightSidebar() {
                     {s.fullName}
                   </Link>
                   <span className="truncate text-xs leading-tight text-neutral-500">
-                    {s.username ? `@${s.username}` : "Member"}
+                    {s.username
+                      ? `@${s.username.replace(/^@+/, "")}`
+                      : "Member"}
                   </span>
                 </div>
                 {user && user.id !== s.authorClerkId ? (
