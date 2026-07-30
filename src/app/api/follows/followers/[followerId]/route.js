@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import Follows from "@lib/models/follows";
-import connection from "../../../../lib/mongo";
+import connection from "../../../../../lib/mongo";
 
 /** Remove someone who follows you (own profile only). */
 export async function DELETE(_req, context) {
