@@ -88,7 +88,8 @@ export default function ArchiveRightSidebar() {
 
     if (!opts?.force) {
       const cached = getSidebarCache(userKey);
-      if (cached) {
+      const staleAvatars = cached?.suggestions.some((s) => !s.avatarUrl);
+      if (cached && !staleAvatars) {
         setTiles(cached.tiles);
         setTags(cached.tags);
         setSuggestions(cached.suggestions);
@@ -400,9 +401,17 @@ export default function ArchiveRightSidebar() {
                   className="shrink-0"
                 >
                   <img
-                    src={s.avatarUrl || "https://i.pravatar.cc/150?u=placeholder"}
+                    src={
+                      s.avatarUrl ||
+                      `https://i.pravatar.cc/150?u=${encodeURIComponent(s.authorClerkId)}`
+                    }
                     alt=""
-                    className="size-8 rounded-full object-cover"
+                    className="size-8 rounded-full object-cover bg-neutral-100"
+                    onError={(e) => {
+                      const el = e.currentTarget;
+                      const fallback = `https://i.pravatar.cc/150?u=${encodeURIComponent(s.authorClerkId)}`;
+                      if (el.src !== fallback) el.src = fallback;
+                    }}
                   />
                 </Link>
                 <div className="flex min-w-0 flex-1 flex-col">

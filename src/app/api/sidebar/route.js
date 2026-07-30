@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import connection from "../../../lib/mongo";
 import Posts from "@lib/models/posts";
 import Follows from "@lib/models/follows";
+import { getActorImageUrls } from "@lib/clerkActor";
 
 export async function GET() {
   try {
@@ -73,6 +74,17 @@ export async function GET() {
         isFollowing: false,
       });
       if (suggestions.length >= 5) break;
+    }
+
+    const liveAvatars = await getActorImageUrls(
+      suggestions.map((s) => s.authorClerkId)
+    );
+    for (const s of suggestions) {
+      const live = liveAvatars.get(s.authorClerkId);
+      if (live) s.avatarUrl = live;
+      if (!s.avatarUrl) {
+        s.avatarUrl = `https://i.pravatar.cc/150?u=${encodeURIComponent(s.authorClerkId)}`;
+      }
     }
 
     return NextResponse.json({ tiles, tags, suggestions }, { status: 200 });
