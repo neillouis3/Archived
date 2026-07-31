@@ -42,9 +42,21 @@ export async function GET(req: Request) {
     );
 
     if (slug) {
-      let doc = await PhotoCollections.findOne({ ...filter, slug }).lean();
+      type LeanCollection = {
+        _id: unknown;
+        name?: string;
+        slug?: string;
+        [key: string]: unknown;
+      };
+
+      let doc =
+        (await PhotoCollections.findOne({
+          ...filter,
+          slug,
+        }).lean()) as LeanCollection | null;
+
       if (!doc) {
-        const rows = await PhotoCollections.find(filter).lean();
+        const rows = (await PhotoCollections.find(filter).lean()) as LeanCollection[];
         doc =
           rows.find((row) => {
             const rowSlug =
@@ -63,7 +75,7 @@ export async function GET(req: Request) {
       if (!doc.slug) {
         const nextSlug = await allocateCollectionSlug(
           ownerClerkId,
-          doc.name,
+          String(doc.name || ""),
           String(doc._id)
         );
         await PhotoCollections.updateOne(
