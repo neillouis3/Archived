@@ -22,6 +22,7 @@ import CollectionArrangeModal from "@/components/collectionArrangeModal";
 import CollectionCard from "@/components/collectionCard";
 import CollectionFormModal from "@/components/collectionFormModal";
 import CollectionPhotoPickerModal from "@/components/collectionPhotoPickerModal";
+import GalleryRearrangeModal from "@/components/galleryRearrangeModal";
 import ImageGrid from "@/components/imageGrid";
 import {
   FramerThumbnailCarousel,
@@ -123,6 +124,7 @@ export default function CollectionsGallery({
   const [carouselItems, setCarouselItems] = useState<CarouselItem[]>([]);
   const [carouselLoading, setCarouselLoading] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [galleryMenuOpen, setGalleryMenuOpen] = useState(false);
   const [visibilityOpen, setVisibilityOpen] = useState(false);
   const [visibilitySaving, setVisibilitySaving] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -131,11 +133,14 @@ export default function CollectionsGallery({
   const editState = useOverlayState();
   const pickerState = useOverlayState();
   const arrangeState = useOverlayState();
+  const galleryRearrangeState = useOverlayState();
+  const [mediaRefresh, setMediaRefresh] = useState(0);
   const visibilityMenuRef = useRef<HTMLDivElement>(null);
   const optionsMenuRef = useRef<HTMLDivElement>(null);
+  const galleryMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!visibilityOpen && !menuOpen) return;
+    if (!visibilityOpen && !menuOpen && !galleryMenuOpen) return;
     function onPointerDown(e: MouseEvent) {
       const target = e.target as Node;
       if (
@@ -152,10 +157,17 @@ export default function CollectionsGallery({
       ) {
         setMenuOpen(false);
       }
+      if (
+        galleryMenuOpen &&
+        galleryMenuRef.current &&
+        !galleryMenuRef.current.contains(target)
+      ) {
+        setGalleryMenuOpen(false);
+      }
     }
     document.addEventListener("mousedown", onPointerDown);
     return () => document.removeEventListener("mousedown", onPointerDown);
-  }, [visibilityOpen, menuOpen]);
+  }, [visibilityOpen, menuOpen, galleryMenuOpen]);
 
   const loadCollections = useCallback(async () => {
     setCollectionsLoading(true);
@@ -345,6 +357,7 @@ export default function CollectionsGallery({
     activeCollectionId,
     activeDetail,
     refreshNonce,
+    mediaRefresh,
   ]);
 
   function toggleLayout() {
@@ -571,27 +584,65 @@ export default function CollectionsGallery({
             ) : (
               <span />
             )}
-            <button
-              type="button"
-              onClick={toggleLayout}
-              aria-label={
-                layout === "grid"
-                  ? "Switch to carousel layout"
-                  : "Switch to grid layout"
-              }
-              title={
-                layout === "grid" ? "Switch to carousel" : "Switch to grid"
-              }
-              className="inline-flex size-9 items-center justify-center rounded-lg border border-stone-200 bg-white text-stone-600 transition-colors hover:bg-stone-50 hover:text-stone-900"
-            >
-              <HugeiconsIcon
-                icon={
-                  layout === "grid" ? CarouselHorizontalIcon : LayoutGridIcon
+            <div className="flex shrink-0 items-center gap-2">
+              {canManage ? (
+                <div className="relative" ref={galleryMenuRef}>
+                  <button
+                    type="button"
+                    onClick={() => setGalleryMenuOpen((v) => !v)}
+                    className="inline-flex size-9 items-center justify-center rounded-lg border border-stone-200 bg-white text-stone-600 transition-colors hover:bg-stone-50 hover:text-stone-900"
+                    aria-label="Gallery options"
+                    aria-expanded={galleryMenuOpen}
+                  >
+                    <HugeiconsIcon
+                      icon={MoreHorizontalIcon}
+                      size={18}
+                      strokeWidth={1.75}
+                    />
+                  </button>
+                  {galleryMenuOpen ? (
+                    <div className="absolute right-0 z-20 mt-1 w-40 overflow-hidden rounded-xl border border-stone-200 bg-white py-1 shadow-lg">
+                      <button
+                        type="button"
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-stone-700 hover:bg-stone-50"
+                        onClick={() => {
+                          setGalleryMenuOpen(false);
+                          galleryRearrangeState.open();
+                        }}
+                      >
+                        <HugeiconsIcon
+                          icon={DragDropHorizontalIcon}
+                          size={16}
+                          strokeWidth={1.75}
+                        />
+                        Rearrange
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+              <button
+                type="button"
+                onClick={toggleLayout}
+                aria-label={
+                  layout === "grid"
+                    ? "Switch to carousel layout"
+                    : "Switch to grid layout"
                 }
-                size={18}
-                strokeWidth={1.75}
-              />
-            </button>
+                title={
+                  layout === "grid" ? "Switch to carousel" : "Switch to grid"
+                }
+                className="inline-flex size-9 items-center justify-center rounded-lg border border-stone-200 bg-white text-stone-600 transition-colors hover:bg-stone-50 hover:text-stone-900"
+              >
+                <HugeiconsIcon
+                  icon={
+                    layout === "grid" ? CarouselHorizontalIcon : LayoutGridIcon
+                  }
+                  size={18}
+                  strokeWidth={1.75}
+                />
+              </button>
+            </div>
           </div>
 
           {collectionsLoading ? (
@@ -620,7 +671,7 @@ export default function CollectionsGallery({
           {layout === "grid" ? (
             <ImageGrid
               authorClerkId={ownerClerkId}
-              refreshNonce={refreshNonce}
+              refreshNonce={refreshNonce + mediaRefresh}
             />
           ) : carouselLoading ? (
             <GalleryCarouselLoader />
@@ -910,6 +961,11 @@ export default function CollectionsGallery({
               aspectRatio: item.aspectRatio,
             }))}
             onSave={saveRearrange}
+          />
+          <GalleryRearrangeModal
+            state={galleryRearrangeState}
+            authorClerkId={ownerClerkId}
+            onSaved={() => setMediaRefresh((n) => n + 1)}
           />
         </>
       ) : null}
