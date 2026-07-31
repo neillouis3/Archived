@@ -162,7 +162,7 @@ export default function EditPostModal({
                       {(
                         [
                           { value: "public" as const, label: "Public", hint: "Anyone" },
-                          { value: "friends" as const, label: "Friends", hint: "Accepted friends only" },
+                          { value: "friends" as const, label: "Friends", hint: "People you follow each other" },
                           { value: "private" as const, label: "Private", hint: "Only you" },
                         ] as const
                       ).map(({ value, label, hint }) => (

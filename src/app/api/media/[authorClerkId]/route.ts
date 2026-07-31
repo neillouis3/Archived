@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import Posts from "@lib/models/posts";
 import connection from "../../../../lib/mongo";
-import { buildAuthorPostsFilter, areFriends } from "@lib/socialQueries";
+import { buildAuthorPostsFilter, areMutualFollows } from "@lib/socialQueries";
 
 const VIS = ["public", "friends", "private"] as const;
 
@@ -24,7 +24,7 @@ export async function GET(
 
     const friend =
       viewerClerkId && viewerClerkId !== authorClerkId
-        ? await areFriends(viewerClerkId, authorClerkId)
+        ? await areMutualFollows(viewerClerkId, authorClerkId)
         : false;
 
     let filter: Record<string, unknown> = buildAuthorPostsFilter(

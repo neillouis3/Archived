@@ -10,7 +10,7 @@ import { enrichPostsAuthorAvatars } from "@lib/clerkActor";
 import {
   buildPostsListFilter,
   filterPostsVisibleToViewer,
-  getAcceptedFriendClerkIdsSet,
+  getMutualFollowClerkIdsSet,
 } from "@lib/socialQueries";
 import { parsePostAspectRatio } from "@lib/postAspectRatio";
 
@@ -128,7 +128,7 @@ export async function GET(req) {
       const [postsRaw, friendSet] = await Promise.all([
         Posts.find({ _id: { $in: uniqueIds } }).lean(),
         viewerClerkId
-          ? getAcceptedFriendClerkIdsSet(viewerClerkId)
+          ? getMutualFollowClerkIdsSet(viewerClerkId)
           : Promise.resolve(new Set()),
       ]);
       const visiblePosts = viewerClerkId

@@ -14,7 +14,9 @@ export const archiveNavItems: readonly ArchiveNavItem[] = [
 
 export function isNavActive(pathname: string, key: string): boolean {
   if (key === "home") return pathname === "/home" || pathname === "/";
-  if (key === "gallery") return pathname.startsWith("/gallery");
+  if (key === "gallery") {
+    return pathname.startsWith("/gallery") || pathname.startsWith("/c/");
+  }
   if (key === "search") return pathname.startsWith("/explore");
   if (key === "notifications") return pathname.startsWith("/notifications");
   if (key === "profile") {

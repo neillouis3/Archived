@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useUser } from "@clerk/nextjs";
 import { useOverlayState } from "@heroui/react";
@@ -19,6 +19,7 @@ import {
   PostGridSkeleton,
   postGridClassName,
 } from "@/components/postGridCard";
+import ProfileCollections from "@/components/profileCollections";
 import ProfileContentTabs, {
   type ProfileContentTab,
 } from "@/components/profileContentTabs";
@@ -72,7 +73,7 @@ export default function ProfilePage() {
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [postsLoading, setPostsLoading] = useState(true);
   const [repostPosts, setRepostPosts] = useState<FeedPost[]>([]);
-  const [repostsLoading, setRepostsLoading] = useState(false);
+  const [repostsLoading, setRepostsLoading] = useState(true);
   const [followStats, setFollowStats] = useState<{
     followerCount: number;
     followingCount: number;
@@ -147,16 +148,31 @@ export default function ProfilePage() {
   }, [refetchPosts]);
 
   useEffect(() => {
-    if (contentTab === "reposts") void refetchReposts();
-  }, [contentTab, refetchReposts]);
+    void refetchReposts();
+  }, [refetchReposts]);
 
   useEffect(() => {
     return subscribeArchiveFeedRefresh(() => {
       setGridRefresh((n) => n + 1);
       void refetchPosts();
-      if (contentTab === "reposts") void refetchReposts();
+      void refetchReposts();
     });
-  }, [refetchPosts, refetchReposts, contentTab]);
+  }, [refetchPosts, refetchReposts]);
+
+  const hasPostMedia = useMemo(
+    () => posts.some((p) => feedPostMediaUrls(p.media).length > 0),
+    [posts]
+  );
+
+  const availableTabs = useMemo(
+    () => ({
+      posts: true,
+      pictures: postsLoading || hasPostMedia,
+      reposts: repostsLoading || repostPosts.length > 0,
+      tagged: false,
+    }),
+    [postsLoading, hasPostMedia, repostsLoading, repostPosts.length]
+  );
 
   useEffect(() => {
     if (!isLoaded || !user?.id) return;
@@ -359,9 +375,13 @@ export default function ProfilePage() {
       </div>
 
       {/* Content tabs + grid */}
-      <ProfileContentTabs value={contentTab} onChange={setContentTab} />
+      <ProfileContentTabs
+        value={contentTab}
+        onChange={setContentTab}
+        available={availableTabs}
+      />
       <div className="mt-4">
-        {contentTab === "posts" ? (
+        {contentTab === "posts" && availableTabs.posts ? (
           postsLoading ? (
             <PostGridSkeleton />
           ) : posts.length > 0 ? (
@@ -411,7 +431,13 @@ export default function ProfilePage() {
             </div>
           )
         ) : contentTab === "pictures" ? (
-          <ImageGrid authorClerkId={user.id} refreshNonce={gridRefresh} />
+          <>
+            <ProfileCollections
+              ownerClerkId={user.id}
+              refreshNonce={gridRefresh}
+            />
+            <ImageGrid authorClerkId={user.id} refreshNonce={gridRefresh} />
+          </>
         ) : contentTab === "reposts" ? (
           repostsLoading ? (
             <PostGridSkeleton />
@@ -450,16 +476,8 @@ export default function ProfilePage() {
                   />
                 ))}
             </div>
-          ) : (
-            <p className="py-16 text-center text-sm text-stone-300">
-              No reposts yet.
-            </p>
-          )
-        ) : (
-          <p className="py-16 text-center text-sm text-stone-300">
-            No tagged posts yet.
-          </p>
-        )}
+          ) : null
+        ) : null}
       </div>
       </>
       )}

@@ -5,7 +5,7 @@ import connection from "../../../../lib/mongo";
 import { enrichPostsAuthorAvatars } from "@lib/clerkActor";
 import {
   buildFollowingFeedFilter,
-  getAcceptedFriendClerkIdsSet,
+  getMutualFollowClerkIdsSet,
   getFollowingClerkIds,
 } from "@lib/socialQueries";
 
@@ -24,7 +24,7 @@ export async function GET(req) {
 
     const [followingIds, friendSet] = await Promise.all([
       getFollowingClerkIds(viewerClerkId),
-      getAcceptedFriendClerkIdsSet(viewerClerkId),
+      getMutualFollowClerkIdsSet(viewerClerkId),
     ]);
     const filter = buildFollowingFeedFilter(viewerClerkId, followingIds, friendSet);
 

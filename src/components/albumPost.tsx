@@ -600,8 +600,8 @@ function ArchivePost({
         />
       </div>
 
-      <div className="mt-3 flex w-full items-center gap-2.5">
-        <div className="flex h-6 items-center gap-1">
+      <div className="mt-3 flex w-full items-center gap-3">
+        <div className="flex h-6 w-10 shrink-0 items-center gap-1">
           <button
             type="button"
             disabled={!isLoaded || !signedIn}
@@ -614,14 +614,12 @@ function ArchivePost({
           >
             <HeartIcon filled={liked} />
           </button>
-          {!engagementLoading && likeCount > 0 ? (
-            <span className="select-none text-sm font-medium leading-none text-stone-500 tabular-nums">
-              {likeCount}
-            </span>
-          ) : null}
+          <span className="min-w-[1rem] select-none text-sm font-medium leading-none text-stone-500 tabular-nums">
+            {!engagementLoading && likeCount > 0 ? likeCount : null}
+          </span>
         </div>
 
-        <div className="flex h-6 items-center gap-1">
+        <div className="flex h-6 w-10 shrink-0 items-center gap-1">
           <button
             type="button"
             disabled={!isLoaded || !signedIn}
@@ -634,15 +632,13 @@ function ArchivePost({
           >
             <ChatIcon />
           </button>
-          {!engagementLoading && commentCount > 0 ? (
-            <span className="select-none text-sm font-medium leading-none text-stone-500 tabular-nums">
-              {commentCount}
-            </span>
-          ) : null}
+          <span className="min-w-[1rem] select-none text-sm font-medium leading-none text-stone-500 tabular-nums">
+            {!engagementLoading && commentCount > 0 ? commentCount : null}
+          </span>
         </div>
 
         {!isOwner ? (
-          <div className="flex h-6 items-center gap-1">
+          <div className="flex h-6 w-10 shrink-0 items-center gap-1">
             <button
               type="button"
               disabled={!isLoaded || !signedIn || repostPending}
@@ -669,11 +665,9 @@ function ArchivePost({
             >
               <RepostActionIcon active={reposted} />
             </button>
-            {!engagementLoading && repostCount > 0 ? (
-              <span className="select-none text-sm font-medium leading-none text-stone-500 tabular-nums">
-                {repostCount}
-              </span>
-            ) : null}
+            <span className="min-w-[1rem] select-none text-sm font-medium leading-none text-stone-500 tabular-nums">
+              {!engagementLoading && repostCount > 0 ? repostCount : null}
+            </span>
           </div>
         ) : null}
 

@@ -4,10 +4,11 @@ import { useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import NextLink from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useOverlayState } from "@heroui/react";
 import ImageGrid from "@/components/imageGrid";
 import { PostGridCard, PostGridSkeleton, postGridClassName } from "@/components/postGridCard";
+import ProfileCollections from "@/components/profileCollections";
 import ProfileContentTabs, {
   type ProfileContentTab,
 } from "@/components/profileContentTabs";
@@ -42,7 +43,7 @@ export default function PublicProfilePage() {
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [postsLoading, setPostsLoading] = useState(true);
   const [repostPosts, setRepostPosts] = useState<FeedPost[]>([]);
-  const [repostsLoading, setRepostsLoading] = useState(false);
+  const [repostsLoading, setRepostsLoading] = useState(true);
   const [contentTab, setContentTab] = useState<ProfileContentTab>("pictures");
   const [followStats, setFollowStats] = useState<{
     followerCount: number;
@@ -154,7 +155,7 @@ export default function PublicProfilePage() {
   }, [userId]);
 
   useEffect(() => {
-    if (!userId || contentTab !== "reposts") return;
+    if (!userId) return;
     let cancelled = false;
     setRepostsLoading(true);
 
@@ -185,7 +186,28 @@ export default function PublicProfilePage() {
     return () => {
       cancelled = true;
     };
-  }, [userId, contentTab]);
+  }, [userId]);
+
+  const hasPostMedia = useMemo(
+    () => posts.some((p) => feedPostMediaUrls(p.media).length > 0),
+    [posts]
+  );
+
+  const availableTabs = useMemo(
+    () => ({
+      posts: postsLoading || posts.length > 0,
+      pictures: postsLoading || hasPostMedia,
+      reposts: repostsLoading || repostPosts.length > 0,
+      tagged: false,
+    }),
+    [
+      postsLoading,
+      posts.length,
+      hasPostMedia,
+      repostsLoading,
+      repostPosts.length,
+    ]
+  );
 
   if (!userId) {
     return (
@@ -351,9 +373,13 @@ export default function PublicProfilePage() {
           ) : null}
         </div>
 
-        <ProfileContentTabs value={contentTab} onChange={setContentTab} />
+        <ProfileContentTabs
+          value={contentTab}
+          onChange={setContentTab}
+          available={availableTabs}
+        />
         <div className="mt-4">
-          {contentTab === "posts" ? (
+          {contentTab === "posts" && availableTabs.posts ? (
             postsLoading ? (
               <PostGridSkeleton />
             ) : posts.length > 0 ? (
@@ -393,7 +419,13 @@ export default function PublicProfilePage() {
               </div>
             ) : null
           ) : contentTab === "pictures" ? (
-            <ImageGrid authorClerkId={userId} />
+            <>
+              <ProfileCollections
+                ownerClerkId={userId}
+                linkOwnerInQuery
+              />
+              <ImageGrid authorClerkId={userId} />
+            </>
           ) : contentTab === "reposts" ? (
             repostsLoading ? (
               <PostGridSkeleton />
@@ -432,16 +464,8 @@ export default function PublicProfilePage() {
                     />
                   ))}
               </div>
-            ) : (
-              <p className="py-16 text-center text-sm text-stone-300">
-                No reposts yet.
-              </p>
-            )
-          ) : (
-            <p className="py-16 text-center text-sm text-stone-300">
-              No tagged posts yet.
-            </p>
-          )}
+            ) : null
+          ) : null}
         </div>
       </div>
     </div>

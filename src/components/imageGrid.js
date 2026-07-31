@@ -9,12 +9,20 @@ import { clampPostAspectRatio } from "@/lib/postAspectRatio";
  * VSCO-style 2-column masonry with Framer shared-layout lightbox.
  * Clicking an image expands it in place — does not open the post viewer.
  *
- * @param {{ authorClerkId?: string, collection?: 'public' | 'friends' | 'private' | null, refreshNonce?: number }} props
+ * @param {{
+ *   authorClerkId?: string,
+ *   collection?: 'public' | 'friends' | 'private' | null,
+ *   refreshNonce?: number,
+ *   items?: Array<{ id: string, url: string, postId?: string | null, aspectRatio?: number | null }>,
+ *   emptyMessage?: string,
+ * }} props
  */
 export default function ImageGrid({
   authorClerkId,
   collection = null,
   refreshNonce = 0,
+  items: itemsProp = null,
+  emptyMessage = "No media yet.",
 }) {
   const [mediaItems, setMediaItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,6 +36,12 @@ export default function ImageGrid({
   }, []);
 
   useEffect(() => {
+    if (Array.isArray(itemsProp)) {
+      setMediaItems(itemsProp);
+      setLoading(false);
+      setIndex(null);
+      return;
+    }
     if (!authorClerkId) {
       setMediaItems([]);
       setLoading(false);
@@ -71,7 +85,7 @@ export default function ImageGrid({
     return () => {
       cancelled = true;
     };
-  }, [authorClerkId, collection, refreshNonce]);
+  }, [authorClerkId, collection, refreshNonce, itemsProp]);
 
   useEffect(() => {
     if (index == null) return;
@@ -127,15 +141,15 @@ export default function ImageGrid({
 
   if (loading) {
     return (
-      <div className="flex w-full gap-0.5">
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+      <div className="flex w-full gap-1">
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
           <div
             className="animate-pulse rounded-tl-md bg-stone-100"
             style={{ aspectRatio: "4/5" }}
           />
           <div className="animate-pulse bg-stone-100" style={{ aspectRatio: "1" }} />
         </div>
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
           <div
             className="animate-pulse rounded-tr-md bg-stone-100"
             style={{ aspectRatio: "1" }}
@@ -151,7 +165,7 @@ export default function ImageGrid({
 
   if (!mediaItems.length) {
     return (
-      <p className="py-16 text-center text-sm text-stone-400">No media yet.</p>
+      <p className="py-16 text-center text-sm text-stone-400">{emptyMessage}</p>
     );
   }
 
@@ -197,11 +211,11 @@ export default function ImageGrid({
 
   return (
     <LayoutGroup>
-      <div className="flex w-full items-start gap-0.5">
+      <div className="flex w-full items-start gap-1">
         {columns.map((col, colIndex) => (
           <div
             key={colIndex}
-            className="flex min-w-0 flex-1 flex-col gap-0.5"
+            className="flex min-w-0 flex-1 flex-col gap-1"
           >
             {col.map(({ card, flatIndex }, rowIndex) => {
               const cornerClass =

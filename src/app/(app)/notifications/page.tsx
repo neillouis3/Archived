@@ -3,13 +3,12 @@
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { useCallback, useEffect, useState, type ComponentType } from "react";
-import { Button, Chip, Skeleton } from "@heroui/react";
+import { Chip, Skeleton } from "@heroui/react";
 import {
   Heart,
   LayoutGrid,
   MessageCircle,
   UserPlus,
-  Users,
 } from "lucide-react";
 import FollowButton from "@/components/FollowButton";
 import { usePostViewerOptional } from "@/components/postViewerContext";
@@ -28,7 +27,7 @@ type NotifRowData = {
   createdAt: string;
 };
 
-type FilterKey = "all" | "follow" | "comment" | "like" | "friend";
+type FilterKey = "all" | "follow" | "comment" | "like";
 
 const FILTERS: {
   key: FilterKey;
@@ -39,7 +38,6 @@ const FILTERS: {
   { key: "follow", label: "Follows", icon: UserPlus },
   { key: "like", label: "Likes", icon: Heart },
   { key: "comment", label: "Comments", icon: MessageCircle },
-  { key: "friend", label: "Friend requests", icon: Users },
 ];
 
 function passesFilter(n: NotifRowData, filter: FilterKey): boolean {
@@ -47,7 +45,6 @@ function passesFilter(n: NotifRowData, filter: FilterKey): boolean {
   if (filter === "follow") return n.type === "follow";
   if (filter === "like") return n.type === "like";
   if (filter === "comment") return n.type === "comment";
-  if (filter === "friend") return n.type === "friend_request" || n.type === "friend_accepted";
   return true;
 }
 
@@ -99,10 +96,6 @@ function labelFor(n: NotifRowData): string {
     }
     case "follow":
       return "started following you.";
-    case "friend_request":
-      return "sent you a friend request.";
-    case "friend_accepted":
-      return "accepted your friend request.";
     default:
       return "interacted with you.";
   }
@@ -118,7 +111,7 @@ function ActorAvatar({ n }: { n: NotifRowData }) {
   if (!n.actorImageUrl || broken) {
     return (
       <div
-        className={`${avatarClass} flex items-center justify-center bg-stone-200 text-xs font-medium text-stone-600`}
+        className={`${avatarClass} flex items-center justify-center bg-stone-100 text-xs font-medium text-stone-500`}
         aria-hidden
       >
         {initial}
@@ -127,10 +120,10 @@ function ActorAvatar({ n }: { n: NotifRowData }) {
   }
 
   return (
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       src={n.actorImageUrl}
       alt=""
-      referrerPolicy="no-referrer"
       className={avatarClass}
       onError={() => setBroken(true)}
     />
@@ -171,19 +164,6 @@ export default function NotificationsPage() {
     if (isLoaded && user) load();
   }, [isLoaded, user, load]);
 
-  async function respondToFriendRequest(n: NotifRowData, accept: boolean) {
-    try {
-      await fetch("/api/friends/respond", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ requesterClerkId: n.actorClerkId, accept }),
-      });
-    } catch {
-      /* ignore */
-    }
-  }
-
   if (!isLoaded) return null;
 
   const filtered = notifications.filter((n) => passesFilter(n, filter));
@@ -215,10 +195,10 @@ export default function NotificationsPage() {
                     className="rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
                   >
                     <Chip
-                      size="sm"
+                      size="md"
                       variant="tertiary"
                       color="default"
-                      className={`cursor-pointer border bg-transparent text-xs font-normal transition-colors [&_.chip__label]:text-xs ${
+                      className={`cursor-pointer border bg-transparent text-sm font-normal transition-colors [&_.chip__label]:text-sm ${
                         selected
                           ? "border-stone-800 text-stone-900"
                           : "border-stone-200 text-stone-600 hover:border-stone-400 hover:text-stone-800"
@@ -226,10 +206,10 @@ export default function NotificationsPage() {
                     >
                       <Icon
                         absoluteStrokeWidth
-                        className="size-2.5 shrink-0"
+                        className="size-3.5 shrink-0"
                         strokeWidth={1.75}
                       />
-                      <Chip.Label className="text-xs">{label}</Chip.Label>
+                      <Chip.Label className="text-sm">{label}</Chip.Label>
                     </Chip>
                   </button>
                 );
@@ -254,11 +234,7 @@ export default function NotificationsPage() {
                     <p className="text-sm font-medium text-stone-800 mb-1">{label}</p>
                     <ul className="flex flex-col">
                       {items.map((n) => (
-                        <NotificationRow
-                          key={n._id}
-                          n={n}
-                          onFriendRespond={respondToFriendRequest}
-                        />
+                        <NotificationRow key={n._id} n={n} />
                       ))}
                     </ul>
                   </section>
@@ -272,13 +248,7 @@ export default function NotificationsPage() {
   );
 }
 
-function NotificationRow({
-  n,
-  onFriendRespond,
-}: {
-  n: NotifRowData;
-  onFriendRespond: (n: NotifRowData, accept: boolean) => void;
-}) {
+function NotificationRow({ n }: { n: NotifRowData }) {
   const { openPost } = usePostViewerOptional();
   const hasPostThumb = n.postId && (n.type === "like" || n.type === "comment" || n.type === "repost");
 
@@ -326,26 +296,6 @@ function NotificationRow({
               targetUserId={n.actorClerkId}
               className="text-xs px-4 py-1.5 rounded-lg border border-stone-200 text-stone-700 hover:bg-stone-100 transition-colors min-w-[5rem]"
             />
-          ) : null}
-
-          {n.type === "friend_request" ? (
-            <div className="flex flex-col gap-1">
-              <Button
-                size="sm"
-                onPress={() => onFriendRespond(n, true)}
-                className="bg-stone-800 hover:bg-stone-700 text-white text-xs rounded-lg px-3 h-7 min-w-[4.5rem]"
-              >
-                Accept
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onPress={() => onFriendRespond(n, false)}
-                className="border-stone-200 text-stone-600 hover:border-stone-300 text-xs rounded-lg px-3 h-7 min-w-[4.5rem]"
-              >
-                Delete
-              </Button>
-            </div>
           ) : null}
         </div>
       </div>

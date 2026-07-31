@@ -1,10 +1,12 @@
 /**
  * Instagram-style post frame aspect ratios (width / height).
+ * - Story / tall: 9:16
  * - Portrait: 4:5
  * - Square: 1:1
  * - Landscape (mild): 5:4
  * - Landscape (wide): 16:9
  */
+export const POST_ASPECT_STORY = 9 / 16;
 export const POST_ASPECT_PORTRAIT = 4 / 5;
 export const POST_ASPECT_SQUARE = 1;
 export const POST_ASPECT_FIVE_FOUR = 5 / 4;
@@ -12,6 +14,7 @@ export const POST_ASPECT_LANDSCAPE = 16 / 9;
 
 /** Discrete frames posts snap to (after clamping into the allowed range). */
 export const POST_ASPECT_STANDARDS = [
+  POST_ASPECT_STORY,
   POST_ASPECT_PORTRAIT,
   POST_ASPECT_SQUARE,
   POST_ASPECT_FIVE_FOUR,
@@ -19,6 +22,12 @@ export const POST_ASPECT_STANDARDS = [
 ] as const;
 
 export const POST_ASPECT_OPTIONS = [
+  {
+    id: "story" as const,
+    label: "Story",
+    shortLabel: "9:16",
+    ratio: POST_ASPECT_STORY,
+  },
   {
     id: "portrait" as const,
     label: "Portrait",
@@ -68,7 +77,12 @@ export const POST_MODAL_SIDEBAR_WIDTH = 400;
 export const POST_MODAL_MAX_MEDIA_WIDTH = 935;
 export const POST_MODAL_MAX_HEIGHT_VH = 0.9;
 
-export type PostAspectKind = "portrait" | "square" | "fiveFour" | "landscape";
+export type PostAspectKind =
+  | "story"
+  | "portrait"
+  | "square"
+  | "fiveFour"
+  | "landscape";
 
 function nearestStandard(ratio: number): number {
   let best: number = POST_ASPECT_SQUARE;
@@ -85,8 +99,8 @@ function nearestStandard(ratio: number): number {
 
 /**
  * Map natural pixel size → display frame ratio.
- * Clamps into [4:5, 16:9], then snaps to the nearest standard
- * (4:5, 1:1, 5:4, or 16:9).
+ * Clamps into [9:16, 16:9], then snaps to the nearest standard
+ * (9:16, 4:5, 1:1, 5:4, or 16:9).
  */
 export function clampPostAspectRatio(width: number, height: number): number {
   if (!width || !height || !Number.isFinite(width) || !Number.isFinite(height)) {
@@ -95,13 +109,14 @@ export function clampPostAspectRatio(width: number, height: number): number {
   const raw = width / height;
   const clamped = Math.min(
     POST_ASPECT_LANDSCAPE,
-    Math.max(POST_ASPECT_PORTRAIT, raw)
+    Math.max(POST_ASPECT_STORY, raw)
   );
   return nearestStandard(clamped);
 }
 
 export function classifyPostAspect(ratio: number): PostAspectKind {
   const snapped = nearestStandard(ratio);
+  if (snapped === POST_ASPECT_STORY) return "story";
   if (snapped === POST_ASPECT_PORTRAIT) return "portrait";
   if (snapped === POST_ASPECT_FIVE_FOUR) return "fiveFour";
   if (snapped === POST_ASPECT_LANDSCAPE) return "landscape";

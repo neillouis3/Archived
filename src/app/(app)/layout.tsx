@@ -25,6 +25,7 @@ export default function AppLayout({
     pathname.startsWith("/profile/") ||
     pathname === "/gallery" ||
     pathname.startsWith("/gallery/") ||
+    pathname.startsWith("/c/") ||
     pathname === "/accounts/settings" ||
     pathname.startsWith("/accounts/settings/") ||
     pathname === "/explore" ||

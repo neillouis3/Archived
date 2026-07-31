@@ -20,6 +20,8 @@ type PostGridCardProps = {
   hasMultiple?: boolean;
   likeCount?: number;
   commentCount?: number;
+  /** Frosted likes/comments hover. Off on Explore for performance. */
+  hoverOverlay?: boolean;
   className?: string;
 };
 
@@ -42,6 +44,7 @@ export function PostGridCard({
   hasMultiple = false,
   likeCount = 0,
   commentCount = 0,
+  hoverOverlay = true,
   className = "",
 }: PostGridCardProps) {
   const { openPost } = usePostViewerOptional();
@@ -50,14 +53,22 @@ export function PostGridCard({
     <button
       type="button"
       onClick={() => openPost(postId)}
-      className={`relative aspect-square overflow-hidden group block w-full bg-white ring-1 ring-stone-200/40 text-left ${className}`}
+      className={`relative aspect-square overflow-hidden group block w-full cursor-pointer bg-white ring-1 ring-stone-200/40 text-left ${className}`}
       aria-label={alt}
     >
       <img
         src={src}
         alt={alt}
-        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-        style={{ filter: "brightness(0.97) contrast(1.02) saturate(0.92)" }}
+        className={`h-full w-full object-cover ${
+          hoverOverlay
+            ? "transition-transform duration-300 group-hover:scale-105"
+            : ""
+        }`}
+        style={
+          hoverOverlay
+            ? { filter: "brightness(0.97) contrast(1.02) saturate(0.92)" }
+            : undefined
+        }
       />
 
       {hasMultiple ? (
@@ -74,36 +85,37 @@ export function PostGridCard({
         </span>
       ) : null}
 
-      {/* Dark frosted hover — likes + comments */}
-      <div
-        className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black/45 opacity-0 backdrop-blur-[2px] transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100"
-        aria-hidden
-      >
-        <div className="flex items-center gap-6 text-white">
-          <span className="flex items-center gap-1.5">
-            <HugeiconsIcon
-              icon={FavouriteIcon}
-              size={20}
-              strokeWidth={0}
-              fill="currentColor"
-              className="size-5 shrink-0"
-            />
-            <span className="text-sm font-semibold tabular-nums">
-              {formatCount(likeCount)}
+      {hoverOverlay ? (
+        <div
+          className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black/45 opacity-0 backdrop-blur-[2px] transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100"
+          aria-hidden
+        >
+          <div className="flex items-center gap-6 text-white">
+            <span className="flex items-center gap-1.5">
+              <HugeiconsIcon
+                icon={FavouriteIcon}
+                size={20}
+                strokeWidth={0}
+                fill="currentColor"
+                className="size-5 shrink-0"
+              />
+              <span className="text-sm font-semibold tabular-nums">
+                {formatCount(likeCount)}
+              </span>
             </span>
-          </span>
-          <span className="flex items-center gap-1.5">
-            <MessageCircleIcon
-              absoluteStrokeWidth
-              className="size-5 shrink-0 fill-current"
-              strokeWidth={0}
-            />
-            <span className="text-sm font-semibold tabular-nums">
-              {formatCount(commentCount)}
+            <span className="flex items-center gap-1.5">
+              <MessageCircleIcon
+                absoluteStrokeWidth
+                className="size-5 shrink-0 fill-current"
+                strokeWidth={0}
+              />
+              <span className="text-sm font-semibold tabular-nums">
+                {formatCount(commentCount)}
+              </span>
             </span>
-          </span>
+          </div>
         </div>
-      </div>
+      ) : null}
     </button>
   );
 }

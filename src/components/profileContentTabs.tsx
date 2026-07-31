@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import {
   BorderAll02Icon,
   LayoutGridIcon,
@@ -24,17 +25,30 @@ const TABS: {
 export default function ProfileContentTabs({
   value,
   onChange,
+  available,
 }: {
   value: ProfileContentTab;
   onChange: (tab: ProfileContentTab) => void;
+  /** Tabs with content. Empty/missing tabs are hidden. */
+  available: Partial<Record<ProfileContentTab, boolean>>;
 }) {
+  useEffect(() => {
+    if (!available[value]) {
+      const first = TABS.find((tab) => available[tab.id]);
+      if (first) onChange(first.id);
+    }
+  }, [available, value, onChange]);
+
+  const visible = TABS.filter((tab) => available[tab.id]);
+  if (visible.length === 0) return null;
+
   return (
     <div
       role="tablist"
       aria-label="Profile content"
       className="flex w-full border-0"
     >
-      {TABS.map(({ id, label, icon }) => {
+      {visible.map(({ id, label, icon }) => {
         const active = value === id;
         return (
           <button

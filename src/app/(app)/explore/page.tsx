@@ -220,6 +220,7 @@ function ExplorePageInner() {
                   hasMultiple={tile.hasMultiple}
                   likeCount={tile.likeCount}
                   commentCount={tile.commentCount}
+                  hoverOverlay={false}
                 />
               ))}
             </div>

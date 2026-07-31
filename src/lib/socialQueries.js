@@ -1,5 +1,4 @@
 import Follows from "./models/follows";
-import Friendships from "./models/friendships";
 
 /** @param {string} viewerClerkId */
 export async function getFollowingClerkIds(viewerClerkId) {
@@ -13,38 +12,46 @@ export async function getFollowingClerkIds(viewerClerkId) {
     .filter((id) => id && id !== viewerClerkId);
 }
 
-/** @returns {Promise<Set<string>>} */
-export async function getAcceptedFriendClerkIdsSet(viewerClerkId) {
-  const rows = await Friendships.find({
-    status: "accepted",
-    $or: [
-      { requesterClerkId: viewerClerkId },
-      { recipientClerkId: viewerClerkId },
-    ],
-  })
-    .select("requesterClerkId recipientClerkId")
-    .lean();
+/**
+ * Mutual follows — Instagram-style stand-in for “friends” visibility.
+ * People the viewer follows who also follow the viewer back.
+ * @returns {Promise<Set<string>>}
+ */
+export async function getMutualFollowClerkIdsSet(viewerClerkId) {
+  if (!viewerClerkId) return new Set();
+
+  const [following, followers] = await Promise.all([
+    Follows.find({ followerClerkId: viewerClerkId })
+      .select("followingClerkId")
+      .lean(),
+    Follows.find({ followingClerkId: viewerClerkId })
+      .select("followerClerkId")
+      .lean(),
+  ]);
+
+  const followingSet = new Set(
+    following
+      .map((r) => r.followingClerkId)
+      .filter((id) => id && id !== viewerClerkId)
+  );
   const ids = new Set();
-  for (const r of rows) {
-    ids.add(
-      r.requesterClerkId === viewerClerkId
-        ? r.recipientClerkId
-        : r.requesterClerkId
-    );
+  for (const r of followers) {
+    const id = r.followerClerkId;
+    if (id && id !== viewerClerkId && followingSet.has(id)) {
+      ids.add(id);
+    }
   }
   return ids;
 }
 
-export async function areFriends(a, b) {
+/** Mutual follow (both directions). Used for “friends” visibility. */
+export async function areMutualFollows(a, b) {
   if (!a || !b || a === b) return false;
-  const n = await Friendships.countDocuments({
-    status: "accepted",
-    $or: [
-      { requesterClerkId: a, recipientClerkId: b },
-      { requesterClerkId: b, recipientClerkId: a },
-    ],
-  });
-  return n > 0;
+  const [aFollowsB, bFollowsA] = await Promise.all([
+    isFollowing(a, b),
+    isFollowing(b, a),
+  ]);
+  return aFollowsB && bFollowsA;
 }
 
 export async function isFollowing(followerClerkId, followingClerkId) {
@@ -53,10 +60,10 @@ export async function isFollowing(followerClerkId, followingClerkId) {
 }
 
 /**
- * Following feed: followed users' public + friends-only from followed users who are also accepted friends.
+ * Following feed: followed users' public + friends-only from mutual follows.
  * @param {string} viewerClerkId
  * @param {string[]} followingIds
- * @param {Set<string>} friendIdSet
+ * @param {Set<string>} friendIdSet mutual follows of viewer
  */
 export function buildFollowingFeedFilter(viewerClerkId, followingIds, friendIdSet) {
   const followedFriends = followingIds.filter((id) => friendIdSet.has(id));
@@ -121,7 +128,7 @@ export async function buildPostsListFilter(opts) {
   if (authorClerkId) {
     const friend =
       viewerClerkId && viewerClerkId !== authorClerkId
-        ? await areFriends(viewerClerkId, authorClerkId)
+        ? await areMutualFollows(viewerClerkId, authorClerkId)
         : false;
 
     const base = buildAuthorPostsFilter(
@@ -151,7 +158,7 @@ export async function buildPostsListFilter(opts) {
     }
     const [followingIds, friendSet] = await Promise.all([
       getFollowingClerkIds(viewerClerkId),
-      getAcceptedFriendClerkIdsSet(viewerClerkId),
+      getMutualFollowClerkIdsSet(viewerClerkId),
     ]);
     return buildFollowingFeedFilter(viewerClerkId, followingIds, friendSet);
   }
@@ -176,10 +183,10 @@ export async function buildPostsListFilter(opts) {
 }
 
 /**
- * Posts the viewer is allowed to see (own, public, or friends-only when friends with author).
+ * Posts the viewer is allowed to see (own, public, or friends-only when mutual follow).
  * @param {object[]} posts
  * @param {string} viewerClerkId
- * @param {Set<string>} friendIdSet accepted friends of viewer
+ * @param {Set<string>} friendIdSet mutual follows of viewer
  */
 export function filterPostsVisibleToViewer(posts, viewerClerkId, friendIdSet) {
   if (!viewerClerkId || !posts?.length) return [];

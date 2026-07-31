@@ -182,6 +182,13 @@ function AspectFrameIcon({
   active: boolean;
 }) {
   const opacity = active ? "opacity-100" : "opacity-50";
+  if (id === "story") {
+    return (
+      <span className={`flex h-6 w-6 items-center justify-center ${opacity}`} aria-hidden>
+        <span className="block h-5 w-2.5 rounded-[2px] border-2 border-current" />
+      </span>
+    );
+  }
   if (id === "square") {
     return (
       <span className={`flex h-6 w-6 items-center justify-center ${opacity}`} aria-hidden>
@@ -1348,7 +1355,7 @@ export default function AddPostModal({
                                       </ListBox.Item>
                                       <ListBox.Item
                                         id="friends"
-                                        textValue="Friends"
+                                        textValue="Friends — people you follow each other"
                                         className="rounded-lg px-3 py-2 text-sm"
                                       >
                                         Friends
@@ -1363,6 +1370,11 @@ export default function AddPostModal({
                                     </ListBox>
                                   </Select.Popover>
                                 </Select>
+                                {visibility === "friends" ? (
+                                  <p className="mt-1.5 text-xs text-stone-400">
+                                    People you follow each other
+                                  </p>
+                                ) : null}
                               </div>
                             </ShareDisclosure>
                           </div>

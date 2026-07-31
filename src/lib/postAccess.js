@@ -1,5 +1,5 @@
 import Posts from "./models/posts";
-import { areFriends } from "./socialQueries";
+import { areMutualFollows } from "./socialQueries";
 
 export async function canViewerSeePost(viewerClerkId, post) {
   if (!post || post.status === "deleted") return false;
@@ -9,7 +9,7 @@ export async function canViewerSeePost(viewerClerkId, post) {
   if (post.visibility === "private") return false;
   if (post.visibility === "friends") {
     if (!viewerClerkId) return false;
-    return areFriends(viewerClerkId, author);
+    return areMutualFollows(viewerClerkId, author);
   }
   return false;
 }

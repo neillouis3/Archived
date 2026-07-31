@@ -50,16 +50,28 @@ export async function GET(req) {
     }
 
     const { searchParams } = new URL(req.url);
+    const legacyFriendTypes = ["friend_request", "friend_accepted"];
+    // Drop legacy friend-system notifications left over after Follow-only.
+    await Notifications.deleteMany({
+      recipientClerkId: userId,
+      type: { $in: legacyFriendTypes },
+    });
+
+    const activeTypeFilter = {
+      recipientClerkId: userId,
+      type: { $nin: legacyFriendTypes },
+    };
+
     if (searchParams.get("unreadCount") === "1") {
       const unread = await Notifications.countDocuments({
-        recipientClerkId: userId,
+        ...activeTypeFilter,
         read: false,
       });
       return NextResponse.json({ unread }, { status: 200 });
     }
 
     const limit = Math.min(parseInt(searchParams.get("limit") || "40", 10), 100);
-    const rows = await Notifications.find({ recipientClerkId: userId })
+    const rows = await Notifications.find(activeTypeFilter)
       .sort({ createdAt: -1 })
       .limit(limit)
       .lean();

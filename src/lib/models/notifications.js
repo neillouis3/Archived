@@ -5,14 +5,7 @@ const notificationsSchema = new mongoose.Schema(
     recipientClerkId: { type: String, required: true, index: true },
     type: {
       type: String,
-      enum: [
-        "like",
-        "comment",
-        "follow",
-        "friend_request",
-        "friend_accepted",
-        "repost",
-      ],
+      enum: ["like", "comment", "follow", "repost"],
       required: true,
     },
     actorClerkId: { type: String, required: true },
